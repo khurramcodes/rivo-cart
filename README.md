@@ -10,12 +10,14 @@ This is a **general-purpose e-commerce website** designed to demonstrate a moder
 - **Backend:** [Node.js](https://nodejs.org/) + [Express.js](https://expressjs.com/) + [Prisma ORM](https://www.prisma.io/)  
 - **Database:** PostgreSQL 
 
-## Features
+## Key Features
 
 - Product listing and search
-- Products Variants
+- Product Variants
 - Product Categories
+- Category wise product filters
 - Shopping cart management
+- State Management with ReduxToolkit
 - User authentication
 - Admin Dashboard
 - API-driven architecture with separate frontend and backend
