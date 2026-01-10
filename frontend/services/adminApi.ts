@@ -107,6 +107,14 @@ export const adminApi = {
     const { data } = await apiClient.get<{ token: string; expire: number; signature: string }>("/api/imagekit/auth");
     return data;
   },
+
+  // dashboard
+  async getDashboardStats() {
+    const { data } = await apiClient.get<{ productsCount: number; categoriesCount: number; ordersCount: number }>(
+      "/api/dashboard/stats"
+    );
+    return data;
+  },
 };
 
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { NavBar } from "@/components/NavBar";
+import { NavBar } from "@/components/user/NavBar";
 
 export default function CheckoutSuccessPage() {
   const params = useSearchParams();

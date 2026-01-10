@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 
-import { NavBar } from "@/components/NavBar";
+import { NavBar } from "@/components/user/NavBar";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";

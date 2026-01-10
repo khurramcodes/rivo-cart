@@ -4,6 +4,7 @@ import { categoryRoutes } from "./category.routes.js";
 import { productRoutes } from "./product.routes.js";
 import { orderRoutes } from "./order.routes.js";
 import { imagekitRoutes } from "./imagekit.routes.js";
+import { dashboardRoutes } from "./dashboard.routes.js";
 
 export const routes = Router();
 
@@ -12,5 +13,6 @@ routes.use("/categories", categoryRoutes);
 routes.use("/products", productRoutes);
 routes.use("/orders", orderRoutes);
 routes.use("/imagekit", imagekitRoutes);
+routes.use("/dashboard", dashboardRoutes);
 
 
