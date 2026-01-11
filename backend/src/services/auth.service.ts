@@ -42,6 +42,8 @@ export async function loginUser(input: {
 
   const email = input.email.toLowerCase().trim();
   const user = await prisma.user.findUnique({ where: { email } });
+
+  
   if (!user) throw new ApiError(401, "INVALID_CREDENTIALS", "Invalid email or password");
 
   const ok = await verifyPassword(input.password, user.password);

@@ -62,12 +62,14 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body as { email: string; password: string };
+  
   const { user, accessToken, refreshToken } = await loginUser({
     email,
     password,
     userAgent: req.get("user-agent") ?? undefined,
     ip: req.ip,
   });
+
 
   const accessMaxAge = msFromExpires(
     process.env.JWT_ACCESS_EXPIRES_IN ?? "24h"
