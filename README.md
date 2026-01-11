@@ -12,13 +12,26 @@ This is a **general-purpose e-commerce website** designed to demonstrate a moder
 
 ## Key Features
 
-- Product listing and search
-- Product Variants
-- Product Categories
-- Category wise product filters
+### Core E-commerce
+- Product listing with search functionality
+- Product variants support (e.g., size, color, weight)
+- Product categories
+- Category-wise product filtering
 - Shopping cart management
-- State Management with ReduxToolkit
+
+### User & Admin
 - User authentication
-- Admin Dashboard
+- Admin dashboard for managing products and categories
+
+### Forms & Validation
+- Form handling using React Hook Form
+- Schema-based validation with Zod
+
+### State Management
+- Global state management using Redux Toolkit
+
+### Architecture & Deployment
 - API-driven architecture with separate frontend and backend
+- Secure authentication using JWT and HTTP-only cookies
+- Centralized backend error handling
 - Ready for deployment on modern platforms
