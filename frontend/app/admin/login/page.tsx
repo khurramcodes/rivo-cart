@@ -12,9 +12,17 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { login } from "@/store/slices/authSlice";
 
 const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .pipe(z.email({ message: "Invalid email" })),
+
+  password: z
+    .string()
+    .min(1, "Password is required")
+    .min(8, "Password must be at least 8 characters"),
 });
+
 type FormValues = z.infer<typeof schema>;
 
 export default function AdminLoginPage() {
@@ -43,26 +51,49 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <main className="mx-auto max-w-md px-4 py-12">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Admin login</h1>
-        <p className="mt-1 text-sm text-zinc-600">Restricted access.</p>
+    <div className='min-h-screen bg-white'>
+      <main className='mx-auto max-w-md px-4 py-12'>
+        <h1 className='text-2xl font-semibold tracking-tight text-zinc-900'>
+          Admin login
+        </h1>
+        <p className='mt-1 text-sm text-zinc-600'>Restricted access.</p>
 
-        <form className="mt-6 space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-          {error ? (
-            <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-              {error}
+        <form className='mt-6 space-y-4' onSubmit={form.handleSubmit(onSubmit)}>
+          <div>
+            <label className='text-sm font-medium text-zinc-800'>Email</label>
+            <Input className='mt-2' type='email' {...form.register("email")} />
+            {form.formState.errors.email ? (
+              <p className='mt-1 text-sm text-red-600'>
+                {form.formState.errors.email.message}
+              </p>
+            ) : null}
+          </div>
+          <div>
+            <label className='text-sm font-medium text-zinc-800'>
+              Password
+            </label>
+            <Input
+              className='mt-2'
+              type='password'
+              {...form.register("password")}
+            />
+            {form.formState.errors.password ? (
+              <p className='mt-1 text-sm text-red-600'>
+                {form.formState.errors.password.message}
+              </p>
+            ) : null}
+          </div>
+
+          {error && (
+            <div className='rounded border border-red-200 bg-red-50 px-4 py-3'>
+              <p className='text-sm text-red-800'>{error}</p>
             </div>
-          ) : null}
-          <div>
-            <label className="text-sm font-medium text-zinc-800">Email</label>
-            <Input className="mt-2" type="email" {...form.register("email")} />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-zinc-800">Password</label>
-            <Input className="mt-2" type="password" {...form.register("password")} />
-          </div>
-          <Button type="submit" className="w-full" disabled={status === "loading"}>
+          )}
+
+          <Button
+            type='submit'
+            className='w-full'
+            disabled={status === "loading"}>
             {status === "loading" ? "Signing in…" : "Sign in"}
           </Button>
         </form>

@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import axios from "axios";
 import type { User } from "@/types";
 import { authApi } from "@/services/authApi";
 
@@ -14,17 +15,34 @@ const initialState: AuthState = {
   status: "idle",
 };
 
-export const login = createAsyncThunk("auth/login", async (payload: { email: string; password: string }) => {
-  const data = await authApi.login(payload);
-  return data.user;
-});
+export const login = createAsyncThunk(
+  "auth/login",
+  async (payload: { email: string; password: string }, { rejectWithValue }) => {
+    try {
+      const data = await authApi.login(payload);
+      return data.user;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data?.error) {
+        return rejectWithValue(error.response.data.error.message);
+      }
+      return rejectWithValue("Login failed. Please try again.");
+    }
+  }
+);
 
 export const register = createAsyncThunk(
   "auth/register",
-  async (payload: { name: string; email: string; password: string }) => {
-    const data = await authApi.register(payload);
-    return data.user;
-  },
+  async (payload: { name: string; email: string; password: string }, { rejectWithValue }) => {
+    try {
+      const data = await authApi.register(payload);
+      return data.user;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data?.error) {
+        return rejectWithValue(error.response.data.error.message);
+      }
+      return rejectWithValue("Registration failed. Please try again.");
+    }
+  }
 );
 
 export const logout = createAsyncThunk("auth/logout", async () => {
@@ -49,10 +67,11 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (s, a) => {
         s.user = a.payload;
         s.status = "authenticated";
+        s.error = undefined;
       })
       .addCase(login.rejected, (s, a) => {
         s.status = "error";
-        s.error = a.error.message ?? "Login failed";
+        s.error = (a.payload as string) ?? "Login failed";
       })
       .addCase(register.pending, (s) => {
         s.status = "loading";
@@ -61,10 +80,11 @@ const authSlice = createSlice({
       .addCase(register.fulfilled, (s, a) => {
         s.user = a.payload;
         s.status = "authenticated";
+        s.error = undefined;
       })
       .addCase(register.rejected, (s, a) => {
         s.status = "error";
-        s.error = a.error.message ?? "Register failed";
+        s.error = (a.payload as string) ?? "Registration failed";
       })
       .addCase(logout.fulfilled, (s) => {
         s.user = null;

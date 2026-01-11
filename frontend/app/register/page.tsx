@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { NavBar } from "@/components/NavBar";
+import { NavBar } from "@/components/user/NavBar";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -23,6 +23,7 @@ export default function RegisterPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const status = useAppSelector((s) => s.auth.status);
+  const error = useAppSelector((s) => s.auth.error);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -63,6 +64,13 @@ export default function RegisterPage() {
               <p className="mt-1 text-sm text-red-600">{form.formState.errors.password.message}</p>
             ) : null}
           </div>
+
+          {error && (
+            <div className='rounded border border-red-200 bg-red-50 px-4 py-3'>
+              <p className='text-sm text-red-800'>{error}</p>
+            </div>
+          )}
+
           <Button type="submit" className="w-full" disabled={status === "loading"}>
             {status === "loading" ? "Creating…" : "Create account"}
           </Button>
