@@ -8,8 +8,8 @@ import { placeOrderSchema, updateOrderStatusSchema } from "../validations/order.
 
 export const orderRoutes = Router();
 
-// customer
-orderRoutes.post("/", requireAuth, requireRole("USER"), requireCsrf, validate(placeOrderSchema), orderController.place);
+// customer (both USER and ADMIN can place orders)
+orderRoutes.post("/", requireAuth, requireCsrf, validate(placeOrderSchema), orderController.place);
 
 // admin
 orderRoutes.get("/", requireAuth, requireRole("ADMIN"), orderController.listAll);
