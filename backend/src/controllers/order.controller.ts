@@ -5,13 +5,12 @@ import { ApiError } from "../utils/ApiError.js";
 
 export const place = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) throw new ApiError(401, "UNAUTHORIZED", "Missing authentication");
-  if (req.user.role !== "USER") throw new ApiError(403, "FORBIDDEN", "Only customers can place orders");
 
   const { customerName, customerPhone, shippingAddress, items } = req.body as {
     customerName: string;
     customerPhone: string;
     shippingAddress: string;
-    items: { productId: string; quantity: number }[];
+    items: { productId: string; variantId: string; quantity: number }[];
   };
 
   const order = await orderService.placeOrder(req.user.sub, { customerName, customerPhone, shippingAddress, items });
