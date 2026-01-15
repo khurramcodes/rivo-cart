@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { NavBar } from "@/components/user/NavBar";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -29,7 +28,6 @@ export default function CartPage() {
 
   return (
     <div className='min-h-screen bg-white'>
-      <NavBar />
       <main className='mx-auto max-w-6xl px-4 py-10'>
         <h1 className='text-2xl font-semibold tracking-tight text-zinc-900'>
           Cart

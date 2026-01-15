@@ -17,7 +17,7 @@ export function NavBar() {
   const dispatch = useAppDispatch();
 
   return (
-    <header className='sticky top-0 z-20 border-b border-zinc-200 bg-white/80 backdrop-blur'>
+    <header className='sticky top-0 z-20 border-b border-zinc-200 bg-white backdrop-blur'>
       <div className='mx-auto flex max-w-6xl lg:max-w-7xl items-center gap-4 px-4 py-4'>
         <Link href='/'>
           <Image

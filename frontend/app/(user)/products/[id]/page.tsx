@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { NavBar } from "@/components/user/NavBar";
 import { catalogApi } from "@/services/catalogApi";
 import type { Product, ProductVariant } from "@/types";
 import { formatPrice } from "@/config/currency";
@@ -204,7 +203,6 @@ export default function ProductDetailPage() {
 
   return (
     <div className='min-h-screen bg-white'>
-      <NavBar />
       <main className='mx-auto max-w-6xl lg:max-w-7xl px-4 py-10'>
         {loading ? <div className='text-sm text-zinc-600'>Loading…</div> : null}
         {!loading && !product ? (

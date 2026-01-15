@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { NavBar } from "@/components/user/NavBar";
 import { catalogApi } from "@/services/catalogApi";
 import { formatPrice } from "@/config/currency";
 import Image from "next/image";
@@ -118,7 +117,6 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <NavBar />
       <main className="mx-auto max-w-6xl lg:max-w-7xl px-4 py-10">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Products</h1>
 

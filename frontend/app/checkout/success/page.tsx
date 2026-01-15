@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { NavBar } from "@/components/user/NavBar";
 
 export default function CheckoutSuccessPage() {
   const params = useSearchParams();
@@ -10,7 +9,6 @@ export default function CheckoutSuccessPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <NavBar />
       <main className="mx-auto max-w-2xl px-4 py-12">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Order placed</h1>
         <p className="mt-2 text-sm text-zinc-600">
