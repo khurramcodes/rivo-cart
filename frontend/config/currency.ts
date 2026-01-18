@@ -14,7 +14,10 @@ export const CURRENCY = {
  * @returns Formatted price string
  */
 export function formatPrice(amountInCents: number): string {
-  const amount = (amountInCents / 100).toFixed(2);
+  const amount = new Intl.NumberFormat("en-PK", {
+    // minimumFractionDigits: 2,
+    // maximumFractionDigits: 2,
+  }).format(amountInCents / 100);
   return CURRENCY.position === "before"
     ? `${CURRENCY.symbol} ${amount}`
     : `${amount} ${CURRENCY.symbol}`;

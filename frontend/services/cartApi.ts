@@ -7,15 +7,13 @@ type CartResponse = { cart: Cart };
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const url = `${baseURL}${path}`;
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...(options?.headers ?? {}),
-  };
+  const headers = new Headers(options?.headers);
+  headers.set("Content-Type", "application/json");
 
   const method = (options?.method ?? "GET").toUpperCase();
   if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
     const csrf = getCookie("XSRF-TOKEN");
-    if (csrf) headers["x-csrf-token"] = csrf;
+    if (csrf) headers.set("x-csrf-token", csrf);
   }
 
   const res = await fetch(url, {

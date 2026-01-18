@@ -7,7 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 
-import { NavBar } from "@/components/user/NavBar";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -30,6 +29,7 @@ export default function CheckoutPage() {
   const dispatch = useAppDispatch();
   const cart = useAppSelector((s) => s.cart.cart);
   const items = cart?.items ?? [];
+
   const user = useAppSelector((s) => s.auth.user);
 
   const total = items.reduce((sum, i) => sum + i.priceSnapshot * i.quantity, 0);
@@ -192,10 +192,6 @@ export default function CheckoutPage() {
                       alt={item.product?.name ?? "Product"}
                       className="w-full h-full object-cover"
                     />
-                    {/* Quantity Badge */}
-                    <div className="absolute -top-2 -right-2 w-5 h-5 bg-zinc-600 text-white text-xs font-medium rounded-full flex items-center justify-center">
-                      {item.quantity}
-                    </div>
                   </div>
 
                   {/* Product Details */}
@@ -204,10 +200,15 @@ export default function CheckoutPage() {
                       {item.product?.name ?? "Product"}
                     </h3>
                     {formatVariantDetails(item.variant?.attributes) ? (
-                      <p className="text-xs text-zinc-500 mt-0.5">
+                      <p className="text-xs text-zinc-500 my-0.5">
                         {formatVariantDetails(item.variant?.attributes)}
                       </p>
                     ) : null}
+
+                    {/* Quantity Badge */}
+                    <div className="text-zinc-500 text-xs">
+                      Qty: {item.quantity}
+                    </div>
                   </div>
 
                   {/* Price */}

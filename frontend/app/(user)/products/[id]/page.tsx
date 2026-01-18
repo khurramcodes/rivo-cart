@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { useAppDispatch } from "@/store/hooks";
 import { addToCart } from "@/store/cartThunks";
 import { addCacheBust } from "@/utils/imageCache";
-import { Minus, Plus, Package, X } from "lucide-react";
+import { Minus, Plus, Package, X, CircleCheckBig } from "lucide-react";
 
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>();
@@ -24,6 +24,7 @@ export default function ProductDetailPage() {
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [showAddedNotice, setShowAddedNotice] = useState(false);
 
   // Combine main image and gallery images
   const productImages = useMemo(() => {
@@ -154,7 +155,7 @@ export default function ProductDetailPage() {
     };
   }, [isLightboxOpen]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product || !selectedVariant) return;
     
     if (selectedVariant.stock === 0) {
@@ -162,7 +163,12 @@ export default function ProductDetailPage() {
       return;
     }
     
-    dispatch(addToCart({ product, variant: selectedVariant, quantity }));
+    try {
+      await dispatch(addToCart({ product, variant: selectedVariant, quantity })).unwrap();
+      setShowAddedNotice(true);
+    } catch {
+      // handled by cart state
+    }
     setQuantity(1);
   };
 
@@ -203,6 +209,25 @@ export default function ProductDetailPage() {
   return (
     <div className='min-h-screen bg-white'>
       <main className='mx-auto max-w-6xl lg:max-w-7xl px-4 py-10'>
+        {showAddedNotice ? (
+          <div className='mb-6 flex items-center justify-between gap-4 rounded border border-emerald-200 bg-emerald-100 px-4 py-3'>
+            <div className='text-sm text-emerald-800 flex items-center gap-2'>
+              <CircleCheckBig size={16} />
+              Product successfully added to cart!{" "}
+              <Link href='/cart' className='font-medium underline underline-offset-4'>
+                View cart
+              </Link>
+            </div>
+            <button
+              type='button'
+              aria-label='Dismiss'
+              onClick={() => setShowAddedNotice(false)}
+              className='text-emerald-900 hover:text-emerald-700'
+            >
+              <X className='h-4 w-4 cursor-pointer' />
+            </button>
+          </div>
+        ) : null}
         {loading ? <div className='text-sm text-zinc-600'>Loading…</div> : null}
         {!loading && !product ? (
           <div className='text-sm text-zinc-600'>Product not found.</div>
@@ -327,7 +352,7 @@ export default function ProductDetailPage() {
                                   }
                                   disabled={!isAvailable}
                                   className={`
-                                  px-4 py-2 rounded border text-sm font-medium transition
+                                  px-4 py-2 rounded border text-sm font-medium transition cursor-pointer
                                   ${
                                     isSelected
                                       ? "border-black bg-black text-white"

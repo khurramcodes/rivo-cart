@@ -96,7 +96,7 @@ export default function CartPage() {
 
                   </div>
                   <div className='text-sm font-medium text-zinc-900'>
-                    {formatPrice(i.price * i.quantity)}
+                    {formatPrice(i.priceSnapshot * i.quantity)}
                   </div>
                   <div>
                     <p
