@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { removeFromCart, setQuantity } from "@/store/slices/cartSlice";
 import { formatPrice } from "@/config/currency";
 import { usePathname, useRouter } from "next/navigation";
+import { Trash2 } from "lucide-react";
 
 export default function CartPage() {
   const items = useAppSelector((s) => s.cart.items);
@@ -48,63 +49,70 @@ export default function CartPage() {
               {items.map((i) => (
                 <div
                   key={`${i.productId}-${i.variantId}`}
-                  className='flex gap-4 rounded border border-zinc-200 p-4'>
-                  <div className='relative h-20 w-20 overflow-hidden rounded bg-zinc-100'>
-                    <Image
-                      src={i.imageUrl}
-                      alt={i.name}
-                      fill
-                      className='object-cover'
-                      unoptimized
-                    />
-                  </div>
-                  <div className='flex-1'>
-                    <p className='text-sm font-medium text-zinc-900'>
-                      {i.name}
-                    </p>
-                    {i.variantDetails ? (
-                      <p className='mt-0.5 text-xs text-zinc-500'>
-                        {i.variantDetails}
-                      </p>
-                    ) : null}
-                    <p className='mt-1 text-sm text-zinc-600'>
-                      {formatPrice(i.price)}
-                    </p>
-                    <p className='mt-0.5 text-xs text-zinc-400'>SKU: {i.sku}</p>
-                    <div className='mt-3 flex items-center gap-3'>
-                      <Input
-                        className='w-20'
-                        type='number'
-                        min={1}
-                        max={Math.max(1, i.stock)}
-                        value={i.quantity}
-                        onChange={(e) =>
-                          dispatch(
-                            setQuantity({
-                              productId: i.productId,
-                              variantId: i.variantId,
-                              quantity: Number(e.target.value),
-                            })
-                          )
-                        }
+                  className='flex justify-between items-center gap-4 rounded border border-zinc-200 p-4'>
+                  <div className='flex flex-1 items-start gap-4'>
+                    <div className='relative h-20 w-20 overflow-hidden rounded bg-zinc-100'>
+                      <Image
+                        src={i.imageUrl}
+                        alt={i.name}
+                        fill
+                        className='object-cover'
+                        unoptimized
                       />
-                      <Button
-                        variant='ghost'
-                        onClick={() =>
-                          dispatch(
-                            removeFromCart({
-                              productId: i.productId,
-                              variantId: i.variantId,
-                            })
-                          )
-                        }>
-                        Remove
-                      </Button>
                     </div>
+                    <div className=''>
+                      <p className='text-sm font-medium text-zinc-900'>
+                        {i.name}
+                      </p>
+                      {i.variantDetails ? (
+                        <p className='mt-0.5 text-xs text-zinc-500'>
+                          {i.variantDetails}
+                        </p>
+                      ) : null}
+                      <p className='mt-1 text-sm text-zinc-600'>
+                        {formatPrice(i.price)}
+                      </p>
+                      <p className='mt-0.5 text-xs text-zinc-400'>SKU: {i.sku}</p>
+
+                    </div>
+                  </div>
+                  <div className='mt-3 flex flex-col items-start gap-3'>
+                    <Input
+                      className='w-4'
+                      type='number'
+                      min={1}
+                      max={Math.max(1, i.stock)}
+                      value={i.quantity}
+                      onChange={(e) =>
+                        dispatch(
+                          setQuantity({
+                            productId: i.productId,
+                            variantId: i.variantId,
+                            quantity: Number(e.target.value),
+                          })
+                        )
+                      }
+                    />
+
                   </div>
                   <div className='text-sm font-medium text-zinc-900'>
                     {formatPrice(i.price * i.quantity)}
                   </div>
+                  <div>
+                    <p
+                      className='cursor-pointer'
+                      onClick={() =>
+                        dispatch(
+                          removeFromCart({
+                            productId: i.productId,
+                            variantId: i.variantId,
+                          })
+                        )
+                      }>
+                      <Trash2 size={16} className='text-red-800' />
+                    </p>
+                  </div>
+
                 </div>
               ))}
             </div>

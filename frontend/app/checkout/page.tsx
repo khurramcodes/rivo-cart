@@ -16,10 +16,10 @@ import { orderApi } from "@/services/orderApi";
 import { formatPrice } from "@/config/currency";
 
 const schema = z.object({
-  customerName: z.string().min(2, "Name must be at least 2 characters"),
+  customerName: z.string().min(3, "Name must be at least 3 characters."),
   customerEmail: z.email("Invalid email address"),
-  customerPhone: z.string().min(6, "Phone must be at least 6 characters"),
-  shippingAddress: z.string().min(5, "Address must be at least 5 characters"),
+  customerPhone: z.string().min(11, "Phone must be at least 11 characters"),
+  shippingAddress: z.string().min(5, "Address is required."),
   paymentMethod: z.enum(["COD"]),
 });
 
@@ -32,13 +32,15 @@ export default function CheckoutPage() {
   const user = useAppSelector((s) => s.auth.user);
 
   const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const subtotal = total;
+  const shipping = 0;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { 
-      customerName: "", 
+    defaultValues: {
+      customerName: "",
       customerEmail: "",
-      customerPhone: "", 
+      customerPhone: "",
       shippingAddress: "",
       paymentMethod: "COD",
     },
@@ -59,10 +61,10 @@ export default function CheckoutPage() {
         customerEmail: values.customerEmail,
         customerPhone: values.customerPhone,
         shippingAddress: values.shippingAddress,
-        items: items.map((i) => ({ 
-          productId: i.productId, 
+        items: items.map((i) => ({
+          productId: i.productId,
           variantId: i.variantId,
-          quantity: i.quantity 
+          quantity: i.quantity
         })),
       });
       dispatch(clearCart());
@@ -175,21 +177,70 @@ export default function CheckoutPage() {
             <h2 className="text-lg font-semibold text-zinc-900">Order Summary</h2>
             <div className="mt-4 space-y-3">
               {items.map((item) => (
-                <div key={item.productId} className="flex justify-between text-sm">
-                  <span className="text-zinc-600">
-                    {item.name} × {item.quantity}
-                  </span>
-                  <span className="text-zinc-900">{formatPrice(item.price * item.quantity)}</span>
+                <div
+                  key={`${item.productId}-${item.variantId}`}
+                  className="flex gap-4"
+                >
+                  {/* Product Image */}
+                  <div className="relative shrink-0 w-16 h-16 rounded-lg border border-zinc-200 bg-white overflow-hidden">
+                    <img
+                      src={item.imageUrl}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
+                    {/* Quantity Badge */}
+                    <div className="absolute -top-2 -right-2 w-5 h-5 bg-zinc-600 text-white text-xs font-medium rounded-full flex items-center justify-center">
+                      {item.quantity}
+                    </div>
+                  </div>
+
+                  {/* Product Details */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-medium text-zinc-900 truncate">
+                      {item.name}
+                    </h3>
+                    <p className="text-xs text-zinc-500 mt-0.5">
+                      {item.variantDetails}
+                    </p>
+                  </div>
+
+                  {/* Price */}
+                  <div className="text-sm font-medium text-zinc-900">
+                    {formatPrice(item.price * item.quantity)}
+                  </div>
                 </div>
               ))}
-            </div>
-            <div className="mt-4 border-t border-zinc-200 pt-4">
-              <div className="flex justify-between">
-                <span className="text-sm font-semibold text-zinc-900">Total</span>
-                <span className="text-2xl font-semibold text-zinc-900">{formatPrice(total)}</span>
+
+              {/* Divider */}
+              <div className="border-t border-zinc-200"></div>
+
+              {/* Pricing Breakdown */}
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-zinc-600">Subtotal</span>
+                  <span className="text-zinc-900">{formatPrice(subtotal)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-zinc-600">Shipping</span>
+                  <span className="text-zinc-900">
+                    {shipping === 0 ? 'Free' : formatPrice(shipping)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-zinc-200"></div>
+
+              {/* Total */}
+              <div className="flex justify-between items-baseline">
+                <span className="text-base font-semibold text-zinc-900">Total</span>
+                <div className="text-right">
+                  <div className="text-xl font-semibold text-zinc-900">
+                    {formatPrice(total)}
+                  </div>
+                </div>
               </div>
             </div>
-            <p className="mt-4 text-xs text-zinc-500">Your order will be confirmed by the admin.</p>
           </aside>
         </div>
       </main>
