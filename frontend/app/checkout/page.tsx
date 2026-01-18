@@ -11,7 +11,7 @@ import { NavBar } from "@/components/user/NavBar";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { clearCart } from "@/store/slices/cartSlice";
+import { clearCartServer } from "@/store/cartThunks";
 import { orderApi } from "@/services/orderApi";
 import { formatPrice } from "@/config/currency";
 
@@ -28,12 +28,16 @@ type FormValues = z.infer<typeof schema>;
 export default function CheckoutPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const items = useAppSelector((s) => s.cart.items);
+  const cart = useAppSelector((s) => s.cart.cart);
+  const items = cart?.items ?? [];
   const user = useAppSelector((s) => s.auth.user);
 
-  const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const total = items.reduce((sum, i) => sum + i.priceSnapshot * i.quantity, 0);
   const subtotal = total;
   const shipping = 0;
+
+  const formatVariantDetails = (attrs: { name: string; value: string }[] | undefined) =>
+    attrs && attrs.length > 0 ? attrs.map((attr) => `${attr.name}: ${attr.value}`).join(", ") : "";
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -67,7 +71,7 @@ export default function CheckoutPage() {
           quantity: i.quantity
         })),
       });
-      dispatch(clearCart());
+      await dispatch(clearCartServer());
       router.push(`/checkout/success?orderId=${order.id}`);
     } catch (error: any) {
       alert(error?.response?.data?.error?.message || "Failed to place order. Please try again.");
@@ -178,14 +182,14 @@ export default function CheckoutPage() {
             <div className="mt-4 space-y-3">
               {items.map((item) => (
                 <div
-                  key={`${item.productId}-${item.variantId}`}
+                  key={item.id}
                   className="flex gap-4"
                 >
                   {/* Product Image */}
                   <div className="relative shrink-0 w-16 h-16 rounded-lg border border-zinc-200 bg-white overflow-hidden">
                     <img
-                      src={item.imageUrl}
-                      alt={item.name}
+                      src={item.product?.imageUrl ?? "/images/logo.png"}
+                      alt={item.product?.name ?? "Product"}
                       className="w-full h-full object-cover"
                     />
                     {/* Quantity Badge */}
@@ -197,16 +201,18 @@ export default function CheckoutPage() {
                   {/* Product Details */}
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-medium text-zinc-900 truncate">
-                      {item.name}
+                      {item.product?.name ?? "Product"}
                     </h3>
-                    <p className="text-xs text-zinc-500 mt-0.5">
-                      {item.variantDetails}
-                    </p>
+                    {formatVariantDetails(item.variant?.attributes) ? (
+                      <p className="text-xs text-zinc-500 mt-0.5">
+                        {formatVariantDetails(item.variant?.attributes)}
+                      </p>
+                    ) : null}
                   </div>
 
                   {/* Price */}
                   <div className="text-sm font-medium text-zinc-900">
-                    {formatPrice(item.price * item.quantity)}
+                    {formatPrice(item.priceSnapshot * item.quantity)}
                   </div>
                 </div>
               ))}

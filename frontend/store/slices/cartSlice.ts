@@ -1,87 +1,109 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import type { Product, ProductVariant } from "@/types";
-
-export type CartItem = {
-  productId: string;
-  variantId: string;
-  sku: string;
-  name: string;
-  imageUrl: string;
-  price: number; // cents
-  quantity: number;
-  stock: number;
-  variantDetails?: string; // e.g., "Weight: 500g, Color: Red"
-};
+import type { Cart, CartItem, Product, ProductVariant } from "@/types";
 
 type CartState = {
-  items: CartItem[];
+  cart: Cart | null;
+  lastSyncedCart: Cart | null;
+  status: "idle" | "loading" | "syncing" | "error";
+  error?: string;
 };
 
 const initialState: CartState = {
-  items: [],
+  cart: null,
+  lastSyncedCart: null,
+  status: "idle",
 };
 
-function getVariantDetails(variant: ProductVariant): string {
-  if (!variant.attributes || variant.attributes.length === 0) return "";
-  return variant.attributes.map((attr) => `${attr.name}: ${attr.value}`).join(", ");
+function buildOptimisticItem(cartId: string, product: Product, variant: ProductVariant, quantity: number): CartItem {
+  const now = new Date().toISOString();
+  return {
+    id: `temp-${variant.id}`,
+    cartId,
+    productId: product.id,
+    variantId: variant.id,
+    quantity,
+    priceSnapshot: variant.price,
+    createdAt: now,
+    updatedAt: now,
+    product: { id: product.id, name: product.name, imageUrl: product.imageUrl },
+    variant: {
+      ...variant,
+      attributes: variant.attributes ?? [],
+    },
+  };
 }
 
-function upsertItem(items: CartItem[], item: CartItem) {
-  // Match by both productId AND variantId
-  const idx = items.findIndex((i) => i.productId === item.productId && i.variantId === item.variantId);
-  if (idx >= 0) {
-    const nextQty = items[idx].quantity + item.quantity;
-    items[idx] = {
-      ...items[idx],
-      stock: item.stock,
-      quantity: Math.max(1, Math.min(item.stock, nextQty)),
-    };
-  } else {
-    items.push({
-      ...item,
-      quantity: Math.max(1, Math.min(item.stock, item.quantity)),
-    });
-  }
+function ensureCart(state: CartState) {
+  if (state.cart) return state.cart;
+  const now = new Date().toISOString();
+  state.cart = {
+    id: "temp-cart",
+    createdAt: now,
+    updatedAt: now,
+    items: [],
+  };
+  return state.cart;
 }
 
 const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    addToCart(state, action: PayloadAction<{ product: Product; variant: ProductVariant; quantity?: number }>) {
-      const { product, variant, quantity } = action.payload;
-      upsertItem(state.items, {
-        productId: product.id,
-        variantId: variant.id,
-        sku: variant.sku,
-        name: product.name,
-        imageUrl: product.imageUrl,
-        price: variant.price,
-        stock: variant.stock,
-        quantity: quantity ?? 1,
-        variantDetails: getVariantDetails(variant),
-      });
+    setCart(state, action: PayloadAction<Cart | null>) {
+      state.cart = action.payload;
+      state.lastSyncedCart = action.payload;
+      state.status = "idle";
+      state.error = undefined;
     },
-    removeFromCart(state, action: PayloadAction<{ productId: string; variantId: string }>) {
-      state.items = state.items.filter(
-        (i) => !(i.productId === action.payload.productId && i.variantId === action.payload.variantId),
-      );
+    setStatus(state, action: PayloadAction<CartState["status"]>) {
+      state.status = action.payload;
     },
-    setQuantity(state, action: PayloadAction<{ productId: string; variantId: string; quantity: number }>) {
-      const item = state.items.find(
-        (i) => i.productId === action.payload.productId && i.variantId === action.payload.variantId,
-      );
+    setError(state, action: PayloadAction<string | undefined>) {
+      state.error = action.payload;
+      if (action.payload) state.status = "error";
+    },
+    optimisticAddItem(
+      state,
+      action: PayloadAction<{ product: Product; variant: ProductVariant; quantity?: number }>,
+    ) {
+      const { product, variant, quantity = 1 } = action.payload;
+      const cart = ensureCart(state);
+      const existing = cart.items.find((i) => i.variantId === variant.id);
+      if (existing) {
+        const nextQty = existing.quantity + quantity;
+        existing.quantity = Math.max(1, Math.min(variant.stock, nextQty));
+        existing.priceSnapshot = variant.price;
+      } else {
+        cart.items.push(
+          buildOptimisticItem(cart.id, product, variant, Math.max(1, Math.min(variant.stock, quantity))),
+        );
+      }
+    },
+    optimisticUpdateItem(state, action: PayloadAction<{ itemId: string; quantity: number }>) {
+      if (!state.cart) return;
+      const item = state.cart.items.find((i) => i.id === action.payload.itemId);
       if (!item) return;
-      item.quantity = Math.max(1, Math.min(item.stock, action.payload.quantity));
+      const stock = item.variant?.stock ?? action.payload.quantity;
+      item.quantity = Math.max(1, Math.min(stock, action.payload.quantity));
+    },
+    optimisticRemoveItem(state, action: PayloadAction<{ itemId: string }>) {
+      if (!state.cart) return;
+      state.cart.items = state.cart.items.filter((i) => i.id !== action.payload.itemId);
     },
     clearCart(state) {
-      state.items = [];
+      state.cart = state.cart
+        ? { ...state.cart, items: [] }
+        : { id: "temp-cart", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), items: [] };
+      state.lastSyncedCart = state.cart;
+      state.status = "idle";
+      state.error = undefined;
     },
   },
 });
 
-export const { addToCart, removeFromCart, setQuantity, clearCart } = cartSlice.actions;
+export const { setCart, setStatus, setError, optimisticAddItem, optimisticUpdateItem, optimisticRemoveItem, clearCart } =
+  cartSlice.actions;
 export default cartSlice.reducer;
 
 

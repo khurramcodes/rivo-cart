@@ -98,4 +98,26 @@ export type Order = {
   user?: Pick<User, "id" | "name" | "email" | "role" | "createdAt">;
 };
 
+export type CartItem = {
+  id: string;
+  cartId: string;
+  productId: string;
+  variantId: string;
+  quantity: number;
+  priceSnapshot: number; // cents
+  createdAt: string;
+  updatedAt: string;
+  product: Pick<Product, "id" | "name" | "imageUrl">;
+  variant: ProductVariant;
+};
+
+export type Cart = {
+  id: string;
+  userId?: string | null;
+  sessionId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  items: CartItem[];
+};
+
 

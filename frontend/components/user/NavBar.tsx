@@ -12,7 +12,9 @@ import Image from "next/image";
 
 export function NavBar() {
   const router = useRouter();
-  const cartCount = useAppSelector((s) => s.cart.items.reduce((sum, i) => sum + i.quantity, 0));
+  const cartCount = useAppSelector((s) =>
+    (s.cart.cart?.items ?? []).reduce((sum, i) => sum + i.quantity, 0),
+  );
   const user = useAppSelector((s) => s.auth.user);
   const dispatch = useAppDispatch();
 

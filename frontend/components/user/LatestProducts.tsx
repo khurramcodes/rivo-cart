@@ -10,7 +10,7 @@ import { formatPrice } from "@/config/currency";
 import { addCacheBust } from "@/utils/imageCache";
 import { Button } from "@/components/ui/Button";
 import { useAppDispatch } from "@/store/hooks";
-import { addToCart } from "@/store/slices/cartSlice";
+import { addToCart } from "@/store/cartThunks";
 
 /**
  * Latest products section props

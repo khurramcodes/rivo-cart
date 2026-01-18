@@ -9,7 +9,7 @@ import type { Product, ProductVariant } from "@/types";
 import { formatPrice } from "@/config/currency";
 import { Button } from "@/components/ui/Button";
 import { useAppDispatch } from "@/store/hooks";
-import { addToCart } from "@/store/slices/cartSlice";
+import { addToCart } from "@/store/cartThunks";
 import { addCacheBust } from "@/utils/imageCache";
 import { Minus, Plus, Package, X } from "lucide-react";
 

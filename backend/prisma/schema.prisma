@@ -40,6 +40,7 @@ model User {
 
   orders    Order[]
   sessions  Session[]
+  carts     Cart[]
 
   @@index([role])
 }
@@ -74,6 +75,7 @@ model Product {
   orderItems      OrderItem[]
   galleryImages   ProductGalleryImage[]
   variants        ProductVariant[]
+  cartItems       CartItem[]
 
   @@index([categoryId])
   @@index([type])
@@ -91,6 +93,7 @@ model ProductVariant {
 
   product    Product                @relation(fields: [productId], references: [id], onDelete: Cascade)
   attributes ProductVariantAttribute[]
+  cartItems  CartItem[]
 
   @@index([productId])
   @@index([sku])
@@ -180,6 +183,40 @@ model Session {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model Cart {
+  id        String   @id @default(uuid())
+  userId    String?
+  sessionId String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  CartItem[]
+
+  @@index([userId])
+  @@index([sessionId])
+}
+
+model CartItem {
+  id            String   @id @default(uuid())
+  cartId        String
+  productId     String
+  variantId     String
+  quantity      Int
+  priceSnapshot Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  cart     Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product  Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
+  variant  ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+
+  @@index([cartId])
+  @@index([productId])
+  @@index([variantId])
+  @@unique([cartId, variantId])
 }
 
 

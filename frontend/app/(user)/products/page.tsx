@@ -11,7 +11,7 @@ import type { Category } from "@/types";
 import { addCacheBust } from "@/utils/imageCache";
 import { Button } from "@/components/ui/Button";
 import { useAppDispatch } from "@/store/hooks";
-import { addToCart } from "@/store/slices/cartSlice";
+import { addToCart } from "@/store/cartThunks";
 
 // Helper function to get product display price
 function getProductPrice(product: Product): { price: number; priceRange?: string } {
