@@ -32,10 +32,13 @@ export const login = createAsyncThunk(
 
 export const register = createAsyncThunk(
   "auth/register",
-  async (payload: { name: string; email: string; password: string }, { rejectWithValue }) => {
+  async (
+    payload: { firstName: string; lastName?: string | null; email: string; password: string },
+    { rejectWithValue }
+  ) => {
     try {
-      const data = await authApi.register(payload);
-      return data.user;
+      await authApi.register(payload);
+      return { email: payload.email };
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data?.error) {
         return rejectWithValue(error.response.data.error.message);
@@ -77,9 +80,8 @@ const authSlice = createSlice({
         s.status = "loading";
         s.error = undefined;
       })
-      .addCase(register.fulfilled, (s, a) => {
-        s.user = a.payload;
-        s.status = "authenticated";
+      .addCase(register.fulfilled, (s) => {
+        s.status = "idle";
         s.error = undefined;
       })
       .addCase(register.rejected, (s, a) => {

@@ -10,6 +10,7 @@ export type CartItem = {
   imageUrl: string;
   price: number; // cents
   quantity: number;
+  stock: number;
   variantDetails?: string; // e.g., "Weight: 500g, Color: Red"
 };
 
@@ -30,9 +31,17 @@ function upsertItem(items: CartItem[], item: CartItem) {
   // Match by both productId AND variantId
   const idx = items.findIndex((i) => i.productId === item.productId && i.variantId === item.variantId);
   if (idx >= 0) {
-    items[idx] = { ...items[idx], quantity: items[idx].quantity + item.quantity };
+    const nextQty = items[idx].quantity + item.quantity;
+    items[idx] = {
+      ...items[idx],
+      stock: item.stock,
+      quantity: Math.max(1, Math.min(item.stock, nextQty)),
+    };
   } else {
-    items.push(item);
+    items.push({
+      ...item,
+      quantity: Math.max(1, Math.min(item.stock, item.quantity)),
+    });
   }
 }
 
@@ -49,6 +58,7 @@ const cartSlice = createSlice({
         name: product.name,
         imageUrl: product.imageUrl,
         price: variant.price,
+        stock: variant.stock,
         quantity: quantity ?? 1,
         variantDetails: getVariantDetails(variant),
       });
@@ -63,7 +73,7 @@ const cartSlice = createSlice({
         (i) => i.productId === action.payload.productId && i.variantId === action.payload.variantId,
       );
       if (!item) return;
-      item.quantity = Math.max(1, Math.min(20, action.payload.quantity));
+      item.quantity = Math.max(1, Math.min(item.stock, action.payload.quantity));
     },
     clearCart(state) {
       state.items = [];

@@ -70,7 +70,7 @@ export function NavBar() {
             ) : (
               <div className='flex items-center gap-2'>
                 <span className='hidden sm:inline text-zinc-600'>
-                  Hi, {user.name}
+                  Hi, {user.firstName || user.name}
                 </span>
                 <Button
                   variant='ghost'

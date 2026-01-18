@@ -124,7 +124,6 @@ export default function ProductDetailPage() {
     (async () => {
       try {
         const p = await catalogApi.getProduct(id);
-        console.log("Product Data: ", p.galleryImages)
         if (mounted) setProduct(p);
       } finally {
         if (mounted) setLoading(false);

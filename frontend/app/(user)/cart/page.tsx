@@ -76,7 +76,7 @@ export default function CartPage() {
                         className='w-20'
                         type='number'
                         min={1}
-                        max={20}
+                        max={Math.max(1, i.stock)}
                         value={i.quantity}
                         onChange={(e) =>
                           dispatch(

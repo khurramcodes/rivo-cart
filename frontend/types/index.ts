@@ -3,6 +3,8 @@ export type UserRole = "USER" | "ADMIN";
 export type User = {
   id: string;
   name: string;
+  firstName: string;
+  lastName?: string | null;
   email: string;
   role: UserRole;
   createdAt: string;

@@ -68,7 +68,7 @@ export default function CheckoutPage() {
       dispatch(clearCart());
       router.push(`/checkout/success?orderId=${order.id}`);
     } catch (error: any) {
-      alert(error?.response?.data?.message || "Failed to place order. Please try again.");
+      alert(error?.response?.data?.error?.message || "Failed to place order. Please try again.");
     }
   }
 

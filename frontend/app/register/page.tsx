@@ -12,7 +12,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const schema = z.object({
-  name: z.string().min(2),
+  firstName: z.string().min(2, "First name is required"),
+  lastName: z.string().optional(),
   email: z.string().email(),
   password: z.string().min(8),
 });
@@ -27,12 +28,18 @@ export default function RegisterPage() {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: "", email: "", password: "" },
+    defaultValues: { firstName: "", lastName: "", email: "", password: "" },
   });
 
   async function onSubmit(values: FormValues) {
-    const res = await dispatch(register(values));
-    if (register.fulfilled.match(res)) router.push("/");
+    const payload = {
+      ...values,
+      lastName: values.lastName?.trim() || undefined,
+    };
+    const res = await dispatch(register(payload));
+    if (register.fulfilled.match(res)) {
+      router.push(`/verify-email?email=${encodeURIComponent(values.email)}`);
+    }
   }
 
   return (
@@ -44,10 +51,21 @@ export default function RegisterPage() {
 
         <form className="mt-6 space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
           <div>
-            <label className="text-sm font-medium text-zinc-800">Name</label>
-            <Input className="mt-2" {...form.register("name")} />
-            {form.formState.errors.name ? (
-              <p className="mt-1 text-sm text-red-600">{form.formState.errors.name.message}</p>
+            <label className="text-sm font-medium text-zinc-800">First name</label>
+            <Input className="mt-2" {...form.register("firstName")} />
+            {form.formState.errors.firstName ? (
+              <p className="mt-1 text-sm text-red-600">
+                {form.formState.errors.firstName.message}
+              </p>
+            ) : null}
+          </div>
+          <div>
+            <label className="text-sm font-medium text-zinc-800">Last name</label>
+            <Input className="mt-2" {...form.register("lastName")} />
+            {form.formState.errors.lastName ? (
+              <p className="mt-1 text-sm text-red-600">
+                {form.formState.errors.lastName.message}
+              </p>
             ) : null}
           </div>
           <div>
