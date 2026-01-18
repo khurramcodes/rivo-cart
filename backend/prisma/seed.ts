@@ -24,7 +24,8 @@ async function main() {
   const email = mustGetEnv("ADMIN_SEED_EMAIL").toLowerCase();
   const password = mustGetEnv("ADMIN_SEED_PASSWORD");
   const name = process.env.ADMIN_SEED_NAME ?? "Admin";
-
+  const firstName = process.env.ADMIN_SEED_FIRST_NAME ?? "Admin";
+  
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
     if (existing.role !== UserRole.ADMIN) {
@@ -41,7 +42,8 @@ async function main() {
   const passwordHash = await bcrypt.hash(password, 12);
   await prisma.user.create({
     data: {
-      name,
+      name: `${firstName}`,
+      firstName,
       email,
       password: passwordHash,
       role: UserRole.ADMIN,

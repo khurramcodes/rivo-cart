@@ -3,34 +3,107 @@ import { prisma } from "../prisma/client.js";
 import { ApiError } from "../utils/ApiError.js";
 import { randomToken, sha256 } from "../utils/crypto.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
-import { signAccessToken, signRefreshToken, type JwtUserClaims } from "../utils/jwt.js";
+import { signAccessToken, signRefreshToken, type JwtUserPayload } from "../utils/jwt.js";
+import { redis } from "../utils/redis.js";
+import { sendOtpEmail } from "./email.service.js";
 
 function sanitizeUser(user: User) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { password, ...safe } = user;
   return safe;
 }
 
-export async function registerUser(input: { name: string; email: string; password: string }) {
+export async function registerUser(input: {
+  firstName: string;
+  lastName?: string | null;
+  email: string;
+  password: string;
+}) {
   const email = input.email.toLowerCase().trim();
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) throw new ApiError(409, "EMAIL_IN_USE", "Email is already in use");
 
   const passwordHash = await hashPassword(input.password);
+  const firstName = input.firstName.trim();
+  const lastName = input.lastName?.trim() || null;
+  const name = lastName ? `${firstName} ${lastName}` : firstName;
   const user = await prisma.user.create({
     data: {
-      name: input.name.trim(),
+      name,
+      firstName,
+      lastName,
       email,
       password: passwordHash,
       role: "USER",
     },
   });
 
-  const claims: JwtUserClaims = { sub: user.id, role: user.role };
+  const payload: JwtUserPayload = { sub: user.id, firstName: user.firstName || user.name, role: user.role };
   return {
     user: sanitizeUser(user),
-    accessToken: signAccessToken(claims),
+    accessToken: signAccessToken(payload),
   };
+}
+
+const OTP_TTL_SECONDS = 10 * 60;
+const REG_INTENT_TTL_SECONDS = 30 * 60;
+const MAX_OTP_ATTEMPTS = 5;
+const MAX_RESENDS = 3;
+const RESEND_WINDOW_SECONDS = 10 * 60;
+
+function otpKey(email: string) {
+  return `auth:register:otp:${email}`;
+}
+
+function intentKey(email: string) {
+  return `auth:register:intent:${email}`;
+}
+
+function attemptKey(email: string) {
+  return `auth:register:attempts:${email}`;
+}
+
+function resendKey(email: string) {
+  return `auth:register:resend:${email}`;
+}
+
+function generateOtp() {
+  const n = Math.floor(100000 + Math.random() * 900000);
+  return String(n);
+}
+
+export async function startRegistration(input: {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName?: string | null;
+}) {
+  const email = input.email.toLowerCase().trim();
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) throw new ApiError(409, "EMAIL_IN_USE", "Email is already in use");
+
+  const existingIntent = await redis.get<string>(intentKey(email));
+  if (existingIntent) {
+    throw new ApiError(409, "REGISTRATION_PENDING", "Registration already pending");
+  }
+
+  const passwordHash = await hashPassword(input.password);
+  const otp = generateOtp();
+  const otpHash = sha256(otp);
+
+  const intent = {
+    email,
+    firstName: input.firstName.trim(),
+    lastName: input.lastName?.trim() || null,
+    passwordHash,
+    createdAt: new Date().toISOString(),
+  };
+
+  await sendOtpEmail(email, otp);
+
+  await redis.set(intentKey(email), JSON.stringify(intent), { ex: REG_INTENT_TTL_SECONDS });
+  await redis.set(otpKey(email), otpHash, { ex: OTP_TTL_SECONDS });
+
+  return { email };
 }
 
 export async function loginUser(input: {
@@ -49,7 +122,11 @@ export async function loginUser(input: {
   const ok = await verifyPassword(input.password, user.password);
   if (!ok) throw new ApiError(401, "INVALID_CREDENTIALS", "Invalid email or password");
 
-  const claims: JwtUserClaims = { sub: user.id, role: user.role };
+  const payload: JwtUserPayload = {
+    sub: user.id,
+    firstName: user.firstName || user.name,
+    role: user.role,
+  };
 
   const refreshToken = randomToken(48);
   const refreshTokenHash = sha256(refreshToken);
@@ -68,11 +145,86 @@ export async function loginUser(input: {
 
   return {
     user: sanitizeUser(user),
-    accessToken: signAccessToken(claims),
+    accessToken: signAccessToken(payload),
     // opaque refresh token stored in HttpOnly cookie; session id helps debug/rotate
     refreshToken,
     sessionId: session.id,
   };
+}
+
+export async function verifyRegistrationOtp(input: { email: string; otp: string }) {
+  const email = input.email.toLowerCase().trim();
+
+  const intentRaw = await redis.get<string>(intentKey(email));
+  if (!intentRaw) throw new ApiError(400, "REGISTRATION_EXPIRED", "Registration expired");
+
+  const storedOtpHash = await redis.get<string>(otpKey(email));
+  if (!storedOtpHash) throw new ApiError(400, "OTP_EXPIRED", "OTP expired");
+
+  const inputHash = sha256(input.otp);
+  if (inputHash !== storedOtpHash) {
+    const attempts = await redis.incr(attemptKey(email));
+    if (attempts === 1) {
+      await redis.expire(attemptKey(email), OTP_TTL_SECONDS);
+    }
+    if (attempts >= MAX_OTP_ATTEMPTS) {
+      await redis.del(otpKey(email));
+      throw new ApiError(400, "OTP_INVALIDATED", "OTP invalidated. Please request a new code.");
+    }
+    throw new ApiError(400, "OTP_INVALID", "Invalid OTP");
+  }
+
+  const intent = (typeof intentRaw === "string" 
+  ? JSON.parse(intentRaw) 
+  : intentRaw) as {
+    email: string;
+    firstName: string;
+    lastName?: string | null;
+    passwordHash: string;
+  };
+
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) throw new ApiError(409, "EMAIL_IN_USE", "Email is already in use");
+
+  const fullName = intent.lastName ? `${intent.firstName} ${intent.lastName}` : intent.firstName;
+  const user = await prisma.user.create({
+    data: {
+      name: fullName,
+      firstName: intent.firstName,
+      lastName: intent.lastName ?? null,
+      email,
+      password: intent.passwordHash,
+      role: "USER",
+    },
+  });
+
+  await redis.del(intentKey(email), otpKey(email), attemptKey(email), resendKey(email));
+  return sanitizeUser(user);
+}
+
+export async function resendRegistrationOtp(input: { email: string }) {
+  const email = input.email.toLowerCase().trim();
+
+  const intentRaw = await redis.get<string>(intentKey(email));
+  if (!intentRaw) throw new ApiError(400, "REGISTRATION_EXPIRED", "Registration expired");
+
+  const existingOtp = await redis.get<string>(otpKey(email));
+  if (existingOtp) throw new ApiError(409, "OTP_STILL_VALID", "OTP still valid");
+
+  const resendCount = await redis.incr(resendKey(email));
+  if (resendCount === 1) {
+    await redis.expire(resendKey(email), RESEND_WINDOW_SECONDS);
+  }
+  if (resendCount > MAX_RESENDS) {
+    throw new ApiError(429, "RATE_LIMITED", "Too many OTP requests. Try again later.");
+  }
+
+  const otp = generateOtp();
+  const otpHash = sha256(otp);
+  await redis.set(otpKey(email), otpHash, { ex: OTP_TTL_SECONDS });
+
+  await sendOtpEmail(email, otp);
+  return { email };
 }
 
 export async function rotateRefreshToken(input: { refreshToken: string }) {
@@ -106,11 +258,15 @@ export async function rotateRefreshToken(input: { refreshToken: string }) {
     }),
   ]);
 
-  const claims: JwtUserClaims = { sub: session.userId, role: session.user.role };
+  const payload: JwtUserPayload = {
+    sub: session.userId,
+    firstName: session.user.firstName || session.user.name,
+    role: session.user.role,
+  };
 
   return {
     user: sanitizeUser(session.user),
-    accessToken: signAccessToken(claims),
+    accessToken: signAccessToken(payload),
     refreshToken: newRefreshToken,
   };
 }
@@ -121,6 +277,12 @@ export async function logoutByRefreshToken(refreshToken: string) {
     where: { refreshTokenHash, revokedAt: null },
     data: { revokedAt: new Date() },
   });
+}
+
+export async function getUserById(userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new ApiError(404, "NOT_FOUND", "User not found");
+  return sanitizeUser(user);
 }
 
 

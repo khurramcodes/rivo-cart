@@ -9,10 +9,13 @@ import {
 } from "../utils/cookies.js";
 import { randomToken } from "../utils/crypto.js";
 import {
-  registerUser,
   loginUser,
   rotateRefreshToken,
   logoutByRefreshToken,
+  getUserById,
+  startRegistration,
+  verifyRegistrationOtp,
+  resendRegistrationOtp,
 } from "../services/auth.service.js";
 import { ApiError } from "../utils/ApiError.js";
 
@@ -40,24 +43,15 @@ function setCsrfCookie(res: Response) {
 }
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
-  const { name, email, password } = req.body as {
-    name: string;
+  const { email, password, firstName, lastName } = req.body as {
     email: string;
     password: string;
+    firstName: string;
+    lastName?: string | null;
   };
-  const result = await registerUser({ name, email, password });
 
-  const accessMaxAge = msFromExpires(
-    process.env.JWT_ACCESS_EXPIRES_IN ?? "24h"
-  );
-  res.cookie(
-    ACCESS_COOKIE,
-    result.accessToken,
-    authCookieOptions(accessMaxAge)
-  );
-  const csrf = setCsrfCookie(res);
-
-  res.status(201).json({ user: result.user, csrfToken: csrf });
+  await startRegistration({ email, password, firstName, lastName });
+  res.status(202).json({ message: "OTP sent" });
 });
 
 export const login = asyncHandler(async (req: Request, res: Response) => {
@@ -119,8 +113,21 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
   res.status(204).send();
 });
 
+export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
+  const { email, otp } = req.body as { email: string; otp: string };
+  await verifyRegistrationOtp({ email, otp });
+  res.status(201).json({ message: "Email verified. Please log in." });
+});
+
+export const resendOtp = asyncHandler(async (req: Request, res: Response) => {
+  const { email } = req.body as { email: string };
+  await resendRegistrationOtp({ email });
+  res.json({ message: "OTP resent" });
+});
+
 export const me = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user)
     throw new ApiError(401, "UNAUTHORIZED", "Missing authentication");
-  res.json({ user: req.user });
+  const user = await getUserById(req.user.sub);
+  res.json({ user });
 });

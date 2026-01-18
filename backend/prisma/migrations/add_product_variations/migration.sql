@@ -68,6 +68,9 @@ SET "sku" = pv."sku",
 FROM "ProductVariant" pv
 WHERE oi."productId" = pv."productId" AND pv."isDefault" = true;
 
+-- Remove default now that data is populated
+ALTER TABLE "OrderItem" ALTER COLUMN "sku" DROP DEFAULT;
+
 -- Now we can safely remove the price column from Product (it's in variants now)
 ALTER TABLE "Product" DROP COLUMN "price";
 

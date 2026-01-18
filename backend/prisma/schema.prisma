@@ -30,6 +30,8 @@ enum ProductType {
 model User {
   id        String    @id @default(cuid())
   name      String
+  firstName String    @default("")
+  lastName  String?
   email     String    @unique
   password  String
   role      UserRole  @default(USER)
