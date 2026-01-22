@@ -87,6 +87,10 @@ export const listProductsSchema = z.object({
     categoryId: z.string().min(1).optional(),
     page: z.coerce.number().int().min(1).optional(),
     limit: z.coerce.number().int().min(1).max(50).optional(),
+    sortBy: z.enum(["name", "category", "price", "stock", "type", "createdAt"]).optional(),
+    sortDir: z.enum(["asc", "desc"]).optional(),
+    minPrice: z.coerce.number().int().min(0).optional(),
+    maxPrice: z.coerce.number().int().min(0).optional(),
   }),
 });
 

@@ -3,17 +3,25 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import * as productService from "../services/product.service.js";
 
 export const list = asyncHandler(async (req: Request, res: Response) => {
-  const { q, categoryId, page, limit } = req.query as {
+  const { q, categoryId, page, limit, sortBy, sortDir, minPrice, maxPrice } = req.query as {
     q?: string;
     categoryId?: string;
     page?: string;
     limit?: string;
+    sortBy?: string;
+    sortDir?: string;
+    minPrice?: string;
+    maxPrice?: string;
   };
   const result = await productService.listProducts({
     q,
     categoryId,
     page: page ? Number(page) : undefined,
     limit: limit ? Number(limit) : undefined,
+    sortBy: sortBy as "name" | "category" | "price" | "stock" | "type" | "createdAt" | undefined,
+    sortDir: sortDir as "asc" | "desc" | undefined,
+    minPrice: minPrice ? Number(minPrice) : undefined,
+    maxPrice: maxPrice ? Number(maxPrice) : undefined,
   });
   res.json(result);
 });

@@ -2,7 +2,16 @@ import { prisma } from "../prisma/client.js";
 import { ApiError } from "../utils/ApiError.js";
 import { deleteFile, listFilesInPath, folderFromFilePath, normalizeFolderPath } from "./imagekit.service.js";
 
-export async function listProducts(input: { q?: string; categoryId?: string; page?: number; limit?: number }) {
+export async function listProducts(input: {
+  q?: string;
+  categoryId?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: "name" | "category" | "price" | "stock" | "type" | "createdAt";
+  sortDir?: "asc" | "desc";
+  minPrice?: number;
+  maxPrice?: number;
+}) {
   const page = input.page ?? 1;
   const limit = input.limit ?? 12;
   const skip = (page - 1) * limit;
@@ -15,6 +24,24 @@ export async function listProducts(input: { q?: string; categoryId?: string; pag
       { description: { contains: input.q, mode: "insensitive" } },
     ];
   }
+  if (input.minPrice !== undefined || input.maxPrice !== undefined) {
+    const priceFilter: { gte?: number; lte?: number } = {};
+    if (input.minPrice !== undefined) priceFilter.gte = input.minPrice;
+    if (input.maxPrice !== undefined) priceFilter.lte = input.maxPrice;
+    where.variants = { some: { price: priceFilter } };
+  }
+
+  const sortDir = input.sortDir ?? "desc";
+  const sortBy = input.sortBy ?? "createdAt";
+  const orderBy: any[] = [];
+
+  if (sortBy === "name") orderBy.push({ name: sortDir });
+  if (sortBy === "type") orderBy.push({ type: sortDir });
+  if (sortBy === "category") orderBy.push({ category: { name: sortDir } });
+  if (sortBy === "price") orderBy.push({ variants: { _min: { price: sortDir } } });
+  if (sortBy === "stock") orderBy.push({ variants: { _sum: { stock: sortDir } } });
+  if (sortBy === "createdAt") orderBy.push({ createdAt: sortDir });
+  orderBy.push({ createdAt: "desc" });
 
   const [items, total] = await prisma.$transaction([
     prisma.product.findMany({
@@ -27,7 +54,7 @@ export async function listProducts(input: { q?: string; categoryId?: string; pag
           orderBy: { isDefault: "desc" },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy,
       take: limit,
       skip,
     }),

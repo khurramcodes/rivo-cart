@@ -20,9 +20,19 @@ export const adminApi = {
   },
 
   // products
-  async listProducts() {
+  async listProducts(params?: {
+    q?: string;
+    categoryId?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: "name" | "category" | "price" | "stock" | "type" | "createdAt";
+    sortDir?: "asc" | "desc";
+    minPrice?: number;
+    maxPrice?: number;
+  }) {
     const { data } = await apiClient.get<{ items: Product[]; total: number; page: number; limit: number }>(
       "/api/products",
+      { params },
     );
     return data;
   },

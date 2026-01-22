@@ -46,6 +46,8 @@ export default function ProductsPage() {
   const dispatch = useAppDispatch();
 
   const [categoryId, setCategoryId] = useState(initialCategoryId);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
   const [items, setItems] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,12 +81,14 @@ export default function ProductsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialQ, initialCategoryId]);
 
-  async function applyFilters(next: { categoryId: string }) {
+  async function applyFilters(next: { categoryId: string; minPrice?: string; maxPrice?: string }) {
     setLoading(true);
     try {
       const data = await catalogApi.listProducts({
         q: initialQ || undefined,
         categoryId: next.categoryId || undefined,
+        minPrice: next.minPrice ? Number(next.minPrice) * 100 : undefined,
+        maxPrice: next.maxPrice ? Number(next.maxPrice) * 100 : undefined,
         page: 1,
         limit,
       });
@@ -104,6 +108,8 @@ export default function ProductsPage() {
       const data = await catalogApi.listProducts({
         q: initialQ || undefined,
         categoryId: categoryId || undefined,
+        minPrice: minPrice ? Number(minPrice) * 100 : undefined,
+        maxPrice: maxPrice ? Number(maxPrice) * 100 : undefined,
         page: nextPage,
         limit,
       });
@@ -121,36 +127,86 @@ export default function ProductsPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Products</h1>
 
         <div className="mt-6 flex gap-6">
-          {/* Left Sidebar - Category Filters */}
-          <aside className="hidden w-48 shrink-0 md:block">
-            <div className="sticky top-24 rounded border border-zinc-200 bg-white p-4">
-              <h2 className="text-sm font-semibold text-zinc-900">Categories</h2>
-              <div className="mt-3 space-y-2">
-                <button
-                  className={`block w-full text-left text-sm transition ${
-                    categoryId === "" ? "font-medium text-black" : "text-zinc-600 hover:text-black"
-                  }`}
-                  onClick={() => {
-                    setCategoryId("");
-                    void applyFilters({ categoryId: "" });
-                  }}
-                >
-                  All Products
-                </button>
-                {categories.map((c) => (
+          {/* Left Sidebar - Filters */}
+          <aside className="hidden w-60 shrink-0 md:block">
+            <div className="sticky top-24 space-y-4">
+              {/* Category Filter */}
+              <div className="rounded border border-zinc-200 bg-white p-4">
+                <h2 className="text-sm font-semibold text-zinc-900">Categories</h2>
+                <div className="mt-3 space-y-2">
                   <button
-                    key={c.id}
                     className={`block w-full text-left text-sm transition ${
-                      categoryId === c.id ? "font-medium text-black" : "text-zinc-600 hover:text-black"
+                      categoryId === "" ? "font-medium text-black" : "text-zinc-600 hover:text-black"
                     }`}
                     onClick={() => {
-                      setCategoryId(c.id);
-                      void applyFilters({ categoryId: c.id });
+                      setCategoryId("");
+                      void applyFilters({ categoryId: "", minPrice, maxPrice });
                     }}
                   >
-                    {c.name}
+                    All Products
                   </button>
-                ))}
+                  {categories.map((c) => (
+                    <button
+                      key={c.id}
+                      className={`block w-full text-left text-sm transition ${
+                        categoryId === c.id ? "font-medium text-black" : "text-zinc-600 hover:text-black"
+                      }`}
+                      onClick={() => {
+                        setCategoryId(c.id);
+                        void applyFilters({ categoryId: c.id, minPrice, maxPrice });
+                      }}
+                    >
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Price Filter */}
+              <div className="rounded border border-zinc-200 bg-white p-4">
+                <h2 className="text-sm font-semibold text-zinc-900">Price Range</h2>
+                <div className="mt-3 space-y-3">
+                  <div>
+                    <label className="block text-xs text-zinc-600 mb-1">Min Price ($)</label>
+                    <input
+                      type="number"
+                      value={minPrice}
+                      onChange={(e) => setMinPrice(e.target.value)}
+                      placeholder="0"
+                      className="w-full px-3 py-2 text-sm border border-zinc-200 rounded focus:outline-none focus:ring-2 focus:ring-black"
+                      min="0"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-zinc-600 mb-1">Max Price ($)</label>
+                    <input
+                      type="number"
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(e.target.value)}
+                      placeholder="Any"
+                      className="w-full px-3 py-2 text-sm border border-zinc-200 rounded focus:outline-none focus:ring-2 focus:ring-black"
+                      min="0"
+                    />
+                  </div>
+                  <button
+                    className="w-full rounded bg-black px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition"
+                    onClick={() => void applyFilters({ categoryId, minPrice, maxPrice })}
+                  >
+                    Apply
+                  </button>
+                  {(minPrice || maxPrice) ? (
+                    <button
+                      className="w-full rounded border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition"
+                      onClick={() => {
+                        setMinPrice("");
+                        setMaxPrice("");
+                        void applyFilters({ categoryId, minPrice: "", maxPrice: "" });
+                      }}
+                    >
+                      Clear Price
+                    </button>
+                  ) : null}
+                </div>
               </div>
             </div>
           </aside>

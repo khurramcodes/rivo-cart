@@ -7,7 +7,7 @@ export const catalogApi = {
     return data.categories;
   },
 
-  async listProducts(params?: { q?: string; categoryId?: string; page?: number; limit?: number }) {
+  async listProducts(params?: { q?: string; categoryId?: string; page?: number; limit?: number; minPrice?: number; maxPrice?: number }) {
     const { data } = await apiClient.get<{ items: Product[]; total: number; page: number; limit: number }>(
       "/api/products",
       { params },
