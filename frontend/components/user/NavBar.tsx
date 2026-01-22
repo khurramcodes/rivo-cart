@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ShoppingCart, Search } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, ShoppingCart, Search } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
 import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
@@ -17,6 +18,20 @@ export function NavBar() {
   );
   const user = useAppSelector((s) => s.auth.user);
   const dispatch = useAppDispatch();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClick = (event: MouseEvent) => {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [menuOpen]);
 
   return (
     <header className='sticky top-0 z-20 border-b border-zinc-200 bg-white backdrop-blur'>
@@ -70,16 +85,38 @@ export function NavBar() {
                 Admin
               </Link>
             ) : (
-              <div className='flex items-center gap-2'>
-                <span className='hidden sm:inline text-zinc-600'>
-                  Hi, {user.firstName || user.name}
-                </span>
-                <Button
-                  variant='ghost'
-                  className='h-9 px-3'
-                  onClick={() => void dispatch(logout())}>
-                  Logout
-                </Button>
+              <div className='relative' ref={menuRef}>
+                <button
+                  type='button'
+                  onClick={() => setMenuOpen((prev) => !prev)}
+                  className='inline-flex items-center gap-1 text-zinc-700 hover:text-black'
+                >
+                  <span className='hidden sm:inline text-zinc-600'>
+                    Hi, {user.firstName || user.name}
+                  </span>
+                  <ChevronDown className='h-4 w-4' />
+                </button>
+                {menuOpen ? (
+                  <div className='absolute right-0 mt-2 w-40 rounded border border-zinc-200 bg-white py-1 text-sm shadow-sm'>
+                    <Link
+                      href='/account'
+                      className='block px-3 py-2 text-zinc-700 hover:bg-zinc-100'
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      Account
+                    </Link>
+                    <button
+                      type='button'
+                      className='block w-full px-3 py-2 text-left text-zinc-700 hover:bg-zinc-100'
+                      onClick={() => {
+                        setMenuOpen(false);
+                        void dispatch(logout());
+                      }}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : null}
               </div>
             )
           ) : (

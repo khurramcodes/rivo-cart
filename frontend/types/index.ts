@@ -10,6 +10,21 @@ export type User = {
   createdAt: string;
 };
 
+export type Address = {
+  id: string;
+  userId: string;
+  fullName: string;
+  phone: string;
+  country: string;
+  state: string;
+  city: string;
+  streetAddress: string;
+  postalCode?: string | null;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Category = {
   id: string;
   name: string;

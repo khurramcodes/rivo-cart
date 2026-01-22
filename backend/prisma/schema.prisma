@@ -41,6 +41,7 @@ model User {
   orders    Order[]
   sessions  Session[]
   carts     Cart[]
+  addresses Address[]
 
   @@index([role])
 }
@@ -186,7 +187,7 @@ model Session {
 }
 
 model Cart {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   userId    String?
   sessionId String?  @unique
   createdAt DateTime @default(now())
@@ -200,7 +201,7 @@ model Cart {
 }
 
 model CartItem {
-  id            String   @id @default(uuid())
+  id            String   @id @default(cuid())
   cartId        String
   productId     String
   variantId     String
@@ -217,6 +218,26 @@ model CartItem {
   @@index([productId])
   @@index([variantId])
   @@unique([cartId, variantId])
+}
+
+model Address {
+  id            String   @id @default(cuid())
+  userId        String
+  fullName      String
+  phone         String
+  country       String
+  state         String
+  city          String
+  streetAddress String
+  postalCode    String?
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isDefault])
 }
 
 

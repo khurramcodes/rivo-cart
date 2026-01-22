@@ -6,6 +6,7 @@ import { orderRoutes } from "./order.routes.js";
 import { imagekitRoutes } from "./imagekit.routes.js";
 import { dashboardRoutes } from "./dashboard.routes.js";
 import { cartRoutes } from "./cart.routes.js";
+import { addressRoutes } from "./address.routes.js";
 
 export const routes = Router();
 
@@ -16,5 +17,6 @@ routes.use("/orders", orderRoutes);
 routes.use("/imagekit", imagekitRoutes);
 routes.use("/dashboard", dashboardRoutes);
 routes.use("/cart", cartRoutes);
+routes.use("/addresses", addressRoutes);
 
 
