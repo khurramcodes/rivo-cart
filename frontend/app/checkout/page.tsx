@@ -5,20 +5,22 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { ShippingAddressForm, type AddressFormValues } from "@/components/user/AddressForm";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearCartServer } from "@/store/cartThunks";
 import { orderApi } from "@/services/orderApi";
 import { formatPrice } from "@/config/currency";
+import { addAddress, fetchAddresses, updateAddress } from "@/store/slices/addressSlice";
+import { selectIsGlobalLoading } from "@/store/slices/loadingSlice";
+import type { Address } from "@/types";
 
 const schema = z.object({
   customerName: z.string().min(3, "Name must be at least 3 characters."),
   customerEmail: z.email("Invalid email address"),
-  customerPhone: z.string().min(11, "Phone must be at least 11 characters"),
-  shippingAddress: z.string().min(5, "Address is required."),
   paymentMethod: z.enum(["COD"]),
 });
 
@@ -31,6 +33,9 @@ export default function CheckoutPage() {
   const items = cart?.items ?? [];
 
   const user = useAppSelector((s) => s.auth.user);
+  const addresses = useAppSelector((s) => s.addresses.items);
+  const addressStatus = useAppSelector((s) => s.addresses.status);
+  const isLoading = useAppSelector(selectIsGlobalLoading);
 
   const total = items.reduce((sum, i) => sum + i.priceSnapshot * i.quantity, 0);
   const subtotal = total;
@@ -44,11 +49,15 @@ export default function CheckoutPage() {
     defaultValues: {
       customerName: "",
       customerEmail: "",
-      customerPhone: "",
-      shippingAddress: "",
       paymentMethod: "COD",
     },
   });
+
+  const defaultAddress = useMemo(() => addresses.find((address) => address.isDefault) ?? null, [addresses]);
+  const [activeAddress, setActiveAddress] = useState<Address | null>(null);
+  const [addressMessage, setAddressMessage] = useState<string | null>(null);
+  const [addressError, setAddressError] = useState<string | null>(null);
+  const [orderError, setOrderError] = useState<string | null>(null);
 
   // Auto-fill form with logged-in user data
   useEffect(() => {
@@ -58,13 +67,72 @@ export default function CheckoutPage() {
     }
   }, [user, form]);
 
+  useEffect(() => {
+    if (!user) return;
+    if (addressStatus === "idle" && addresses.length === 0) {
+      void dispatch(fetchAddresses());
+    }
+  }, [addressStatus, addresses.length, dispatch, user]);
+
+  useEffect(() => {
+    if (!activeAddress && defaultAddress) {
+      setActiveAddress(defaultAddress);
+    }
+  }, [activeAddress, defaultAddress]);
+
+  const formatShippingAddress = (address: Address) => {
+    const line = [
+      address.streetAddress,
+      address.city,
+      address.state,
+      address.country,
+      address.postalCode ? address.postalCode : null,
+    ]
+      .filter(Boolean)
+      .join(", ");
+    return line;
+  };
+
+  const handleAddressSubmit = async (values: AddressFormValues) => {
+    if (!user) return;
+    setAddressError(null);
+    setAddressMessage(null);
+
+    const fullName = defaultAddress?.fullName ?? user.name;
+
+    try {
+      if (defaultAddress) {
+        const updated = await dispatch(
+          updateAddress({
+            id: defaultAddress.id,
+            updates: { ...values, fullName },
+          })
+        ).unwrap();
+        setActiveAddress(updated);
+        setAddressMessage("Shipping address updated.");
+      } else {
+        const created = await dispatch(addAddress({ ...values, fullName })).unwrap();
+        setActiveAddress(created);
+        setAddressMessage("Shipping address saved.");
+      }
+    } catch (error) {
+      setAddressError(typeof error === "string" ? error : "Failed to save shipping address.");
+    }
+  };
+
   async function onSubmit(values: FormValues) {
+    setOrderError(null);
+    if (!activeAddress) {
+      setOrderError("Please save your shipping address before placing the order.");
+      return;
+    }
+
     try {
       const order = await orderApi.place({
         customerName: values.customerName,
         customerEmail: values.customerEmail,
-        customerPhone: values.customerPhone,
-        shippingAddress: values.shippingAddress,
+        customerPhone: activeAddress.phone,
+        shippingAddress: formatShippingAddress(activeAddress),
         items: items.map((i) => ({
           productId: i.productId,
           variantId: i.variantId,
@@ -74,7 +142,7 @@ export default function CheckoutPage() {
       await dispatch(clearCartServer());
       router.push(`/checkout/success?orderId=${order.id}`);
     } catch (error: any) {
-      alert(error?.response?.data?.error?.message || "Failed to place order. Please try again.");
+      setOrderError(error?.response?.data?.error?.message || "Failed to place order. Please try again.");
     }
   }
 
@@ -131,25 +199,22 @@ export default function CheckoutPage() {
                     <p className="mt-1 text-sm text-red-600">{form.formState.errors.customerEmail.message}</p>
                   ) : null}
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-zinc-800">Phone</label>
-                  <Input className="mt-2" {...form.register("customerPhone")} />
-                  {form.formState.errors.customerPhone ? (
-                    <p className="mt-1 text-sm text-red-600">{form.formState.errors.customerPhone.message}</p>
-                  ) : null}
-                </div>
               </div>
             </div>
 
             {/* Shipping Address Section */}
             <div className="rounded border border-zinc-200 p-6">
               <h2 className="text-lg font-semibold text-zinc-900">Shipping Address</h2>
-              <div className="mt-4">
-                <label className="text-sm font-medium text-zinc-800">Address</label>
-                <Input className="mt-2" {...form.register("shippingAddress")} placeholder="Street address, city, postal code" />
-                {form.formState.errors.shippingAddress ? (
-                  <p className="mt-1 text-sm text-red-600">{form.formState.errors.shippingAddress.message}</p>
-                ) : null}
+              <div className="mt-4 space-y-3">
+                <ShippingAddressForm
+                  initialValues={activeAddress ?? defaultAddress ?? undefined}
+                  fullNameValue={defaultAddress?.fullName ?? user?.name ?? ""}
+                  loading={isLoading}
+                  submitLabel="Save shipping address"
+                  onSubmit={handleAddressSubmit}
+                />
+                {addressError ? <p className="text-sm text-red-600">{addressError}</p> : null}
+                {addressMessage ? <p className="text-sm text-emerald-600">{addressMessage}</p> : null}
               </div>
             </div>
 
@@ -172,9 +237,12 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full">
-              Place order
-            </Button>
+            <div className="space-y-2">
+              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || isLoading}>
+                {form.formState.isSubmitting || isLoading ? "Placing order..." : "Place order"}
+              </Button>
+              {orderError ? <p className="text-sm text-red-600">{orderError}</p> : null}
+            </div>
           </form>
 
           <aside className="rounded border border-zinc-200 p-6 h-fit">

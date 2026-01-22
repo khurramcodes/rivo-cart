@@ -3,6 +3,7 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/store/Providers";
 import { AuthHydrator } from "@/features/auth/AuthHydrator";
+import { GlobalLoader } from "@/components/ui/GlobalLoader";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -29,6 +30,7 @@ export default function RootLayout({
       >
         <Providers>
           <AuthHydrator />
+          <GlobalLoader />
           {children}
         </Providers>
       </body>

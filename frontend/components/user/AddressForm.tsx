@@ -17,10 +17,13 @@ export type AddressFormValues = {
   postalCode?: string | null;
 };
 
-type AddressFormProps = {
+export type AddressFormProps = {
   initialValues?: Partial<AddressFormValues>;
   submitLabel?: string;
   loading?: boolean;
+  showFullName?: boolean;
+  fullNameValue?: string;
+  asForm?: boolean;
   onSubmit: (values: AddressFormValues) => void | Promise<void>;
   onCancel?: () => void;
 };
@@ -29,6 +32,9 @@ export function AddressForm({
   initialValues,
   submitLabel = "Save address",
   loading,
+  showFullName = true,
+  fullNameValue,
+  asForm = true,
   onSubmit,
   onCancel,
 }: AddressFormProps) {
@@ -41,7 +47,7 @@ export function AddressForm({
   const [selectedState, setSelectedState] = useState<State | null>(null);
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
 
-  const [fullName, setFullName] = useState(initialValues?.fullName ?? "");
+  const [fullName, setFullName] = useState(initialValues?.fullName ?? fullNameValue ?? "");
   const [phone, setPhone] = useState(initialValues?.phone ?? "");
   const [streetAddress, setStreetAddress] = useState(initialValues?.streetAddress ?? "");
   const [postalCode, setPostalCode] = useState(initialValues?.postalCode ?? "");
@@ -61,7 +67,7 @@ export function AddressForm({
 
   useEffect(() => {
     if (!initialValues || countries.length === 0) return;
-    setFullName(initialValues.fullName ?? "");
+    setFullName(initialValues.fullName ?? fullNameValue ?? "");
     setPhone(initialValues.phone ?? "");
     setStreetAddress(initialValues.streetAddress ?? "");
     setPostalCode(initialValues.postalCode ?? "");
@@ -90,7 +96,7 @@ export function AddressForm({
       setSelectedState(null);
       setSelectedCity(null);
     }
-  }, [countries, initialValues]);
+  }, [countries, fullNameValue, initialValues]);
 
   const handleCountryChange = async (countryId: number) => {
     const country = countries.find((c) => c.id === countryId) ?? null;
@@ -126,8 +132,8 @@ export function AddressForm({
     setSelectedCity(city);
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
     setError(null);
 
     if (!selectedCountry || !selectedState || !selectedCity) {
@@ -135,13 +141,14 @@ export function AddressForm({
       return;
     }
 
-    if (!fullName.trim() || !phone.trim() || !streetAddress.trim()) {
+    const resolvedFullName = showFullName ? fullName.trim() : (fullNameValue ?? fullName).trim();
+    if (!resolvedFullName || !phone.trim() || !streetAddress.trim()) {
       setError("Please fill in all required fields.");
       return;
     }
 
     await onSubmit({
-      fullName: fullName.trim(),
+      fullName: resolvedFullName,
       phone: phone.trim(),
       country: selectedCountry.name,
       state: selectedState.name,
@@ -151,18 +158,20 @@ export function AddressForm({
     });
   };
 
-  return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="text-sm font-medium text-zinc-800">Full name</label>
-          <Input
-            className="mt-2"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-          />
-        </div>
+  const formContent = (
+    <>
+      <div className={`grid gap-4 ${showFullName ? "sm:grid-cols-2" : ""}`}>
+        {showFullName ? (
+          <div>
+            <label className="text-sm font-medium text-zinc-800">Full name</label>
+            <Input
+              className="mt-2"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+            />
+          </div>
+        ) : null}
         <div>
           <label className="text-sm font-medium text-zinc-800">Phone number</label>
           <Input
@@ -174,9 +183,9 @@ export function AddressForm({
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="text-zinc-800 grid gap-4 sm:grid-cols-3">
         <div>
-          <label className="text-sm font-medium text-zinc-800">Country</label>
+          <label className="text-sm font-medium">Country</label>
           <select
             className="mt-2 w-full rounded border border-zinc-200 bg-white px-3 py-2 text-sm"
             value={selectedCountry?.id ?? ""}
@@ -194,7 +203,7 @@ export function AddressForm({
           </select>
         </div>
         <div>
-          <label className="text-sm font-medium text-zinc-800">State</label>
+          <label className="text-sm font-medium">State</label>
           <select
             className="mt-2 w-full rounded border border-zinc-200 bg-white px-3 py-2 text-sm disabled:bg-zinc-50"
             value={selectedState?.id ?? ""}
@@ -213,7 +222,7 @@ export function AddressForm({
           </select>
         </div>
         <div>
-          <label className="text-sm font-medium text-zinc-800">City</label>
+          <label className="text-sm font-medium">City</label>
           <select
             className="mt-2 w-full rounded border border-zinc-200 bg-white px-3 py-2 text-sm disabled:bg-zinc-50"
             value={selectedCity?.id ?? ""}
@@ -255,7 +264,7 @@ export function AddressForm({
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={loading}>
+        <Button type={asForm ? "submit" : "button"} disabled={loading} onClick={!asForm ? () => handleSubmit() : undefined}>
           {loading ? "Saving..." : submitLabel}
         </Button>
         {onCancel ? (
@@ -264,6 +273,25 @@ export function AddressForm({
           </Button>
         ) : null}
       </div>
+    </>
+  );
+
+  return asForm ? (
+    <form className="space-y-4" onSubmit={handleSubmit}>
+      {formContent}
     </form>
+  ) : (
+    <div className="space-y-4">{formContent}</div>
+  );
+}
+
+export function ShippingAddressForm(props: Omit<AddressFormProps, "showFullName">) {
+  return (
+    <AddressForm
+      {...props}
+      showFullName={false}
+      asForm={false}
+      submitLabel={props.submitLabel ?? "Save address"}
+    />
   );
 }

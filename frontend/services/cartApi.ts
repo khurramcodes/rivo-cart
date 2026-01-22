@@ -1,11 +1,14 @@
 import { getCookie } from "@/utils/cookies";
 import type { Cart } from "@/types";
+import { beginLoading, endLoading } from "@/store/loadingManager";
 
 const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 type CartResponse = { cart: Cart };
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const loadingKey = "cart";
+  beginLoading(loadingKey);
   const url = `${baseURL}${path}`;
   const headers = new Headers(options?.headers);
   headers.set("Content-Type", "application/json");
@@ -16,18 +19,22 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     if (csrf) headers.set("x-csrf-token", csrf);
   }
 
-  const res = await fetch(url, {
-    ...options,
-    headers,
-    credentials: "include",
-  });
+  try {
+    const res = await fetch(url, {
+      ...options,
+      headers,
+      credentials: "include",
+    });
 
-  if (!res.ok) {
-    const body = await res.json().catch(() => null);
-    const message = body?.error?.message ?? "Request failed";
-    throw new Error(message);
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      const message = body?.error?.message ?? "Request failed";
+      throw new Error(message);
+    }
+    return res.json();
+  } finally {
+    endLoading(loadingKey);
   }
-  return res.json();
 }
 
 export const cartApi = {
