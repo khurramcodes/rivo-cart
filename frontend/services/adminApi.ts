@@ -7,11 +7,11 @@ export const adminApi = {
     const { data } = await apiClient.get<{ categories: Category[] }>("/api/categories");
     return { items: data.categories };
   },
-  async createCategory(payload: { name: string; description?: string }) {
+  async createCategory(payload: { name: string; description?: string; parentId?: string | null }) {
     const { data } = await apiClient.post<{ category: Category }>("/api/categories", payload);
     return data.category;
   },
-  async updateCategory(id: string, payload: { name?: string; description?: string }) {
+  async updateCategory(id: string, payload: { name?: string; description?: string; parentId?: string | null }) {
     const { data } = await apiClient.put<{ category: Category }>(`/api/categories/${id}`, payload);
     return data.category;
   },
