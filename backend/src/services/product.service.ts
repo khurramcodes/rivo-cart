@@ -1,5 +1,6 @@
 import { prisma } from "../prisma/client.js";
 import { ApiError } from "../utils/ApiError.js";
+import { generateProductSlug } from "../utils/slug.js";
 import { deleteFile, listFilesInPath, folderFromFilePath, normalizeFolderPath } from "./imagekit.service.js";
 
 export async function listProducts(input: {
@@ -154,10 +155,12 @@ export async function createProduct(input: {
       throw new ApiError(400, "INVALID_SIMPLE_PRODUCT", "Simple products must have exactly one variant");
     }
 
+    const slug = await generateProductSlug(input.name);
     return await prisma.product.create({
       data: {
         id: input.id,
         name: input.name.trim(),
+        slug,
         description: input.description?.trim() || null,
         type: input.type,
         imageUrl: input.imageUrl,

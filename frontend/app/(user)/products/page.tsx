@@ -173,7 +173,7 @@ export default function ProductsPage() {
                       value={minPrice}
                       onChange={(e) => setMinPrice(e.target.value)}
                       placeholder="0"
-                      className="w-full px-3 py-2 text-sm border border-zinc-200 rounded focus:outline-none focus:ring-2 focus:ring-black"
+                      className="w-full px-3 py-2 text-sm text-zinc-900 border border-zinc-200 rounded focus:outline-none focus:ring-2 focus:ring-black"
                       min="0"
                     />
                   </div>
@@ -183,8 +183,8 @@ export default function ProductsPage() {
                       type="number"
                       value={maxPrice}
                       onChange={(e) => setMaxPrice(e.target.value)}
-                      placeholder="Any"
-                      className="w-full px-3 py-2 text-sm border border-zinc-200 rounded focus:outline-none focus:ring-2 focus:ring-black"
+                      placeholder={maxPrice || "0"}
+                      className="w-full px-3 py-2 text-sm text-zinc-900 border border-zinc-200 rounded focus:outline-none focus:ring-2 focus:ring-black"
                       min="0"
                     />
                   </div>

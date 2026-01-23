@@ -8,15 +8,19 @@ export const list = asyncHandler(async (_req: Request, res: Response) => {
 });
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
-  const { name, description } = req.body as { name: string; description?: string };
-  const category = await categoryService.createCategory({ name, description });
+  const { name, description, parentId } = req.body as {
+    name: string;
+    description?: string;
+    parentId?: string;
+  };
+  const category = await categoryService.createCategory({ name, description, parentId });
   res.status(201).json({ category });
 });
 
 export const update = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params as { id: string };
-  const { name, description } = req.body as { name?: string; description?: string };
-  const category = await categoryService.updateCategory(id, { name, description });
+  const { name, description, parentId } = req.body as { name?: string; description?: string; parentId?: string };
+  const category = await categoryService.updateCategory(id, { name, description, parentId });
   res.json({ category });
 });
 
