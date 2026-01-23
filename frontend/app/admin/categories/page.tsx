@@ -169,7 +169,7 @@ export default function AdminCategoriesPage() {
             <div className="grid gap-2 lg:grid-cols-2">
               <div>
                 <label className="text-sm font-medium text-zinc-800">Name</label>
-                <Input className="mt-2" {...createForm.register("name")} />
+                <Input className="mt-2" {...createForm.register("name")} placeholder="Category name" />
                 {createForm.formState.errors.name ? (
                   <p className="mt-1 text-sm text-red-600">{createForm.formState.errors.name.message}</p>
                 ) : null}
@@ -193,7 +193,7 @@ export default function AdminCategoriesPage() {
             </div>
             <div>
               <label className="text-sm font-medium text-zinc-800">Description</label>
-              <Input className="mt-2" {...createForm.register("description")} />
+              <Input className="mt-2" {...createForm.register("description")} placeholder="Category description" />
               {createForm.formState.errors.description ? (
                 <p className="mt-1 text-sm text-red-600">{createForm.formState.errors.description.message}</p>
               ) : null}
