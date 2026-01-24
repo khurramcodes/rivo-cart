@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { prisma } from "../prisma/client.js";
 import { ApiError } from "../utils/ApiError.js";
+import * as couponService from "./coupon.service.js";
 
 const cartInclude = {
   items: {
@@ -273,6 +274,39 @@ export async function migrateCartItems(
     }
   });
 
+  const cart = await prisma.cart.findUnique({ where: { id: context.cart.id }, include: cartInclude });
+  if (!cart) throw new ApiError(404, "CART_NOT_FOUND", "Cart not found");
+  return { ...context, cart };
+}
+
+export async function applyCouponToCart(
+  userId: string | undefined,
+  sessionId: string | undefined,
+  code: string,
+): Promise<CartContext> {
+  const context = await resolveCart(userId, sessionId);
+  const cartId = context.cart.id;
+
+  const { coupon } = await couponService.validateCouponForCart(cartId, code);
+  await prisma.cart.update({
+    where: { id: cartId },
+    data: { appliedCouponId: coupon.id },
+  });
+
+  const cart = await prisma.cart.findUnique({ where: { id: cartId }, include: cartInclude });
+  if (!cart) throw new ApiError(404, "CART_NOT_FOUND", "Cart not found");
+  return { ...context, cart };
+}
+
+export async function removeCouponFromCart(
+  userId: string | undefined,
+  sessionId: string | undefined,
+): Promise<CartContext> {
+  const context = await resolveCart(userId, sessionId);
+  await prisma.cart.update({
+    where: { id: context.cart.id },
+    data: { appliedCouponId: null },
+  });
   const cart = await prisma.cart.findUnique({ where: { id: context.cart.id }, include: cartInclude });
   if (!cart) throw new ApiError(404, "CART_NOT_FOUND", "Cart not found");
   return { ...context, cart };

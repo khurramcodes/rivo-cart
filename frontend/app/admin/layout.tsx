@@ -47,6 +47,7 @@ export default function AdminLayout({
     { label: "Categories", href: "/admin/categories" },
     { label: "Products", href: "/admin/products" },
     { label: "Orders", href: "/admin/orders" },
+    { label: "Discounts", href: "/admin/discounts" },
   ];
 
   const isActive = (href: string) => {

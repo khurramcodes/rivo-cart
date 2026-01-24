@@ -131,6 +131,7 @@ export type Cart = {
   id: string;
   userId?: string | null;
   sessionId?: string | null;
+  appliedCouponId?: string | null;
   createdAt: string;
   updatedAt: string;
   items: CartItem[];

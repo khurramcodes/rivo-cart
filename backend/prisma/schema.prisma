@@ -27,6 +27,19 @@ enum ProductType {
   VARIABLE
 }
 
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum DiscountScope {
+  SITE_WIDE
+  PRODUCT
+  VARIANT
+  CATEGORY
+  COLLECTION
+}
+
 model User {
   id        String    @id @default(cuid())
   name      String
@@ -38,10 +51,11 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  orders    Order[]
-  sessions  Session[]
-  carts     Cart[]
-  addresses Address[]
+  orders            Order[]
+  sessions          Session[]
+  carts             Cart[]
+  addresses         Address[]
+  couponRedemptions CouponRedemption[]
 
   @@index([role])
 }
@@ -55,9 +69,10 @@ model Category {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
-  children    Category[] @relation("CategoryHierarchy")
-  products    Product[]
+  parent             Category? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children           Category[] @relation("CategoryHierarchy")
+  products           Product[]
+  discountCategories DiscountCategories[]
 
   @@index([parentId])
 }
@@ -79,11 +94,12 @@ model Product {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  category        Category             @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  orderItems      OrderItem[]
-  galleryImages   ProductGalleryImage[]
-  variants        ProductVariant[]
-  cartItems       CartItem[]
+  category         Category             @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  orderItems       OrderItem[]
+  galleryImages    ProductGalleryImage[]
+  variants         ProductVariant[]
+  cartItems        CartItem[]
+  discountProducts DiscountProducts[]
 
   @@index([categoryId])
   @@index([type])
@@ -99,9 +115,10 @@ model ProductVariant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  product    Product                @relation(fields: [productId], references: [id], onDelete: Cascade)
-  attributes ProductVariantAttribute[]
-  cartItems  CartItem[]
+  product          Product                @relation(fields: [productId], references: [id], onDelete: Cascade)
+  attributes       ProductVariantAttribute[]
+  cartItems        CartItem[]
+  discountVariants DiscountVariants[]
 
   @@index([productId])
   @@index([sku])
@@ -149,8 +166,9 @@ model Order {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  user            User          @relation(fields: [userId], references: [id], onDelete: Restrict)
-  items           OrderItem[]
+  user              User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items             OrderItem[]
+  couponRedemptions CouponRedemption[]
 
   @@index([userId])
   @@index([status])
@@ -194,17 +212,20 @@ model Session {
 }
 
 model Cart {
-  id        String   @id @default(cuid())
-  userId    String?
-  sessionId String?  @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(cuid())
+  userId          String?
+  sessionId       String?  @unique
+  appliedCouponId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  user   User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items  CartItem[]
+  user           User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items          CartItem[]
+  appliedCoupon  Coupon? @relation(fields: [appliedCouponId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([sessionId])
+  @@index([appliedCouponId])
 }
 
 model CartItem {
@@ -245,6 +266,136 @@ model Address {
 
   @@index([userId])
   @@index([isDefault])
+}
+
+model Discount {
+  id            String        @id @default(cuid())
+  name          String
+  description   String?
+  discountType  DiscountType
+  discountValue Int
+  startDate     DateTime
+  endDate       DateTime
+  isActive      Boolean       @default(true)
+  priority      Int           @default(0)
+  isStackable   Boolean       @default(false)
+  scope         DiscountScope
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  products      DiscountProducts[]
+  variants      DiscountVariants[]
+  categories    DiscountCategories[]
+  collections   DiscountCollections[]
+
+  @@index([isActive])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([priority])
+  @@index([scope])
+}
+
+model DiscountProducts {
+  id         String   @id @default(cuid())
+  discountId String
+  productId  String
+
+  discount   Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([discountId, productId])
+  @@index([productId])
+  @@index([discountId])
+}
+
+model DiscountVariants {
+  id         String        @id @default(cuid())
+  discountId String
+  variantId  String
+
+  discount   Discount      @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  variant    ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([discountId, variantId])
+  @@index([variantId])
+  @@index([discountId])
+}
+
+model DiscountCategories {
+  id         String   @id @default(cuid())
+  discountId String
+  categoryId String
+
+  discount   Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([discountId, categoryId])
+  @@index([categoryId])
+  @@index([discountId])
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  discountCollections DiscountCollections[]
+}
+
+model DiscountCollections {
+  id           String     @id @default(cuid())
+  discountId   String
+  collectionId String
+
+  discount     Discount   @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@unique([discountId, collectionId])
+  @@index([collectionId])
+  @@index([discountId])
+}
+
+model Coupon {
+  id                     String            @id @default(cuid())
+  code                   String            @unique
+  description            String?
+  discountType           DiscountType
+  discountValue          Int
+  startDate              DateTime
+  endDate                DateTime
+  isActive               Boolean           @default(true)
+  minimumCartValue       Int?
+  maxRedemptions         Int?
+  maxRedemptionsPerUser  Int?
+  isStackable            Boolean           @default(false)
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+
+  redemptions            CouponRedemption[]
+  carts                  Cart[]
+
+  @@index([isActive])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+model CouponRedemption {
+  id         String   @id @default(cuid())
+  couponId   String
+  userId     String?
+  orderId    String
+  redeemedAt DateTime @default(now())
+
+  coupon     Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([couponId])
+  @@index([userId])
+  @@index([orderId])
+  @@index([redeemedAt])
 }
 
 

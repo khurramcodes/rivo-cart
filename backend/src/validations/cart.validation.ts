@@ -28,3 +28,10 @@ export const migrateCartSchema = z.object({
     items: z.array(cartItemSchema).min(1),
   }),
 });
+
+export const applyCouponSchema = z.object({
+  body: z.object({
+    code: z.string().min(3).max(50),
+    source: z.enum(["cart", "checkout"]).optional(),
+  }),
+});

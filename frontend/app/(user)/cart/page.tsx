@@ -4,11 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { removeItem, updateQuantity } from "@/store/cartThunks";
 import { formatPrice } from "@/config/currency";
 import { usePathname, useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
+import { cartApi } from "@/services/cartApi";
+import { setCart } from "@/store/slices/cartSlice";
 
 export default function CartPage() {
   const cart = useAppSelector((s) => s.cart.cart);
@@ -17,8 +20,22 @@ export default function CartPage() {
   const router = useRouter();
   const pathname = usePathname();
   const status = useAppSelector((s) => s.auth.status);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponMessage, setCouponMessage] = useState<string | null>(null);
+  const [pricing, setPricing] = useState<{
+    originalPrice: number;
+    discountedPrice: number;
+    appliedCoupon: { code: string; amount: number } | null;
+    totalSavings: number;
+  } | null>(null);
+  const [pricingLoading, setPricingLoading] = useState(false);
 
   const total = items.reduce((sum, i) => sum + i.priceSnapshot * i.quantity, 0);
+  const hasAppliedCoupon = Boolean(cart?.appliedCouponId);
+  const appliedCouponCode = pricing?.appliedCoupon?.code;
+  const totalSavings = pricing?.totalSavings ?? 0;
+  const discountedTotal = pricing?.discountedPrice ?? total;
 
   const formatVariantDetails = (attrs: { name: string; value: string }[] | undefined) =>
     attrs && attrs.length > 0 ? attrs.map((attr) => `${attr.name}: ${attr.value}`).join(", ") : "";
@@ -29,6 +46,77 @@ export default function CartPage() {
       return;
     }
     router.push("/checkout");
+  };
+
+  useEffect(() => {
+    if (!cart?.id) return;
+    let mounted = true;
+    setPricingLoading(true);
+    cartApi
+      .getPricing()
+      .then((data) => {
+        if (!mounted) return;
+        setPricing({
+          originalPrice: data.pricing.originalPrice,
+          discountedPrice: data.pricing.discountedPrice,
+          appliedCoupon: data.pricing.appliedCoupon
+            ? { code: data.pricing.appliedCoupon.code, amount: data.pricing.appliedCoupon.amount }
+            : null,
+          totalSavings: data.pricing.totalSavings,
+        });
+      })
+      .catch((err) => {
+        if (!mounted) return;
+        setCouponError(err?.message ?? "Failed to load pricing.");
+      })
+      .finally(() => {
+        if (mounted) setPricingLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [cart?.id, items.length]);
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponError(null);
+    setCouponMessage(null);
+    try {
+      const data = await cartApi.applyCoupon(couponCode.trim());
+      dispatch(setCart(data.cart));
+      setPricing({
+        originalPrice: data.pricing.originalPrice,
+        discountedPrice: data.pricing.discountedPrice,
+        appliedCoupon: data.pricing.appliedCoupon
+          ? { code: data.pricing.appliedCoupon.code, amount: data.pricing.appliedCoupon.amount }
+          : null,
+        totalSavings: data.pricing.totalSavings,
+      });
+      setCouponMessage("Coupon applied successfully.");
+      setCouponCode("");
+    } catch (err: any) {
+      setCouponError(err?.message ?? "Failed to apply coupon.");
+    }
+  };
+
+  const handleRemoveCoupon = async () => {
+    setCouponError(null);
+    setCouponMessage(null);
+    try {
+      const data = await cartApi.removeCoupon();
+      dispatch(setCart(data.cart));
+      setPricing({
+        originalPrice: data.pricing.originalPrice,
+        discountedPrice: data.pricing.discountedPrice,
+        appliedCoupon: data.pricing.appliedCoupon
+          ? { code: data.pricing.appliedCoupon.code, amount: data.pricing.appliedCoupon.amount }
+          : null,
+        totalSavings: data.pricing.totalSavings,
+      });
+      setCouponMessage("Coupon removed.");
+    } catch (err: any) {
+      setCouponError(err?.message ?? "Failed to remove coupon.");
+    }
   };
 
   return (
@@ -117,8 +205,39 @@ export default function CartPage() {
             <aside className='rounded border border-zinc-200 p-4 h-fit'>
               <p className='text-sm text-zinc-600'>Total</p>
               <p className='mt-1 text-2xl font-semibold tracking-tight text-zinc-900'>
-                {formatPrice(total)}
+                {formatPrice(discountedTotal)}
               </p>
+              {pricingLoading ? (
+                <p className='mt-1 text-xs text-zinc-500'>Calculating discounts...</p>
+              ) : null}
+              {totalSavings > 0 ? (
+                <p className='mt-1 text-xs text-emerald-600'>You saved {formatPrice(totalSavings)}</p>
+              ) : null}
+              <div className='mt-4 rounded border border-zinc-200 p-3'>
+                <p className='text-sm font-medium text-zinc-900'>Coupon</p>
+                {appliedCouponCode ? (
+                  <div className='mt-2 flex items-center justify-between text-sm'>
+                    <span className='text-zinc-700'>{appliedCouponCode}</span>
+                    <Button variant='ghost' className='h-8 px-2' onClick={handleRemoveCoupon}>
+                      Remove
+                    </Button>
+                  </div>
+                ) : (
+                  <div className='mt-2 flex gap-2'>
+                    <Input
+                      placeholder='Enter coupon'
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      disabled={hasAppliedCoupon}
+                    />
+                    <Button type='button' onClick={handleApplyCoupon} disabled={hasAppliedCoupon || !couponCode.trim()}>
+                      Apply
+                    </Button>
+                  </div>
+                )}
+                {couponMessage ? <p className='mt-2 text-xs text-emerald-600'>{couponMessage}</p> : null}
+                {couponError ? <p className='mt-2 text-xs text-red-600'>{couponError}</p> : null}
+              </div>
               <div
                 onClick={handleCheckout}
                 className='mt-4 block cursor-pointer'>

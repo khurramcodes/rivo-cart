@@ -1,6 +1,46 @@
 import { apiClient } from "./apiClient";
 import type { Category, Order, OrderStatus, Product } from "@/types";
 
+export type DiscountScope = "SITE_WIDE" | "PRODUCT" | "VARIANT" | "CATEGORY" | "COLLECTION";
+export type DiscountType = "PERCENTAGE" | "FIXED";
+
+export type Discount = {
+  id: string;
+  name: string;
+  description?: string | null;
+  discountType: DiscountType;
+  discountValue: number;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+  priority: number;
+  isStackable: boolean;
+  scope: DiscountScope;
+  products?: { productId: string }[];
+  variants?: { variantId: string }[];
+  categories?: { categoryId: string }[];
+  collections?: { collectionId: string }[];
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type Coupon = {
+  id: string;
+  code: string;
+  description?: string | null;
+  discountType: DiscountType;
+  discountValue: number;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+  minimumCartValue?: number | null;
+  maxRedemptions?: number | null;
+  maxRedemptionsPerUser?: number | null;
+  isStackable: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export const adminApi = {
   // categories
   async listCategories() {
@@ -17,6 +57,118 @@ export const adminApi = {
   },
   async deleteCategory(id: string) {
     await apiClient.delete(`/api/categories/${id}`);
+  },
+
+  // discounts
+  async listDiscounts() {
+    const { data } = await apiClient.get<{ discounts: Discount[] }>("/api/discounts");
+    return data.discounts;
+  },
+  async getDiscount(id: string) {
+    const { data } = await apiClient.get<{ discount: Discount }>(`/api/discounts/${id}`);
+    return data.discount;
+  },
+  async createDiscount(payload: {
+    name: string;
+    description?: string;
+    discountType: DiscountType;
+    discountValue: number;
+    startDate: string;
+    endDate: string;
+    isActive?: boolean;
+    priority?: number;
+    isStackable?: boolean;
+    scope: DiscountScope;
+    productIds?: string[];
+    variantIds?: string[];
+    categoryIds?: string[];
+    collectionIds?: string[];
+  }) {
+    const { data } = await apiClient.post<{ discount: Discount }>("/api/discounts", payload);
+    return data.discount;
+  },
+  async updateDiscount(
+    id: string,
+    payload: Partial<{
+      name: string;
+      description: string;
+      discountType: DiscountType;
+      discountValue: number;
+      startDate: string;
+      endDate: string;
+      isActive: boolean;
+      priority: number;
+      isStackable: boolean;
+      scope: DiscountScope;
+      productIds: string[];
+      variantIds: string[];
+      categoryIds: string[];
+      collectionIds: string[];
+    }>,
+  ) {
+    const { data } = await apiClient.put<{ discount: Discount }>(`/api/discounts/${id}`, payload);
+    return data.discount;
+  },
+  async deleteDiscount(id: string) {
+    await apiClient.delete(`/api/discounts/${id}`);
+  },
+
+  // coupons
+  async listCoupons() {
+    const { data } = await apiClient.get<{ coupons: Coupon[] }>("/api/coupons");
+    return data.coupons;
+  },
+  async getCoupon(id: string) {
+    const { data } = await apiClient.get<{ coupon: Coupon }>(`/api/coupons/${id}`);
+    return data.coupon;
+  },
+  async createCoupon(payload: {
+    code: string;
+    description?: string;
+    discountType: DiscountType;
+    discountValue: number;
+    startDate: string;
+    endDate: string;
+    isActive?: boolean;
+    minimumCartValue?: number;
+    maxRedemptions?: number;
+    maxRedemptionsPerUser?: number;
+    isStackable?: boolean;
+  }) {
+    const { data } = await apiClient.post<{ coupon: Coupon }>("/api/coupons", payload);
+    return data.coupon;
+  },
+  async updateCoupon(
+    id: string,
+    payload: Partial<{
+      code: string;
+      description: string;
+      discountType: DiscountType;
+      discountValue: number;
+      startDate: string;
+      endDate: string;
+      isActive: boolean;
+      minimumCartValue: number;
+      maxRedemptions: number;
+      maxRedemptionsPerUser: number;
+      isStackable: boolean;
+    }>,
+  ) {
+    const { data } = await apiClient.put<{ coupon: Coupon }>(`/api/coupons/${id}`, payload);
+    return data.coupon;
+  },
+  async deleteCoupon(id: string) {
+    await apiClient.delete(`/api/coupons/${id}`);
+  },
+  async validateCoupon(payload: { cartId: string; code: string }) {
+    const { data } = await apiClient.post<{ valid: boolean; coupon: Coupon; subtotal: number }>("/api/coupons/validate", payload);
+    return data;
+  },
+  async getCouponStats(id: string) {
+    const { data } = await apiClient.get<{ stats: { couponId: string; totalRedemptions: number; uniqueUsers: number; lastRedeemedAt: string | null } }>(
+      `/api/coupons/${id}/stats`,
+    );
+    return data.stats;
   },
 
   // products

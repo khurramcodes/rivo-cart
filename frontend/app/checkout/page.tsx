@@ -13,6 +13,7 @@ import { ShippingAddressForm, type AddressFormValues } from "@/components/user/A
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearCartServer } from "@/store/cartThunks";
 import { orderApi } from "@/services/orderApi";
+import { cartApi } from "@/services/cartApi";
 import { formatPrice } from "@/config/currency";
 import { addAddress, fetchAddresses, updateAddress } from "@/store/slices/addressSlice";
 import { selectIsGlobalLoading } from "@/store/slices/loadingSlice";
@@ -40,6 +41,11 @@ export default function CheckoutPage() {
   const total = items.reduce((sum, i) => sum + i.priceSnapshot * i.quantity, 0);
   const subtotal = total;
   const shipping = 0;
+  const [pricing, setPricing] = useState<{
+    discountedPrice: number;
+    totalSavings: number;
+    appliedCoupon: { code: string; amount: number } | null;
+  } | null>(null);
 
   const formatVariantDetails = (attrs: { name: string; value: string }[] | undefined) =>
     attrs && attrs.length > 0 ? attrs.map((attr) => `${attr.name}: ${attr.value}`).join(", ") : "";
@@ -73,6 +79,30 @@ export default function CheckoutPage() {
       void dispatch(fetchAddresses());
     }
   }, [addressStatus, addresses.length, dispatch, user]);
+
+  useEffect(() => {
+    if (!cart?.id) return;
+    let mounted = true;
+    cartApi
+      .getPricing()
+      .then((data) => {
+        if (!mounted) return;
+        setPricing({
+          discountedPrice: data.pricing.discountedPrice,
+          totalSavings: data.pricing.totalSavings,
+          appliedCoupon: data.pricing.appliedCoupon
+            ? { code: data.pricing.appliedCoupon.code, amount: data.pricing.appliedCoupon.amount }
+            : null,
+        });
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setPricing(null);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [cart?.id, items.length]);
 
   useEffect(() => {
     if (!activeAddress && defaultAddress) {
@@ -295,6 +325,12 @@ export default function CheckoutPage() {
                   <span className="text-zinc-600">Subtotal</span>
                   <span className="text-zinc-900">{formatPrice(subtotal)}</span>
                 </div>
+                {pricing?.appliedCoupon ? (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-zinc-600">Coupon ({pricing.appliedCoupon.code})</span>
+                    <span className="text-emerald-600">- {formatPrice(pricing.appliedCoupon.amount)}</span>
+                  </div>
+                ) : null}
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-600">Shipping</span>
                   <span className="text-zinc-900">
@@ -311,7 +347,7 @@ export default function CheckoutPage() {
                 <span className="text-base font-semibold text-zinc-900">Total</span>
                 <div className="text-right">
                   <div className="text-xl font-semibold text-zinc-900">
-                    {formatPrice(total)}
+                    {formatPrice(pricing?.discountedPrice ?? total)}
                   </div>
                 </div>
               </div>

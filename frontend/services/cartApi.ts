@@ -5,6 +5,31 @@ import { beginLoading, endLoading } from "@/store/loadingManager";
 const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 type CartResponse = { cart: Cart };
+type PricingResult = {
+  originalPrice: number;
+  discountedPrice: number;
+  appliedDiscounts: {
+    id: string;
+    name: string;
+    discountType: "PERCENTAGE" | "FIXED";
+    discountValue: number;
+    scope: "SITE_WIDE" | "PRODUCT" | "VARIANT" | "CATEGORY" | "COLLECTION";
+    priority: number;
+    isStackable: boolean;
+    amount: number;
+  }[];
+  appliedCoupon: {
+    id: string;
+    code: string;
+    discountType: "PERCENTAGE" | "FIXED";
+    discountValue: number;
+    amount: number;
+  } | null;
+  totalSavings: number;
+};
+
+type PricingResponse = { pricing: PricingResult };
+type CartPricingResponse = { cart: Cart; pricing: PricingResult };
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const loadingKey = "cart";
@@ -41,6 +66,9 @@ export const cartApi = {
   async getCart() {
     return request<CartResponse>("/api/cart");
   },
+  async getPricing() {
+    return request<PricingResponse>("/api/cart/pricing");
+  },
   async addItem(payload: { productId: string; variantId: string; quantity: number }) {
     return request<CartResponse>("/api/cart/items", {
       method: "POST",
@@ -62,6 +90,17 @@ export const cartApi = {
     return request<CartResponse>("/api/cart/migrate", {
       method: "POST",
       body: JSON.stringify({ items }),
+    });
+  },
+  async applyCoupon(code: string) {
+    return request<CartPricingResponse>("/api/cart/coupon", {
+      method: "POST",
+      body: JSON.stringify({ code, source: "cart" }),
+    });
+  },
+  async removeCoupon() {
+    return request<CartPricingResponse>("/api/cart/coupon", {
+      method: "DELETE",
     });
   },
 };

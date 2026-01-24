@@ -5,13 +5,14 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { catalogApi } from "@/services/catalogApi";
+import { pricingApi, type VariantPricing } from "@/services/pricingApi";
 import type { Product, ProductVariant } from "@/types";
 import { formatPrice } from "@/config/currency";
 import { Button } from "@/components/ui/Button";
 import { useAppDispatch } from "@/store/hooks";
 import { addToCart } from "@/store/cartThunks";
 import { addCacheBust } from "@/utils/imageCache";
-import { Minus, Plus, Package, X, CircleCheckBig } from "lucide-react";
+import { Minus, Plus, Package, X, CircleCheckBig, Tag } from "lucide-react";
 
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>();
@@ -25,6 +26,7 @@ export default function ProductDetailPage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [showAddedNotice, setShowAddedNotice] = useState(false);
+  const [pricing, setPricing] = useState<VariantPricing | null>(null);
 
   // Combine main image and gallery images
   const productImages = useMemo(() => {
@@ -134,6 +136,28 @@ export default function ProductDetailPage() {
       mounted = false;
     };
   }, [id]);
+
+  // Fetch pricing when selected variant changes
+  useEffect(() => {
+    if (!selectedVariant?.id) {
+      setPricing(null);
+      return;
+    }
+    
+    let mounted = true;
+    pricingApi
+      .getVariantPricing(selectedVariant.id)
+      .then((data) => {
+        if (mounted) setPricing(data);
+      })
+      .catch(() => {
+        if (mounted) setPricing(null);
+      });
+    
+    return () => {
+      mounted = false;
+    };
+  }, [selectedVariant?.id]);
 
   // Handle ESC key for lightbox
   useEffect(() => {
@@ -297,9 +321,33 @@ export default function ProductDetailPage() {
               </h1>
 
               {/* Price */}
-              <p className='mt-2 text-2xl font-semibold text-zinc-900'>
-                {formatPrice(selectedVariant.price)}
-              </p>
+              <div className='mt-2'>
+                {pricing && pricing.totalSavings > 0 ? (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <p className='text-xl text-zinc-400 line-through'>
+                        {formatPrice(pricing.originalPrice)}
+                      </p>
+                      <p className='text-2xl font-semibold text-red-600'>
+                        {formatPrice(pricing.discountedPrice)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-emerald-700">
+                      <Tag size={14} />
+                      <span className="font-medium">You save {formatPrice(pricing.totalSavings)}</span>
+                    </div>
+                    {pricing.appliedDiscounts.length > 0 && (
+                      <p className="text-xs text-zinc-500">
+                        {pricing.appliedDiscounts.map((d) => d.name).join(", ")}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className='text-2xl font-semibold text-zinc-900'>
+                    {formatPrice(selectedVariant.price)}
+                  </p>
+                )}
+              </div>
 
               {/* SKU & Stock Status */}
               <div className='mt-3 flex items-center gap-4 text-sm'>

@@ -6,11 +6,13 @@ import Image from "next/image";
 
 import type { Product } from "@/types";
 import { catalogApi } from "@/services/catalogApi";
+import { pricingApi, type VariantPricing } from "@/services/pricingApi";
 import { formatPrice } from "@/config/currency";
 import { addCacheBust } from "@/utils/imageCache";
 import { Button } from "@/components/ui/Button";
 import { useAppDispatch } from "@/store/hooks";
 import { addToCart } from "@/store/cartThunks";
+import { Tag } from "lucide-react";
 
 /**
  * Latest products section props
@@ -25,6 +27,7 @@ export function LatestProducts({ limit = 6 }: LatestProductsProps) {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [pricingMap, setPricingMap] = useState<Map<string, VariantPricing>>(new Map());
 
   useEffect(() => {
     let mounted = true;
@@ -34,7 +37,23 @@ export function LatestProducts({ limit = 6 }: LatestProductsProps) {
         const data = await catalogApi.listProducts();
         if (!mounted) return;
 
-        setProducts(limit ? data.items.slice(0, limit) : data.items);
+        const limitedProducts = limit ? data.items.slice(0, limit) : data.items;
+        setProducts(limitedProducts);
+
+        // Fetch pricing for all default variants
+        const variantIds = limitedProducts
+          .map((p) => getDefaultVariant(p)?.id)
+          .filter((id): id is string => !!id);
+        
+        if (variantIds.length > 0) {
+          const pricingResults = await pricingApi.getBulkVariantPricing(variantIds);
+          if (!mounted) return;
+          const newMap = new Map<string, VariantPricing>();
+          pricingResults.forEach((r) => {
+            if (r.pricing) newMap.set(r.variantId, r.pricing);
+          });
+          setPricingMap(newMap);
+        }
       } catch (error) {
         console.error("Failed to fetch products:", error);
       } finally {
@@ -100,6 +119,8 @@ export function LatestProducts({ limit = 6 }: LatestProductsProps) {
         {products.map((product) => {
           const priceInfo = getProductPrice(product);
           const defaultVariant = getDefaultVariant(product);
+          const pricing = defaultVariant ? pricingMap.get(defaultVariant.id) : null;
+          const hasDiscount = pricing && pricing.totalSavings > 0;
 
           return (
             <div
@@ -108,6 +129,12 @@ export function LatestProducts({ limit = 6 }: LatestProductsProps) {
               <Link href={`/products/${product.id}`}>
                 {product.imageUrl && (
                   <div className='relative aspect-square overflow-hidden rounded bg-zinc-100'>
+                    {hasDiscount && (
+                      <div className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded bg-red-600 px-2 py-1 text-xs font-semibold text-white shadow-sm">
+                        <Tag size={12} />
+                        Save {formatPrice(pricing.totalSavings)}
+                      </div>
+                    )}
                     <Image
                       src={addCacheBust(product.imageUrl, product.updatedAt)}
                       alt={product.name}
@@ -122,9 +149,22 @@ export function LatestProducts({ limit = 6 }: LatestProductsProps) {
                   <p className='text-sm font-medium text-zinc-900'>
                     {product.name}
                   </p>
-                  <p className='mt-1 text-sm text-zinc-600'>
-                    {priceInfo.priceRange || formatPrice(priceInfo.price)}
-                  </p>
+                  <div className="mt-1">
+                    {hasDiscount ? (
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm text-zinc-400 line-through">
+                          {priceInfo.priceRange || formatPrice(priceInfo.price)}
+                        </p>
+                        <p className="text-sm font-semibold text-red-600">
+                          {formatPrice(pricing.discountedPrice)}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className='text-sm text-zinc-600'>
+                        {priceInfo.priceRange || formatPrice(priceInfo.price)}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </Link>
 

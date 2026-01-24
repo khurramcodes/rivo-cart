@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { catalogApi } from "@/services/catalogApi";
+import { pricingApi, type VariantPricing } from "@/services/pricingApi";
 import { formatPrice } from "@/config/currency";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,6 +13,7 @@ import { addCacheBust } from "@/utils/imageCache";
 import { Button } from "@/components/ui/Button";
 import { useAppDispatch } from "@/store/hooks";
 import { addToCart } from "@/store/cartThunks";
+import { Tag } from "lucide-react";
 
 // Helper function to get product display price
 function getProductPrice(product: Product): { price: number; priceRange?: string } {
@@ -54,6 +56,7 @@ export default function ProductsPage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const limit = 12;
+  const [pricingMap, setPricingMap] = useState<Map<string, VariantPricing>>(new Map());
 
   const hasMore = useMemo(() => items.length < total, [items.length, total]);
 
@@ -71,6 +74,21 @@ export default function ProductsPage() {
         setItems(data.items);
         setTotal(data.total);
         setPage(1);
+
+        // Fetch pricing for all default variants
+        const variantIds = data.items
+          .map((p) => getDefaultVariant(p)?.id)
+          .filter((id): id is string => !!id);
+        
+        if (variantIds.length > 0) {
+          const pricingResults = await pricingApi.getBulkVariantPricing(variantIds);
+          if (!mounted) return;
+          const newMap = new Map<string, VariantPricing>();
+          pricingResults.forEach((r) => {
+            if (r.pricing) newMap.set(r.variantId, r.pricing);
+          });
+          setPricingMap(newMap);
+        }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -95,6 +113,20 @@ export default function ProductsPage() {
       setItems(data.items);
       setTotal(data.total);
       setPage(1);
+
+      // Fetch pricing for all default variants
+      const variantIds = data.items
+        .map((p) => getDefaultVariant(p)?.id)
+        .filter((id): id is string => !!id);
+      
+      if (variantIds.length > 0) {
+        const pricingResults = await pricingApi.getBulkVariantPricing(variantIds);
+        const newMap = new Map<string, VariantPricing>();
+        pricingResults.forEach((r) => {
+          if (r.pricing) newMap.set(r.variantId, r.pricing);
+        });
+        setPricingMap(newMap);
+      }
     } finally {
       setLoading(false);
     }
@@ -116,6 +148,22 @@ export default function ProductsPage() {
       setItems((prev) => [...prev, ...data.items]);
       setTotal(data.total);
       setPage(nextPage);
+
+      // Fetch pricing for new items
+      const variantIds = data.items
+        .map((p) => getDefaultVariant(p)?.id)
+        .filter((id): id is string => !!id);
+      
+      if (variantIds.length > 0) {
+        const pricingResults = await pricingApi.getBulkVariantPricing(variantIds);
+        setPricingMap((prev) => {
+          const newMap = new Map(prev);
+          pricingResults.forEach((r) => {
+            if (r.pricing) newMap.set(r.variantId, r.pricing);
+          });
+          return newMap;
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -241,6 +289,8 @@ export default function ProductsPage() {
               {items.map((p) => {
                 const priceInfo = getProductPrice(p);
                 const defaultVariant = getDefaultVariant(p);
+                const pricing = defaultVariant ? pricingMap.get(defaultVariant.id) : null;
+                const hasDiscount = pricing && pricing.totalSavings > 0;
                 
                 return (
                   <div
@@ -249,6 +299,12 @@ export default function ProductsPage() {
                   >
                     <Link href={`/products/${p.id}`}>
                       <div className="relative aspect-square overflow-hidden rounded bg-zinc-100">
+                        {hasDiscount && (
+                          <div className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded bg-red-600 px-2 py-1 text-xs font-semibold text-white shadow-sm">
+                            <Tag size={12} />
+                            Save {formatPrice(pricing.totalSavings)}
+                          </div>
+                        )}
                         <Image 
                           src={addCacheBust(p.imageUrl, p.updatedAt)} 
                           alt={p.name} 
@@ -259,9 +315,22 @@ export default function ProductsPage() {
                       </div>
                       <div className="mt-3">
                         <p className="text-sm font-medium text-zinc-900">{p.name}</p>
-                        <p className="mt-1 text-sm text-zinc-600">
-                          {priceInfo.priceRange || formatPrice(priceInfo.price)}
-                        </p>
+                        <div className="mt-1">
+                          {hasDiscount ? (
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm text-zinc-400 line-through">
+                                {priceInfo.priceRange || formatPrice(priceInfo.price)}
+                              </p>
+                              <p className="text-sm font-semibold text-red-600">
+                                {formatPrice(pricing.discountedPrice)}
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="text-sm text-zinc-600">
+                              {priceInfo.priceRange || formatPrice(priceInfo.price)}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </Link>
                     {p.type === "SIMPLE" && defaultVariant ? (
