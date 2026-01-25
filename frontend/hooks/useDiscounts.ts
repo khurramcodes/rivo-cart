@@ -4,25 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { adminApi, type Discount, type DiscountScope, type DiscountType } from "@/services/adminApi";
 import { catalogApi } from "@/services/catalogApi";
 import type { Category, Product } from "@/types";
-import { discountSchema } from "@/schemas/discount.schema";
+import { discountSchema, type DiscountFormData } from "@/schemas/discount.schema";
 import { toIsoStartDate, toIsoEndDate } from "@/utils/date";
-
-type DiscountFormData = {
-  name: string;
-  description?: string;
-  discountType: DiscountType;
-  discountValue: number;
-  startDate: string;
-  endDate: string;
-  priority: number;
-  isStackable: boolean;
-  isActive: boolean;
-  scope: DiscountScope;
-  productIds?: string[];
-  variantIds?: string[];
-  categoryIds?: string[];
-  collectionIds?: string[];
-};
 
 const formatDate = (value?: string | null) => {
   if (!value) return "";
