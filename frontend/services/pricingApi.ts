@@ -16,10 +16,16 @@ export type VariantPricing = {
   totalSavings: number;
 };
 
+/**
+ * Pricing API - fetches discount/pricing data.
+ * Uses skipLoading: true to avoid blocking navigation with global loader.
+ * Components should manage their own local loading state for pricing.
+ */
 export const pricingApi = {
   async getVariantPricing(variantId: string) {
     const { data } = await apiClient.get<{ pricing: VariantPricing }>(
-      `/api/pricing/variants/${variantId}`
+      `/api/pricing/variants/${variantId}`,
+      { skipLoading: true }
     );
     return data.pricing;
   },
@@ -27,7 +33,8 @@ export const pricingApi = {
   async getBulkVariantPricing(variantIds: string[]) {
     const { data } = await apiClient.post<{ results: { variantId: string; pricing: VariantPricing | null }[] }>(
       "/api/pricing/variants/bulk",
-      { variantIds }
+      { variantIds },
+      { skipLoading: true }
     );
     return data.results;
   },

@@ -6,7 +6,6 @@ import { LOADER_IMAGE_SRC, LOADER_TEXT } from "@/config/loader";
 
 export function GlobalLoader() {
   const isLoading = useAppSelector(selectIsGlobalLoading);
-
   if (!isLoading) return null;
 
   return (

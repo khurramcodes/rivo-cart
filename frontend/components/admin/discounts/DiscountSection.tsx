@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useDiscounts } from "@/hooks/useDiscounts";
-import type { DiscountScope, DiscountType } from "@/services/adminApi";
+
 import type { ProductVariant } from "@/types";
 
 const toggleSelection = (items: string[], id: string) =>
@@ -249,7 +249,7 @@ export function DiscountSection() {
               <div>
                 <label className='text-sm font-medium text-zinc-800'>Type</label>
                 <select
-                  className='mt-2 h-10 w-full rounded border border-zinc-200 px-3 text-sm'
+                  className='mt-2 h-10 w-full rounded border border-zinc-200 px-3 text-sm text-zinc-800'
                   {...form.register("discountType")}>
                   <option value='PERCENTAGE'>Percentage</option>
                   <option value='FIXED'>Fixed</option>
@@ -334,7 +334,7 @@ export function DiscountSection() {
             <div>
               <label className='text-sm font-medium text-zinc-800'>Scope</label>
               <select
-                className='mt-2 h-10 w-full rounded border border-zinc-200 px-3 text-sm disabled:bg-zinc-50'
+                className='mt-2 h-10 w-full rounded border border-zinc-200 px-3 text-sm text-zinc-800 disabled:bg-zinc-50'
                 {...form.register("scope")}
                 disabled={scopeLocked}>
                 <option value='SITE_WIDE'>Site-wide</option>

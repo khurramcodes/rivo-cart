@@ -4,9 +4,15 @@ import type { Address } from "@/types";
 type AddressResponse = { address: Address };
 type AddressesResponse = { addresses: Address[] };
 
+/**
+ * Address API for managing user shipping addresses.
+ * List operation skips global loading to avoid blocking page navigation.
+ */
 export const addressApi = {
   async list() {
-    const { data } = await apiClient.get<AddressesResponse>("/api/addresses");
+    const { data } = await apiClient.get<AddressesResponse>("/api/addresses", {
+      skipLoading: true,
+    });
     return data;
   },
   async create(payload: {

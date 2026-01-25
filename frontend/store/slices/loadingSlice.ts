@@ -44,8 +44,9 @@ const loadingSlice = createSlice({
 export const { startLoading, stopLoading } = loadingSlice.actions;
 export default loadingSlice.reducer;
 
-export const selectIsGlobalLoading = (state: { loading: LoadingState }) => state.loading.activeCount > 0;
+export const selectIsGlobalLoading = (state: { loading: LoadingState }) =>
+  state.loading.activeCount > 0;
+
 export const selectIsLoadingByKey =
-  (key: string) =>
-  (state: { loading: LoadingState }) =>
+  (key: string) => (state: { loading: LoadingState }) =>
     (state.loading.keys[key] ?? 0) > 0;
