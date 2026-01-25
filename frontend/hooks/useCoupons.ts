@@ -2,22 +2,9 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { adminApi, type Coupon, type DiscountType } from "@/services/adminApi";
-import { couponSchema } from "@/schemas/coupon.schema";
+import { couponSchema, type CouponFormData } from "@/schemas/coupon.schema";
 import { toIsoStartDate, toIsoEndDate } from "@/utils/date";
 
-type CouponFormData = {
-  code: string;
-  description?: string;
-  discountType: DiscountType;
-  discountValue: number;
-  startDate: string;
-  endDate: string;
-  minimumCartValue?: number;
-  maxRedemptions?: number;
-  maxRedemptionsPerUser?: number;
-  isStackable: boolean;
-  isActive: boolean;
-};
 
 const formatDate = (value?: string | null) => {
   if (!value) return "";
