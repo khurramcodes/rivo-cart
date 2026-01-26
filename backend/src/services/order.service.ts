@@ -1,5 +1,6 @@
 import { prisma } from "../prisma/client.js";
 import { ApiError } from "../utils/ApiError.js";
+import { resolveCartPricing } from "./pricing.service.js";
 
 export async function placeOrder(
   userId: string,
@@ -10,6 +11,12 @@ export async function placeOrder(
     items: { productId: string; variantId: string; quantity: number }[];
   },
 ) {
+  // Get the user's cart to check for applied coupon and calculate pricing
+  const cart = await prisma.cart.findFirst({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+
   // Fetch all variants with their products
   const variantIds = Array.from(new Set(input.items.map((i) => i.variantId)));
   const variants = await prisma.productVariant.findMany({
@@ -61,7 +68,21 @@ export async function placeOrder(
     };
   });
 
-  const totalAmount = normalized.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  // Calculate total using pricing engine if cart exists, otherwise use raw prices
+  let totalAmount = normalized.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  let appliedCouponId: string | null = null;
+
+  if (cart) {
+    try {
+      const pricing = await resolveCartPricing(cart.id);
+      totalAmount = pricing.discountedPrice;
+      if (pricing.appliedCoupon) {
+        appliedCouponId = pricing.appliedCoupon.id;
+      }
+    } catch {
+      // If pricing fails, fall back to raw total (already calculated above)
+    }
+  }
 
   // Create order and deduct stock in a transaction
   const order = await prisma.$transaction(async (tx) => {
@@ -96,6 +117,28 @@ export async function placeOrder(
       },
       include: { items: true },
     });
+
+    // Record coupon redemption if a coupon was applied
+    if (appliedCouponId) {
+      await tx.couponRedemption.create({
+        data: {
+          couponId: appliedCouponId,
+          userId,
+          orderId: created.id,
+        },
+      });
+    }
+
+    // Clear the cart: remove all items and reset the applied coupon
+    if (cart) {
+      await tx.cartItem.deleteMany({
+        where: { cartId: cart.id },
+      });
+      await tx.cart.update({
+        where: { id: cart.id },
+        data: { appliedCouponId: null },
+      });
+    }
 
     return created;
   });

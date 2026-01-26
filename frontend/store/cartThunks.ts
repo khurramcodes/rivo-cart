@@ -96,19 +96,20 @@ export const updateQuantity =
     }, 500);
   };
 
+/**
+ * Clears the cart by fetching the latest cart state from the server.
+ * Note: After placing an order, the backend already clears the cart,
+ * so this just syncs the frontend state with the server.
+ */
 export const clearCartServer =
-  () => async (dispatch: AppDispatch, getState: () => RootState) => {
-    const cart = getState().cart.cart;
-    if (!cart || cart.items.length === 0) {
-      dispatch(clearCart());
-      return;
-    }
+  () => async (dispatch: AppDispatch) => {
     dispatch(setStatus("syncing"));
     try {
-      await Promise.all(cart.items.map((item) => cartApi.removeItem(item.id)));
       const data = await cartApi.getCart();
       dispatch(setCart(data.cart));
     } catch (err) {
+      // If fetching fails, clear local cart state
+      dispatch(clearCart());
       dispatch(setError(errorMessage(err)));
     } finally {
       dispatch(setStatus("idle"));

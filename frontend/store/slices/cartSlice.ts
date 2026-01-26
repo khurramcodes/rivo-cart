@@ -42,6 +42,7 @@ function ensureCart(state: CartState) {
     createdAt: now,
     updatedAt: now,
     items: [],
+    appliedCouponId: null,
   };
   return state.cart;
 }
@@ -92,9 +93,10 @@ const cartSlice = createSlice({
       state.cart.items = state.cart.items.filter((i) => i.id !== action.payload.itemId);
     },
     clearCart(state) {
+      const now = new Date().toISOString();
       state.cart = state.cart
-        ? { ...state.cart, items: [] }
-        : { id: "temp-cart", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), items: [] };
+        ? { ...state.cart, items: [], appliedCouponId: null, updatedAt: now }
+        : { id: "temp-cart", createdAt: now, updatedAt: now, items: [], appliedCouponId: null };
       state.lastSyncedCart = state.cart;
       state.status = "idle";
       state.error = undefined;
