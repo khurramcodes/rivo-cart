@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "main": "dist/server.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.build.json",
@@ -11,12 +14,9 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "postinstall": "prisma generate"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
@@ -24,6 +24,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
+    "prisma": "^7.2.0",
     "@reduxjs/toolkit": "^2.11.2",
     "@upstash/redis": "^1.36.1",
     "axios": "^1.13.2",
@@ -35,14 +36,9 @@
     "helmet": "^8.1.0",
     "imagekit": "^6.0.0",
     "jsonwebtoken": "^9.0.2",
-    "lucide-react": "^0.562.0",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.10.1",
     "pg": "^8.13.3",
-    "react-hook-form": "^7.70.0",
-    "react-redux": "^9.2.0",
-    "redux-persist": "^6.0.0",
-    "tailwind-merge": "^3.4.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -54,7 +50,6 @@
     "@types/nodemailer": "^7.0.5",
     "@types/pg": "^8.16.0",
     "dotenv": "^17.2.3",
-    "prisma": "^7.2.0",
     "tsx": "^4.20.5",
     "typescript": "^5.7.3"
   }
