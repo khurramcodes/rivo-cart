@@ -20,9 +20,18 @@ type AppliedCoupon = {
   amount: number;
 };
 
+export type PricingLineItem = {
+  itemId: string;
+  originalUnitPrice: number;
+  discountedUnitPrice: number;
+  quantity: number;
+  lineTotal: number;
+};
+
 type PricingResult = {
   originalPrice: number;
   discountedPrice: number;
+  lineItems: PricingLineItem[];
   appliedDiscounts: AppliedDiscount[];
   appliedCoupon: AppliedCoupon | null;
   totalSavings: number;
@@ -76,10 +85,11 @@ async function getCategoryChainIds(categoryId: string, cache: Map<string, string
   const chain: string[] = [];
   let currentId: string | null = categoryId;
   while (currentId) {
-    const category = await prisma.category.findUnique({
-      where: { id: currentId },
-      select: { id: true, parentId: true },
-    });
+    const category: { id: string; parentId: string | null } | null =
+      await prisma.category.findUnique({
+        where: { id: currentId },
+        select: { id: true, parentId: true },
+      });
     if (!category) break;
     chain.unshift(category.id);
     currentId = category.parentId ?? null;
@@ -261,6 +271,7 @@ export async function resolveVariantPricing(variantId: string): Promise<PricingR
   return {
     originalPrice,
     discountedPrice,
+    lineItems: [],
     appliedDiscounts: pricing.applied,
     appliedCoupon: null,
     totalSavings: Math.max(0, originalPrice - discountedPrice),
@@ -293,10 +304,12 @@ export async function resolveCartPricing(cartId: string): Promise<PricingResult>
   let originalPrice = 0;
   let discountedPrice = 0;
   const appliedDiscounts: AppliedDiscount[] = [];
+  const lineItems: PricingLineItem[] = [];
 
   for (const item of cart.items) {
     if (!item.variant || !item.product) continue;
-    const lineOriginal = item.variant.price * item.quantity;
+    const originalUnitPrice = item.variant.price;
+    const lineOriginal = originalUnitPrice * item.quantity;
     originalPrice += lineOriginal;
 
     const pricing = await computeVariantDiscounts(
@@ -309,8 +322,17 @@ export async function resolveCartPricing(cartId: string): Promise<PricingResult>
       cache,
     );
 
-    discountedPrice += pricing.price * item.quantity;
+    const discountedUnitPrice = pricing.price;
+    const lineTotal = discountedUnitPrice * item.quantity;
+    discountedPrice += lineTotal;
     appliedDiscounts.push(...pricing.applied);
+    lineItems.push({
+      itemId: item.id,
+      originalUnitPrice,
+      discountedUnitPrice,
+      quantity: item.quantity,
+      lineTotal,
+    });
   }
 
   const appliedById = new Map(appliedDiscounts.map((d) => [d.id, d]));
@@ -368,6 +390,7 @@ export async function resolveCartPricing(cartId: string): Promise<PricingResult>
   return {
     originalPrice,
     discountedPrice,
+    lineItems,
     appliedDiscounts: uniqueApplied,
     appliedCoupon,
     totalSavings: Math.max(0, originalPrice - discountedPrice),

@@ -15,6 +15,7 @@ import { setCart } from "@/store/slices/cartSlice";
 
 export default function CartPage() {
   const cart = useAppSelector((s) => s.cart.cart);
+  const cartStatus = useAppSelector((s) => s.cart.status);
   const items = cart?.items ?? [];
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -26,16 +27,27 @@ export default function CartPage() {
   const [pricing, setPricing] = useState<{
     originalPrice: number;
     discountedPrice: number;
+    lineItems: { itemId: string; originalUnitPrice: number; discountedUnitPrice: number; quantity: number; lineTotal: number }[];
     appliedCoupon: { code: string; amount: number } | null;
     totalSavings: number;
   } | null>(null);
   const [pricingLoading, setPricingLoading] = useState(false);
 
+  const itemsSignature = useMemo(
+    () => items.map((i) => `${i.id}:${i.quantity}`).join(","),
+    [items],
+  );
   const total = items.reduce((sum, i) => sum + i.priceSnapshot * i.quantity, 0);
   const hasAppliedCoupon = Boolean(cart?.appliedCouponId);
   const appliedCouponCode = pricing?.appliedCoupon?.code;
-  const totalSavings = pricing?.totalSavings ?? 0;
-  const discountedTotal = pricing?.discountedPrice ?? total;
+  // const discountedTotal = pricing?.discountedPrice ?? total;
+
+  const discountedTotal = pricing
+    ? pricing.lineItems.reduce((sum, l) => sum + l.lineTotal, 0)
+    : total;
+
+  const getLinePricing = (itemId: string) =>
+    pricing?.lineItems?.find((l) => l.itemId === itemId);
 
   const formatVariantDetails = (attrs: { name: string; value: string }[] | undefined) =>
     attrs && attrs.length > 0 ? attrs.map((attr) => `${attr.name}: ${attr.value}`).join(", ") : "";
@@ -48,8 +60,10 @@ export default function CartPage() {
     router.push("/checkout");
   };
 
+  // Refetch pricing when we have a cart and whenever cart sync completes (status → idle)
+  // so totals update after quantity change, add, remove, etc.
   useEffect(() => {
-    if (!cart?.id) return;
+    if (!cart?.id || cartStatus !== "idle") return;
     let mounted = true;
     setPricingLoading(true);
     cartApi
@@ -59,6 +73,7 @@ export default function CartPage() {
         setPricing({
           originalPrice: data.pricing.originalPrice,
           discountedPrice: data.pricing.discountedPrice,
+          lineItems: data.pricing.lineItems ?? [],
           appliedCoupon: data.pricing.appliedCoupon
             ? { code: data.pricing.appliedCoupon.code, amount: data.pricing.appliedCoupon.amount }
             : null,
@@ -75,7 +90,7 @@ export default function CartPage() {
     return () => {
       mounted = false;
     };
-  }, [cart?.id, items.length]);
+  }, [cart?.id, cartStatus]);
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -87,6 +102,7 @@ export default function CartPage() {
       setPricing({
         originalPrice: data.pricing.originalPrice,
         discountedPrice: data.pricing.discountedPrice,
+        lineItems: data.pricing.lineItems ?? [],
         appliedCoupon: data.pricing.appliedCoupon
           ? { code: data.pricing.appliedCoupon.code, amount: data.pricing.appliedCoupon.amount }
           : null,
@@ -108,6 +124,7 @@ export default function CartPage() {
       setPricing({
         originalPrice: data.pricing.originalPrice,
         discountedPrice: data.pricing.discountedPrice,
+        lineItems: data.pricing.lineItems ?? [],
         appliedCoupon: data.pricing.appliedCoupon
           ? { code: data.pricing.appliedCoupon.code, amount: data.pricing.appliedCoupon.amount }
           : null,
@@ -161,9 +178,20 @@ export default function CartPage() {
                         {formatVariantDetails(i.variant?.attributes)}
                         </p>
                       ) : null}
-                      <p className='mt-1 text-sm text-zinc-600'>
-                      {formatPrice(i.priceSnapshot)}
-                      </p>
+                      <div className='mt-1 text-sm text-zinc-600'>
+                        {(() => {
+                          const line = getLinePricing(i.id);
+                          const hasDiscount = line && line.discountedUnitPrice < line.originalUnitPrice;
+                          return hasDiscount ? (
+                            <>
+                              <span className='line-through text-zinc-400'>{formatPrice(line.originalUnitPrice)}</span>
+                              <span className='ml-2'>{formatPrice(line.discountedUnitPrice)}</span>
+                            </>
+                          ) : (
+                            formatPrice(i.priceSnapshot)
+                          );
+                        })()}
+                      </div>
                     <p className='mt-0.5 text-xs text-zinc-400'>SKU: {i.variant?.sku}</p>
 
                     </div>
@@ -184,7 +212,11 @@ export default function CartPage() {
 
                   </div>
                   <div className='text-sm font-medium text-zinc-900'>
-                    {formatPrice(i.priceSnapshot * i.quantity)}
+                    {(() => {
+                      const line = getLinePricing(i.id);
+                      const rowTotal = line ? line.lineTotal : i.priceSnapshot * i.quantity;
+                      return formatPrice(rowTotal);
+                    })()}
                   </div>
                   <div>
                     <p
@@ -209,9 +241,6 @@ export default function CartPage() {
               </p>
               {pricingLoading ? (
                 <p className='mt-1 text-xs text-zinc-500'>Calculating discounts...</p>
-              ) : null}
-              {totalSavings > 0 ? (
-                <p className='mt-1 text-xs text-emerald-600'>You saved {formatPrice(totalSavings)}</p>
               ) : null}
               <div className='mt-4 rounded border border-zinc-200 p-3'>
                 <p className='text-sm font-medium text-zinc-900'>Coupon</p>

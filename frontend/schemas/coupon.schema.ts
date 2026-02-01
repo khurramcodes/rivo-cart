@@ -7,7 +7,7 @@ export const couponSchema = z.object({
     .transform((v) => v.trim().toLowerCase()),
   description: z.string().optional(),
   discountType: z.enum(["PERCENTAGE", "FIXED"]),
-  discountValue: z.coerce.number<number>().positive("Discount value must be greater than 0"),
+  discountValue: z.coerce.number<number>().positive("Discount must be greater than 0"),
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().min(1, "End date is required"),
   minimumCartValue: z.coerce.number<number>().optional(),
@@ -15,10 +15,18 @@ export const couponSchema = z.object({
   maxRedemptionsPerUser: z.coerce.number<number>().optional(),
   isStackable: z.boolean(),
   isActive: z.boolean(),
-}).refine((data) => new Date(data.startDate) <= new Date(data.endDate), {
-  message: "End date must be after start date",
-  path: ["endDate"],
-});
-
+})
+  .refine((data) => new Date(data.startDate) <= new Date(data.endDate), {
+    message: "End date must be after start date",
+    path: ["endDate"],
+  })
+  .refine(
+    (data) =>
+      data.discountType !== "PERCENTAGE" || data.discountValue <= 100,
+    {
+      message: "Discount % cannot exceed 100%",
+      path: ["discountValue"],
+    },
+  );
 
 export type CouponFormData = z.infer<typeof couponSchema>;

@@ -22,13 +22,18 @@ function getOptionalUserId(req: Request): string | undefined {
   }
 }
 
-function applySessionCookie(res: Response, sessionId?: string, clear?: boolean) {
-  if (clear) {
+function applySessionCookie(
+  res: Response,
+  result: { newSessionId?: string | null; clearSessionCookie?: boolean; cart: { sessionId?: string | null } },
+) {
+  if (result.clearSessionCookie) {
     res.clearCookie(CART_SESSION_COOKIE, cartSessionCookieOptions(0));
     return;
   }
-  if (sessionId) {
-    res.cookie(CART_SESSION_COOKIE, sessionId, cartSessionCookieOptions(CART_SESSION_MAX_AGE_MS));
+  // Always re-set the cookie when the cart has a session (guest cart) so the browser stores it consistently
+  const toSet = result.newSessionId ?? result.cart.sessionId ?? undefined;
+  if (toSet) {
+    res.cookie(CART_SESSION_COOKIE, toSet, cartSessionCookieOptions(CART_SESSION_MAX_AGE_MS));
   }
 }
 
@@ -36,7 +41,7 @@ export const getCart = asyncHandler(async (req: Request, res: Response) => {
   const userId = getOptionalUserId(req);
   const sessionId = req.cookies?.[CART_SESSION_COOKIE] as string | undefined;
   const result = await cartService.resolveCart(userId, sessionId);
-  applySessionCookie(res, result.newSessionId, result.clearSessionCookie);
+  applySessionCookie(res, result);
   res.json({ cart: result.cart });
 });
 
@@ -44,7 +49,7 @@ export const addItem = asyncHandler(async (req: Request, res: Response) => {
   const userId = getOptionalUserId(req);
   const sessionId = req.cookies?.[CART_SESSION_COOKIE] as string | undefined;
   const result = await cartService.addItemToCart(userId, sessionId, req.body);
-  applySessionCookie(res, result.newSessionId, result.clearSessionCookie);
+  applySessionCookie(res, result);
   res.json({ cart: result.cart });
 });
 
@@ -57,7 +62,7 @@ export const updateItem = asyncHandler(async (req: Request, res: Response) => {
     req.params.id,
     req.body.quantity,
   );
-  applySessionCookie(res, result.newSessionId, result.clearSessionCookie);
+  applySessionCookie(res, result);
   res.json({ cart: result.cart });
 });
 
@@ -65,7 +70,7 @@ export const removeItem = asyncHandler(async (req: Request, res: Response) => {
   const userId = getOptionalUserId(req);
   const sessionId = req.cookies?.[CART_SESSION_COOKIE] as string | undefined;
   const result = await cartService.removeCartItem(userId, sessionId, req.params.id);
-  applySessionCookie(res, result.newSessionId, result.clearSessionCookie);
+  applySessionCookie(res, result);
   res.json({ cart: result.cart });
 });
 
@@ -73,7 +78,7 @@ export const migrateCart = asyncHandler(async (req: Request, res: Response) => {
   const userId = getOptionalUserId(req);
   const sessionId = req.cookies?.[CART_SESSION_COOKIE] as string | undefined;
   const result = await cartService.migrateCartItems(userId, sessionId, req.body.items);
-  applySessionCookie(res, result.newSessionId, result.clearSessionCookie);
+  applySessionCookie(res, result);
   res.json({ cart: result.cart });
 });
 
@@ -85,7 +90,7 @@ export const applyCoupon = asyncHandler(async (req: Request, res: Response) => {
   const userId = getOptionalUserId(req);
   const sessionId = req.cookies?.[CART_SESSION_COOKIE] as string | undefined;
   const result = await cartService.applyCouponToCart(userId, sessionId, code);
-  applySessionCookie(res, result.newSessionId, result.clearSessionCookie);
+  applySessionCookie(res, result);
   const pricing = await resolveCartPricing(result.cart.id);
   res.json({ cart: result.cart, pricing });
 });
@@ -94,7 +99,7 @@ export const removeCoupon = asyncHandler(async (req: Request, res: Response) => 
   const userId = getOptionalUserId(req);
   const sessionId = req.cookies?.[CART_SESSION_COOKIE] as string | undefined;
   const result = await cartService.removeCouponFromCart(userId, sessionId);
-  applySessionCookie(res, result.newSessionId, result.clearSessionCookie);
+  applySessionCookie(res, result);
   const pricing = await resolveCartPricing(result.cart.id);
   res.json({ cart: result.cart, pricing });
 });
@@ -103,7 +108,7 @@ export const getPricing = asyncHandler(async (req: Request, res: Response) => {
   const userId = getOptionalUserId(req);
   const sessionId = req.cookies?.[CART_SESSION_COOKIE] as string | undefined;
   const result = await cartService.resolveCart(userId, sessionId);
-  applySessionCookie(res, result.newSessionId, result.clearSessionCookie);
+  applySessionCookie(res, result);
   const pricing = await resolveCartPricing(result.cart.id);
   res.json({ pricing });
 });

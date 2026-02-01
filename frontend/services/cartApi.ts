@@ -4,9 +4,18 @@ import type { Cart } from "@/types";
 const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 type CartResponse = { cart: Cart };
+export type PricingLineItem = {
+  itemId: string;
+  originalUnitPrice: number;
+  discountedUnitPrice: number;
+  quantity: number;
+  lineTotal: number;
+};
+
 type PricingResult = {
   originalPrice: number;
   discountedPrice: number;
+  lineItems: PricingLineItem[];
   appliedDiscounts: {
     id: string;
     name: string;

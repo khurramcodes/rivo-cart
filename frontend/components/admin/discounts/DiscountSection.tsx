@@ -7,6 +7,8 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useDiscounts } from "@/hooks/useDiscounts";
 
 import type { ProductVariant } from "@/types";
+import { formatPrice } from "@/config/currency";
+import { useWatch } from "react-hook-form";
 
 const toggleSelection = (items: string[], id: string) =>
   items.includes(id) ? items.filter((item) => item !== id) : [...items, id];
@@ -43,12 +45,37 @@ export function DiscountSection() {
     return map;
   }, [products]);
 
+  const currentDiscount = useMemo(
+    () => (editingId ? discounts.find((d) => d.id === editingId) : null),
+    [editingId, discounts],
+  );
+
   const renderScopeSelectors = () => {
-    const scope = form.watch("scope");
-    const productIds = form.watch("productIds") ?? [];
-    const variantIds = form.watch("variantIds") ?? [];
-    const categoryIds = form.watch("categoryIds") ?? [];
-    const collectionIds = form.watch("collectionIds") ?? [];
+    const scope = useWatch({ control: form.control, name: "scope" });
+    const formProductIds =
+      useWatch({ control: form.control, name: "productIds" });
+    const formVariantIds = useWatch({ control: form.control, name: "variantIds" });
+    const formCategoryIds =
+      useWatch({ control: form.control, name: "categoryIds" });
+    const formCollectionIds =
+      useWatch({ control: form.control, name: "collectionIds" });
+
+    const productIds =
+      (Array.isArray(formProductIds) ? formProductIds : null) ??
+      currentDiscount?.products?.map((p) => p.productId) ??
+      [];
+    const variantIds =
+      (Array.isArray(formVariantIds) ? formVariantIds : null) ??
+      currentDiscount?.variants?.map((v) => v.variantId) ??
+      [];
+    const categoryIds =
+      (Array.isArray(formCategoryIds) ? formCategoryIds : null) ??
+      currentDiscount?.categories?.map((c) => c.categoryId) ??
+      [];
+    const collectionIds =
+      (Array.isArray(formCollectionIds) ? formCollectionIds : null) ??
+      currentDiscount?.collections?.map((c) => c.collectionId) ??
+      [];
 
     if (scope === "PRODUCT") {
       return (
@@ -64,7 +91,10 @@ export function DiscountSection() {
                   checked={productIds.includes(product.id)}
                   onChange={() => {
                     const newIds = toggleSelection(productIds, product.id);
-                    form.setValue("productIds", newIds);
+                    form.setValue("productIds", newIds, {
+                      shouldDirty: true,
+                      shouldTouch: true,
+                    });
                   }}
                 />
                 {product.name}
@@ -97,12 +127,15 @@ export function DiscountSection() {
                         checked={variantIds.includes(variant.id)}
                         onChange={() => {
                           const newIds = toggleSelection(variantIds, variant.id);
-                          form.setValue("variantIds", newIds);
+                          form.setValue("variantIds", newIds, {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                          });
                         }}
                       />
                       <span className='text-zinc-800'>{variant.sku}</span>
                       <span className='text-xs text-zinc-500'>
-                        ({variant.price} cents)
+                        ({formatPrice(variant.price)})
                       </span>
                     </label>
                   ))}

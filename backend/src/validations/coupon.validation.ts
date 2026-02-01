@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const discountTypeEnum = z.enum(["PERCENTAGE", "FIXED"]);
 
-const baseCouponSchema = z.object({
+const baseCouponObject = z.object({
   code: z.string().min(3).max(50),
   description: z.string().max(1000).optional(),
   discountType: discountTypeEnum,
@@ -16,13 +16,29 @@ const baseCouponSchema = z.object({
   isStackable: z.boolean().optional(),
 });
 
+const percentageMaxRefine = (data: {
+  discountType?: string;
+  discountValue?: number;
+}) =>
+  data.discountType !== "PERCENTAGE" ||
+  data.discountValue === undefined ||
+  data.discountValue <= 100;
+
+const baseCouponSchema = baseCouponObject.refine(percentageMaxRefine, {
+  message: "Percentage discount cannot exceed 100%",
+  path: ["discountValue"],
+});
+
 export const createCouponSchema = z.object({
   body: baseCouponSchema,
 });
 
 export const updateCouponSchema = z.object({
   params: z.object({ id: z.string().min(1) }),
-  body: baseCouponSchema.partial(),
+  body: baseCouponObject.partial().refine(percentageMaxRefine, {
+    message: "Percentage discount cannot exceed 100%",
+    path: ["discountValue"],
+  }),
 });
 
 export const validateCouponSchema = z.object({

@@ -115,7 +115,7 @@ export function CouponSection() {
               <div>
                 <label className='text-sm font-medium text-zinc-800'>Type</label>
                 <select
-                  className='mt-2 h-10 w-full rounded border border-zinc-200 px-3 text-sm'
+                  className='mt-2 h-10 w-full rounded border border-zinc-200 px-3 text-sm text-zinc-800'
                   {...form.register("discountType")}>
                   <option value='PERCENTAGE'>Percentage</option>
                   <option value='FIXED'>Fixed</option>
