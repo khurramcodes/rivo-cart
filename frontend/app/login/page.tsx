@@ -3,7 +3,6 @@
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { NavBar } from "@/components/user/NavBar";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -45,7 +44,6 @@ export default function LoginPage() {
 
   return (
     <div className='min-h-screen bg-white'>
-      <NavBar />
       <main className='mx-auto max-w-md px-4 py-12'>
         <h1 className='text-2xl font-semibold tracking-tight text-zinc-900'>
           Login

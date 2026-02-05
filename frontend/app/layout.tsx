@@ -30,7 +30,7 @@ export default function RootLayout({
       >
         <Providers>
           <AuthHydrator />
-          <GlobalLoader />
+          {/* <GlobalLoader /> */}
           {children}
         </Providers>
       </body>

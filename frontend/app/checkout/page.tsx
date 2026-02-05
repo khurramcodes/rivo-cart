@@ -16,7 +16,6 @@ import { orderApi } from "@/services/orderApi";
 import { cartApi } from "@/services/cartApi";
 import { formatPrice } from "@/config/currency";
 import { addAddress, fetchAddresses, updateAddress } from "@/store/slices/addressSlice";
-import { selectIsGlobalLoading } from "@/store/slices/loadingSlice";
 import type { Address } from "@/types";
 
 const schema = z.object({
@@ -36,7 +35,6 @@ export default function CheckoutPage() {
   const user = useAppSelector((s) => s.auth.user);
   const addresses = useAppSelector((s) => s.addresses.items);
   const addressStatus = useAppSelector((s) => s.addresses.status);
-  const isLoading = useAppSelector(selectIsGlobalLoading);
 
   const total = items.reduce((sum, i) => sum + i.priceSnapshot * i.quantity, 0);
   const subtotal = total;
@@ -239,7 +237,6 @@ export default function CheckoutPage() {
                 <ShippingAddressForm
                   initialValues={activeAddress ?? defaultAddress ?? undefined}
                   fullNameValue={defaultAddress?.fullName ?? user?.name ?? ""}
-                  loading={isLoading}
                   submitLabel="Save shipping address"
                   onSubmit={handleAddressSubmit}
                 />
@@ -268,8 +265,8 @@ export default function CheckoutPage() {
             </div>
 
             <div className="space-y-2">
-              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || isLoading}>
-                {form.formState.isSubmitting || isLoading ? "Placing order..." : "Place order"}
+              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? "Placing order..." : "Place order"}
               </Button>
               {orderError ? <p className="text-sm text-red-600">{orderError}</p> : null}
             </div>

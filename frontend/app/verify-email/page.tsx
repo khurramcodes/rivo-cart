@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import Link from "next/link";
-import { NavBar } from "@/components/user/NavBar";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { authApi } from "@/services/authApi";
@@ -59,7 +58,6 @@ export default function VerifyEmailPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <NavBar />
       <main className="mx-auto max-w-md px-4 py-12">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Verify email</h1>
         <p className="mt-1 text-sm text-zinc-600">

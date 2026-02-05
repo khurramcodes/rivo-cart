@@ -1,12 +1,8 @@
 "use client";
 
-import { useAppSelector } from "@/store/hooks";
-import { selectIsGlobalLoading } from "@/store/slices/loadingSlice";
 import { LOADER_IMAGE_SRC, LOADER_TEXT } from "@/config/loader";
 
 export function GlobalLoader() {
-  const isLoading = useAppSelector(selectIsGlobalLoading);
-  if (!isLoading) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
