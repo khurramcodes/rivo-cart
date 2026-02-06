@@ -24,7 +24,6 @@
     "@hookform/resolvers": "^5.2.2",
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
-    "prisma": "^7.2.0",
     "@reduxjs/toolkit": "^2.11.2",
     "@upstash/redis": "^1.36.1",
     "axios": "^1.13.2",
@@ -39,6 +38,7 @@
     "node-cron": "^3.0.3",
     "nodemailer": "^6.10.1",
     "pg": "^8.13.3",
+    "prisma": "^7.2.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {

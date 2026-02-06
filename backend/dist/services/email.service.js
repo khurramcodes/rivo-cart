@@ -6,15 +6,17 @@ function mustGetEnv(name) {
         throw new ApiError(500, "CONFIG_ERROR", `Missing env var: ${name}`);
     return val;
 }
-const transporter = nodemailer.createTransport({
-    host: mustGetEnv("SMTP_HOST"),
-    port: Number(process.env.SMTP_PORT ?? 587),
-    secure: process.env.SMTP_SECURE === "true",
-    auth: {
-        user: mustGetEnv("SMTP_USER"),
-        pass: mustGetEnv("SMTP_PASS"),
-    },
-});
+// const transporter = nodemailer.createTransport({
+//     host: mustGetEnv("SMTP_HOST"),
+//     port: Number(process.env.SMTP_PORT ?? 587),
+//     secure: process.env.SMTP_SECURE === "true",
+//     auth: {
+//         user: mustGetEnv("SMTP_USER"),
+//         pass: mustGetEnv("SMTP_PASS"),
+//     },
+// });
+
+
 export async function sendOtpEmail(to, otp) {
     const from = process.env.SMTP_FROM ?? "noreply@sib.com";
     await transporter.sendMail({

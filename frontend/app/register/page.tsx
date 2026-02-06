@@ -3,7 +3,6 @@
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { NavBar } from "@/components/user/NavBar";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -44,7 +43,6 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <NavBar />
       <main className="mx-auto max-w-md px-4 py-12">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Create account</h1>
         <p className="mt-1 text-sm text-zinc-600">Simple checkout with Cash on Delivery.</p>
