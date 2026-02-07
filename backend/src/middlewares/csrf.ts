@@ -9,10 +9,9 @@ export function requireCsrf(req: Request, _res: Response, next: NextFunction) {
 
   const cookie = req.cookies?.[CSRF_COOKIE] as string | undefined;
   const header =
-    req.header("x-csrf-token") ??
-    req.header("x-xsrf-token") ??
-    req.header("csrf-token") ??
-    undefined;
+    req.header("X-XSRF-TOKEN") ||
+    req.header("x-xsrf-token") || // optional fallback
+    req.header("x-csrf-token");
 
   if (!cookie || !header || cookie !== header) {
     return next(new ApiError(403, "CSRF_FAILED", "CSRF validation failed"));
