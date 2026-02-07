@@ -10,11 +10,13 @@ function mustGetEnv(name: string) {
 const transporter = nodemailer.createTransport({
   host: mustGetEnv("SMTP_HOST"),
   port: Number(process.env.SMTP_PORT ?? 587),
-  secure: process.env.SMTP_SECURE === "true",
+  secure: process.env.SMTP_SECURE === "false",
   auth: {
     user: mustGetEnv("SMTP_USER"),
     pass: mustGetEnv("SMTP_PASS"),
   },
+  connectionTimeout: 10000,
+  socketTimeout: 10000,
 });
 
 export async function sendOtpEmail(to: string, otp: string) {
