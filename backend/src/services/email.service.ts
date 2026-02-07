@@ -1,4 +1,3 @@
-import nodemailer from "nodemailer";
 import { ApiError } from "../utils/ApiError.js";
 import axios from 'axios';
 
