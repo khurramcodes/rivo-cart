@@ -3,6 +3,8 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 import type { User } from "@/types";
 import { authApi } from "@/services/authApi";
+import { clearCart } from "./cartSlice";
+import { fetchCart } from "../cartThunks";
 
 type AuthState = {
   user: User | null;
@@ -17,9 +19,10 @@ const initialState: AuthState = {
 
 export const login = createAsyncThunk(
   "auth/login",
-  async (payload: { email: string; password: string }, { rejectWithValue }) => {
+  async (payload: { email: string; password: string }, { rejectWithValue, dispatch }) => {
     try {
       const data = await authApi.login(payload);
+      await dispatch(fetchCart());
       return data.user;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data?.error) {
@@ -48,8 +51,9 @@ export const register = createAsyncThunk(
   }
 );
 
-export const logout = createAsyncThunk("auth/logout", async () => {
+export const logout = createAsyncThunk("auth/logout", async (_payload, { dispatch }) => {
   await authApi.logout();
+  dispatch(clearCart());
 });
 
 const authSlice = createSlice({
