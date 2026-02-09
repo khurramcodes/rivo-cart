@@ -24,7 +24,7 @@ export type VariantPricing = {
 export const pricingApi = {
   async getVariantPricing(variantId: string) {
     const { data } = await apiClient.get<{ pricing: VariantPricing }>(
-      `/api/pricing/variants/${variantId}`,
+      `/pricing/variants/${variantId}`,
       { skipLoading: true }
     );
     return data.pricing;
@@ -32,7 +32,7 @@ export const pricingApi = {
 
   async getBulkVariantPricing(variantIds: string[]) {
     const { data } = await apiClient.post<{ results: { variantId: string; pricing: VariantPricing | null }[] }>(
-      "/api/pricing/variants/bulk",
+      "/pricing/variants/bulk",
       { variantIds },
       { skipLoading: true }
     );

@@ -8,7 +8,7 @@ import type { Category, Product } from "@/types";
  */
 export const catalogApi = {
   async listCategories() {
-    const { data } = await apiClient.get<{ categories: Category[] }>("/api/categories", {
+    const { data } = await apiClient.get<{ categories: Category[] }>("/categories", {
       skipLoading: true,
     });
     return data.categories;
@@ -16,14 +16,14 @@ export const catalogApi = {
 
   async listProducts(params?: { q?: string; categoryId?: string; page?: number; limit?: number; minPrice?: number; maxPrice?: number }) {
     const { data } = await apiClient.get<{ items: Product[]; total: number; page: number; limit: number }>(
-      "/api/products",
+      "/products",
       { params, skipLoading: true },
     );
     return data;
   },
 
   async getProduct(id: string) {
-    const { data } = await apiClient.get<{ product: Product }>(`/api/products/${id}`, {
+    const { data } = await apiClient.get<{ product: Product }>(`/products/${id}`, {
       skipLoading: true,
     });
     return data.product;

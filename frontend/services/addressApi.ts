@@ -10,7 +10,7 @@ type AddressesResponse = { addresses: Address[] };
  */
 export const addressApi = {
   async list() {
-    const { data } = await apiClient.get<AddressesResponse>("/api/addresses", {
+    const { data } = await apiClient.get<AddressesResponse>("/addresses", {
       skipLoading: true,
     });
     return data;
@@ -24,7 +24,7 @@ export const addressApi = {
     streetAddress: string;
     postalCode?: string | null;
   }) {
-    const { data } = await apiClient.post<AddressResponse>("/api/addresses", payload);
+    const { data } = await apiClient.post<AddressResponse>("/addresses", payload);
     return data;
   },
   async update(
@@ -40,14 +40,14 @@ export const addressApi = {
       isDefault?: boolean;
     }>
   ) {
-    const { data } = await apiClient.patch<AddressResponse>(`/api/addresses/${id}`, payload);
+    const { data } = await apiClient.patch<AddressResponse>(`/addresses/${id}`, payload);
     return data;
   },
   async remove(id: string) {
-    await apiClient.delete(`/api/addresses/${id}`);
+    await apiClient.delete(`/addresses/${id}`);
   },
   async setDefault(id: string) {
-    const { data } = await apiClient.post<AddressResponse>(`/api/addresses/${id}/default`, {});
+    const { data } = await apiClient.post<AddressResponse>(`/addresses/${id}/default`, {});
     return data;
   },
 };

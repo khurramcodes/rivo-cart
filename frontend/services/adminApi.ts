@@ -44,28 +44,28 @@ export type Coupon = {
 export const adminApi = {
   // categories
   async listCategories() {
-    const { data } = await apiClient.get<{ categories: Category[] }>("/api/categories");
+    const { data } = await apiClient.get<{ categories: Category[] }>("/categories");
     return { items: data.categories };
   },
   async createCategory(payload: { name: string; description?: string; parentId?: string | null }) {
-    const { data } = await apiClient.post<{ category: Category }>("/api/categories", payload);
+    const { data } = await apiClient.post<{ category: Category }>("/categories", payload);
     return data.category;
   },
   async updateCategory(id: string, payload: { name?: string; description?: string; parentId?: string | null }) {
-    const { data } = await apiClient.put<{ category: Category }>(`/api/categories/${id}`, payload);
+    const { data } = await apiClient.put<{ category: Category }>(`/categories/${id}`, payload);
     return data.category;
   },
   async deleteCategory(id: string) {
-    await apiClient.delete(`/api/categories/${id}`);
+    await apiClient.delete(`/categories/${id}`);
   },
 
   // discounts
   async listDiscounts() {
-    const { data } = await apiClient.get<{ discounts: Discount[] }>("/api/discounts");
+    const { data } = await apiClient.get<{ discounts: Discount[] }>("/discounts");
     return data.discounts;
   },
   async getDiscount(id: string) {
-    const { data } = await apiClient.get<{ discount: Discount }>(`/api/discounts/${id}`);
+    const { data } = await apiClient.get<{ discount: Discount }>(`/discounts/${id}`);
     return data.discount;
   },
   async createDiscount(payload: {
@@ -84,7 +84,7 @@ export const adminApi = {
     categoryIds?: string[];
     collectionIds?: string[];
   }) {
-    const { data } = await apiClient.post<{ discount: Discount }>("/api/discounts", payload);
+    const { data } = await apiClient.post<{ discount: Discount }>("/discounts", payload);
     return data.discount;
   },
   async updateDiscount(
@@ -106,20 +106,20 @@ export const adminApi = {
       collectionIds: string[];
     }>,
   ) {
-    const { data } = await apiClient.put<{ discount: Discount }>(`/api/discounts/${id}`, payload);
+    const { data } = await apiClient.put<{ discount: Discount }>(`/discounts/${id}`, payload);
     return data.discount;
   },
   async deleteDiscount(id: string) {
-    await apiClient.delete(`/api/discounts/${id}`);
+    await apiClient.delete(`/discounts/${id}`);
   },
 
   // coupons
   async listCoupons() {
-    const { data } = await apiClient.get<{ coupons: Coupon[] }>("/api/coupons");
+    const { data } = await apiClient.get<{ coupons: Coupon[] }>("/coupons");
     return data.coupons;
   },
   async getCoupon(id: string) {
-    const { data } = await apiClient.get<{ coupon: Coupon }>(`/api/coupons/${id}`);
+    const { data } = await apiClient.get<{ coupon: Coupon }>(`/coupons/${id}`);
     return data.coupon;
   },
   async createCoupon(payload: {
@@ -135,7 +135,7 @@ export const adminApi = {
     maxRedemptionsPerUser?: number;
     isStackable?: boolean;
   }) {
-    const { data } = await apiClient.post<{ coupon: Coupon }>("/api/coupons", payload);
+    const { data } = await apiClient.post<{ coupon: Coupon }>("/coupons", payload);
     return data.coupon;
   },
   async updateCoupon(
@@ -154,19 +154,19 @@ export const adminApi = {
       isStackable: boolean;
     }>,
   ) {
-    const { data } = await apiClient.put<{ coupon: Coupon }>(`/api/coupons/${id}`, payload);
+    const { data } = await apiClient.put<{ coupon: Coupon }>(`/coupons/${id}`, payload);
     return data.coupon;
   },
   async deleteCoupon(id: string) {
-    await apiClient.delete(`/api/coupons/${id}`);
+    await apiClient.delete(`/coupons/${id}`);
   },
   async validateCoupon(payload: { cartId: string; code: string }) {
-    const { data } = await apiClient.post<{ valid: boolean; coupon: Coupon; subtotal: number }>("/api/coupons/validate", payload);
+    const { data } = await apiClient.post<{ valid: boolean; coupon: Coupon; subtotal: number }>("/coupons/validate", payload);
     return data;
   },
   async getCouponStats(id: string) {
     const { data } = await apiClient.get<{ stats: { couponId: string; totalRedemptions: number; uniqueUsers: number; lastRedeemedAt: string | null } }>(
-      `/api/coupons/${id}/stats`,
+      `/coupons/${id}/stats`,
     );
     return data.stats;
   },
@@ -183,17 +183,17 @@ export const adminApi = {
     maxPrice?: number;
   }) {
     const { data } = await apiClient.get<{ items: Product[]; total: number; page: number; limit: number }>(
-      "/api/products",
+      "/products",
       { params },
     );
     return data;
   },
   async getProduct(id: string) {
-    const { data } = await apiClient.get<{ product: Product }>(`/api/products/${id}`);
+    const { data } = await apiClient.get<{ product: Product }>(`/products/${id}`);
     return data.product;
   },
   async newProductId() {
-    const { data } = await apiClient.get<{ id: string; imageFolderPath: string }>("/api/products/admin/new-id");
+    const { data } = await apiClient.get<{ id: string; imageFolderPath: string }>("/products/admin/new-id");
     return data;
   },
   async createProduct(payload: {
@@ -218,7 +218,7 @@ export const adminApi = {
       attributes?: { name: string; value: string }[];
     }[];
   }) {
-    const { data } = await apiClient.post<{ product: Product }>("/api/products", payload);
+    const { data } = await apiClient.post<{ product: Product }>("/products", payload);
     return data.product;
   },
   async updateProduct(
@@ -247,33 +247,33 @@ export const adminApi = {
       deleteVariantIds: string[];
     }>,
   ) {
-    const { data } = await apiClient.put<{ product: Product }>(`/api/products/${id}`, payload);
+    const { data } = await apiClient.put<{ product: Product }>(`/products/${id}`, payload);
     return data.product;
   },
   async deleteProduct(id: string) {
-    await apiClient.delete(`/api/products/${id}`);
+    await apiClient.delete(`/products/${id}`);
   },
 
   // orders
   async listOrders() {
-    const { data } = await apiClient.get<{ orders: Order[] }>("/api/orders");
+    const { data } = await apiClient.get<{ orders: Order[] }>("/orders");
     return data.orders;
   },
   async updateOrderStatus(id: string, status: OrderStatus) {
-    const { data } = await apiClient.put<{ order: Order }>(`/api/orders/${id}/status`, { status });
+    const { data } = await apiClient.put<{ order: Order }>(`/orders/${id}/status`, { status });
     return data.order;
   },
 
   // imagekit
   async imagekitAuth() {
-    const { data } = await apiClient.get<{ token: string; expire: number; signature: string }>("/api/imagekit/auth");
+    const { data } = await apiClient.get<{ token: string; expire: number; signature: string }>("/imagekit/auth");
     return data;
   },
 
   // dashboard
   async getDashboardStats() {
     const { data } = await apiClient.get<{ productsCount: number; categoriesCount: number; ordersCount: number }>(
-      "/api/dashboard/stats"
+      "/dashboard/stats"
     );
     return data;
   },

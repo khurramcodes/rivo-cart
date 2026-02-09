@@ -70,42 +70,42 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
 export const cartApi = {
   async getCart() {
-    return request<CartResponse>("/api/cart");
+    return request<CartResponse>("/cart");
   },
   async getPricing() {
-    return request<PricingResponse>("/api/cart/pricing");
+    return request<PricingResponse>("/cart/pricing");
   },
   async addItem(payload: { productId: string; variantId: string; quantity: number }) {
-    return request<CartResponse>("/api/cart/items", {
+    return request<CartResponse>("/cart/items", {
       method: "POST",
       body: JSON.stringify(payload),
     });
   },
   async updateItem(itemId: string, quantity: number) {
-    return request<CartResponse>(`/api/cart/items/${itemId}`, {
+    return request<CartResponse>(`/cart/items/${itemId}`, {
       method: "PATCH",
       body: JSON.stringify({ quantity }),
     });
   },
   async removeItem(itemId: string) {
-    return request<CartResponse>(`/api/cart/items/${itemId}`, {
+    return request<CartResponse>(`/cart/items/${itemId}`, {
       method: "DELETE",
     });
   },
   async migrate(items: { productId: string; variantId: string; quantity: number }[]) {
-    return request<CartResponse>("/api/cart/migrate", {
+    return request<CartResponse>("/cart/migrate", {
       method: "POST",
       body: JSON.stringify({ items }),
     });
   },
   async applyCoupon(code: string) {
-    return request<CartPricingResponse>("/api/cart/coupon", {
+    return request<CartPricingResponse>("/cart/coupon", {
       method: "POST",
       body: JSON.stringify({ code, source: "cart" }),
     });
   },
   async removeCoupon() {
-    return request<CartPricingResponse>("/api/cart/coupon", {
+    return request<CartPricingResponse>("/cart/coupon", {
       method: "DELETE",
     });
   },

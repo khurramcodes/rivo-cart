@@ -12,30 +12,30 @@ export const authApi = {
     email: string;
     password: string;
   }) {
-    const { data } = await apiClient.post<RegisterResponse>("/api/auth/register", payload);
+    const { data } = await apiClient.post<RegisterResponse>("/auth/register", payload);
     return data;
   },
   async login(payload: { email: string; password: string }) {
-    const { data } = await apiClient.post<AuthResponse>("/api/auth/login", payload);
+    const { data } = await apiClient.post<AuthResponse>("/auth/login", payload);
     return data;
   },
   async refresh() {
-    const { data } = await apiClient.post<AuthResponse>("/api/auth/refresh", {});
+    const { data } = await apiClient.post<AuthResponse>("/auth/refresh", {});
     return data;
   },
   async logout() {
-    await apiClient.post("/api/auth/logout", {});
+    await apiClient.post("/auth/logout", {});
   },
   async me() {
-    const { data } = await apiClient.get<{ user: User }>("/api/auth/me");
+    const { data } = await apiClient.get<{ user: User }>("/auth/me");
     return data;
   },
   async verifyEmail(payload: { email: string; otp: string }) {
-    const { data } = await apiClient.post<VerifyResponse>("/api/auth/verify-email", payload);
+    const { data } = await apiClient.post<VerifyResponse>("/auth/verify-email", payload);
     return data;
   },
   async resendOtp(payload: { email: string }) {
-    const { data } = await apiClient.post<VerifyResponse>("/api/auth/resend-otp", payload);
+    const { data } = await apiClient.post<VerifyResponse>("/auth/resend-otp", payload);
     return data;
   },
 };

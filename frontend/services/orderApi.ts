@@ -9,17 +9,17 @@ export const orderApi = {
     shippingAddress: string;
     items: { productId: string; variantId: string; quantity: number }[];
   }) {
-    const { data } = await apiClient.post<{ order: Order }>("/api/orders", payload);
+    const { data } = await apiClient.post<{ order: Order }>("/orders", payload);
     return data.order;
   },
 
   async listAll() {
-    const { data } = await apiClient.get<{ orders: Order[] }>("/api/orders");
+    const { data } = await apiClient.get<{ orders: Order[] }>("/orders");
     return data.orders;
   },
 
   async updateStatus(orderId: string, status: OrderStatus) {
-    const { data } = await apiClient.put<{ order: Order }>(`/api/orders/${orderId}/status`, { status });
+    const { data } = await apiClient.put<{ order: Order }>(`/orders/${orderId}/status`, { status });
     return data.order;
   },
 };
