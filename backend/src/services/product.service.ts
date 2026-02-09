@@ -411,6 +411,13 @@ export async function deleteProduct(id: string) {
       }
     }
 
+    // Delete all cart items associated with the product
+    await prisma.cartItem.deleteMany({
+      where: {
+        productId: id,
+      },
+    });
+
     // Delete product (cascades to variants, attributes, and gallery images)
     await prisma.product.delete({ where: { id } });
 
