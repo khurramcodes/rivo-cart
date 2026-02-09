@@ -1,7 +1,5 @@
-import { getCookie } from "@/utils/cookies";
+import { apiClient } from "./apiClient";
 import type { Cart } from "@/types";
-
-const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 type CartResponse = { cart: Cart };
 export type PricingLineItem = {
@@ -39,74 +37,42 @@ type PricingResult = {
 type PricingResponse = { pricing: PricingResult };
 type CartPricingResponse = { cart: Cart; pricing: PricingResult };
 
-/**
- * Cart API request helper.
- * Does NOT trigger global loader - cart operations use local loading state.
- */
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const url = `${baseURL}${path}`;
-  const headers = new Headers(options?.headers);
-  headers.set("Content-Type", "application/json");
-
-  const method = (options?.method ?? "GET").toUpperCase();
-  if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
-    const csrf = getCookie("XSRF-TOKEN");
-    if (csrf) headers.set("x-csrf-token", csrf);
-  }
-
-  const res = await fetch(url, {
-    ...options,
-    headers,
-    credentials: "include",
-  });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => null);
-    const message = body?.error?.message ?? "Request failed";
-    throw new Error(message);
-  }
-  return res.json();
-}
-
 export const cartApi = {
   async getCart() {
-    return request<CartResponse>("/cart");
+    const { data } = await apiClient.get<CartResponse>("/cart");
+    return data;
   },
   async getPricing() {
-    return request<PricingResponse>("/cart/pricing");
+    const { data } = await apiClient.get<PricingResponse>("/cart/pricing");
+    return data;
   },
   async addItem(payload: { productId: string; variantId: string; quantity: number }) {
-    return request<CartResponse>("/cart/items", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
+    const { data } = await apiClient.post<CartResponse>("/cart/items", payload);
+    return data;
   },
   async updateItem(itemId: string, quantity: number) {
-    return request<CartResponse>(`/cart/items/${itemId}`, {
-      method: "PATCH",
-      body: JSON.stringify({ quantity }),
+    const { data } = await apiClient.patch<CartResponse>(`/cart/items/${itemId}`, {
+      quantity,
     });
+    return data;
   },
   async removeItem(itemId: string) {
-    return request<CartResponse>(`/cart/items/${itemId}`, {
-      method: "DELETE",
-    });
+    const { data } = await apiClient.delete<CartResponse>(`/cart/items/${itemId}`);
+    return data;
   },
   async migrate(items: { productId: string; variantId: string; quantity: number }[]) {
-    return request<CartResponse>("/cart/migrate", {
-      method: "POST",
-      body: JSON.stringify({ items }),
-    });
+    const { data } = await apiClient.post<CartResponse>("/cart/migrate", { items });
+    return data;
   },
   async applyCoupon(code: string) {
-    return request<CartPricingResponse>("/cart/coupon", {
-      method: "POST",
-      body: JSON.stringify({ code, source: "cart" }),
+    const { data } = await apiClient.post<CartPricingResponse>("/cart/coupon", {
+      code,
+      source: "cart",
     });
+    return data;
   },
   async removeCoupon() {
-    return request<CartPricingResponse>("/cart/coupon", {
-      method: "DELETE",
-    });
+    const { data } = await apiClient.delete<CartPricingResponse>("/cart/coupon");
+    return data;
   },
 };
