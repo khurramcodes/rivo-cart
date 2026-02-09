@@ -280,6 +280,7 @@ export default function ProductDetailPage() {
                         alt={`${product.name} thumbnail ${idx + 1}`}
                         fill
                         className='object-cover'
+                        priority
                         unoptimized
                       />
                     </button>
@@ -297,6 +298,7 @@ export default function ProductDetailPage() {
                   alt={product.name}
                   fill
                   className='object-cover'
+                  priority
                   unoptimized
                 />
               </div>
@@ -494,6 +496,7 @@ export default function ProductDetailPage() {
                 alt={product?.name || 'Product image'}
                 fill
                 className='object-contain'
+                priority
                 unoptimized
               />
             </div>

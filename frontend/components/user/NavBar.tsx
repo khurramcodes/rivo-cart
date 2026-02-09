@@ -6,17 +6,18 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ShoppingCart, Search } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
 import { Input } from "../ui/Input";
-import { Button } from "../ui/Button";
 import { useAppDispatch } from "@/store/hooks";
 import { logout } from "@/store/slices/authSlice";
 import Image from "next/image";
+import { GlobalLoader } from "../ui/GlobalLoader";
 
 export function NavBar() {
   const router = useRouter();
   const cartCount = useAppSelector((s) =>
     (s.cart.cart?.items ?? []).reduce((sum, i) => sum + i.quantity, 0),
   );
-  const user = useAppSelector((s) => s.auth.user);
+  const {user, hydrated} = useAppSelector((s) => s.auth);
+
   const dispatch = useAppDispatch();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -32,6 +33,10 @@ export function NavBar() {
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [menuOpen]);
+
+  if (!hydrated) {
+    return <GlobalLoader />;
+  }
 
   return (
     <header className='sticky top-0 z-20 border-b border-zinc-200 bg-white backdrop-blur'>

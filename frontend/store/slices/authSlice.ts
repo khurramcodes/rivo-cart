@@ -8,13 +8,15 @@ import { fetchCart } from "../cartThunks";
 
 type AuthState = {
   user: User | null;
-  status: "idle" | "loading" | "authenticated" | "error";
+  status: "idle" | "loading" | "authenticated" | "unauthenticated" | "error";
   error?: string;
+  hydrated: boolean;
 };
 
 const initialState: AuthState = {
   user: null,
   status: "idle",
+  hydrated: false,
 };
 
 export const login = createAsyncThunk(
@@ -62,7 +64,8 @@ const authSlice = createSlice({
   reducers: {
     setUser(state, action: PayloadAction<User | null>) {
       state.user = action.payload;
-      state.status = action.payload ? "authenticated" : "idle";
+      state.status = action.payload ? "authenticated" : "unauthenticated";
+      state.hydrated = true;
     },
   },
   extraReducers: (builder) => {

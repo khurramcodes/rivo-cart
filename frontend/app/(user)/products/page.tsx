@@ -310,6 +310,7 @@ export default function ProductsPage() {
                           alt={p.name} 
                           fill 
                           className="object-cover transition group-hover:scale-[1.02]"
+                          priority
                           unoptimized
                         />
                       </div>

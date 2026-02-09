@@ -1,30 +1,37 @@
 "use client";
 
-import { useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useEffect, useRef } from "react";
+import { useAppDispatch } from "@/store/hooks";
 import { setUser } from "@/store/slices/authSlice";
 import { authApi } from "@/services/authApi";
+import { fetchCart } from "@/store/cartThunks";
+
+let didHydrate = false;
 
 export function useHydrateAuth() {
   const dispatch = useAppDispatch();
-  const status = useAppSelector((s) => s.auth.status);
+  const hydratedRef = useRef(false);
 
   useEffect(() => {
-    if (status !== "idle") return;
+    if (hydratedRef.current || didHydrate) return;
+    hydratedRef.current = true;
+    didHydrate = true;
+
     let mounted = true;
+
     (async () => {
       try {
         const me = await authApi.me();
-        if (mounted) dispatch(setUser(me.user));
+        if (!mounted) return;
+        dispatch(setUser(me.user));
+        await dispatch(fetchCart());
       } catch {
-        // not logged in
         if (mounted) dispatch(setUser(null));
       }
     })();
+
     return () => {
       mounted = false;
     };
-  }, [dispatch, status]);
+  }, [dispatch]);
 }
-
-
