@@ -4,6 +4,8 @@ import {
   csrfCookieOptions,
   CSRF_COOKIE,
   authCookieOptions,
+  authCookieClearOptions,
+  csrfCookieClearOptions,
   ACCESS_COOKIE,
   REFRESH_COOKIE,
 } from "../utils/cookies.js";
@@ -106,9 +108,9 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
   const refreshToken = req.cookies?.[REFRESH_COOKIE] as string | undefined;
   if (refreshToken) await logoutByRefreshToken(refreshToken);
 
-  res.clearCookie(ACCESS_COOKIE, { path: "/" });
-  res.clearCookie(REFRESH_COOKIE, { path: "/" });
-  res.clearCookie(CSRF_COOKIE, { path: "/" });
+  res.clearCookie(ACCESS_COOKIE, authCookieClearOptions());
+  res.clearCookie(REFRESH_COOKIE, authCookieClearOptions());
+  res.clearCookie(CSRF_COOKIE, csrfCookieClearOptions());
 
   res.status(204).send();
 });

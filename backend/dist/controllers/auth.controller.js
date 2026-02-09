@@ -1,5 +1,5 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { csrfCookieOptions, CSRF_COOKIE, authCookieOptions, ACCESS_COOKIE, REFRESH_COOKIE, } from "../utils/cookies.js";
+import { csrfCookieOptions, CSRF_COOKIE, authCookieOptions, authCookieClearOptions, csrfCookieClearOptions, ACCESS_COOKIE, REFRESH_COOKIE, } from "../utils/cookies.js";
 import { randomToken } from "../utils/crypto.js";
 import { loginUser, rotateRefreshToken, logoutByRefreshToken, getUserById, startRegistration, verifyRegistrationOtp, resendRegistrationOtp, } from "../services/auth.service.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -62,9 +62,9 @@ export const logout = asyncHandler(async (req, res) => {
     const refreshToken = req.cookies?.[REFRESH_COOKIE];
     if (refreshToken)
         await logoutByRefreshToken(refreshToken);
-    res.clearCookie(ACCESS_COOKIE, { path: "/" });
-    res.clearCookie(REFRESH_COOKIE, { path: "/" });
-    res.clearCookie(CSRF_COOKIE, { path: "/" });
+    res.clearCookie(ACCESS_COOKIE, authCookieClearOptions());
+    res.clearCookie(REFRESH_COOKIE, authCookieClearOptions());
+    res.clearCookie(CSRF_COOKIE, csrfCookieClearOptions());
     res.status(204).send();
 });
 export const verifyEmail = asyncHandler(async (req, res) => {
