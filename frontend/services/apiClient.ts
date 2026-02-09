@@ -1,7 +1,10 @@
 import axios from "axios";
 import { getCookie } from "@/utils/cookies";
 
-const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
+const baseURL =
+  process.env.NODE_ENV === "production"
+    ? "/api"
+    : process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export const apiClient = axios.create({
   baseURL,
