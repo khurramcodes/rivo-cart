@@ -8,9 +8,6 @@ export function requireCsrf(req: Request, _res: Response, next: NextFunction) {
   if (SAFE_METHODS.has(req.method)) return next();
 
   const cookie = req.cookies?.[CSRF_COOKIE] as string | undefined;
-  
-  console.log("req.headers", req.headers);
-  console.log("cookie", cookie);
 
   const header =
     req.header("X-XSRF-TOKEN") ||

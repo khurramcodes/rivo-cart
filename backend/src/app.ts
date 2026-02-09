@@ -18,9 +18,6 @@ export function createApp() {
     .map((origin) => origin.trim())
     .filter(Boolean);
 
-  console.log("allowedOrigins", allowedOrigins);
-  console.log("process.env.CORS_ORIGIN", process.env.CORS_ORIGIN);
-  
   app.use(
     cors({
       origin: (origin, callback) => {
