@@ -1,14 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import Link from "next/link";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { authApi } from "@/services/authApi";
+import { GlobalLoader } from "@/components/ui/GlobalLoader";
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const router = useRouter();
   const params = useSearchParams();
   const email = useMemo(() => params.get("email")?.trim() ?? "", [params]);
@@ -112,5 +113,14 @@ export default function VerifyEmailPage() {
         ) : null}
       </main>
     </div>
+  );
+}
+
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<GlobalLoader />}>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }

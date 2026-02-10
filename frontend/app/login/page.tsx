@@ -9,6 +9,8 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { login } from "@/store/slices/authSlice";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from 'react';
+import { GlobalLoader } from "@/components/ui/GlobalLoader";
 
 const schema = z.object({
   email: z
@@ -24,7 +26,7 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export default function LoginPage() {
+function LoginForm() {
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -100,5 +102,13 @@ export default function LoginPage() {
         </p>
       </main>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<GlobalLoader />}>
+      <LoginForm />
+    </Suspense>
   );
 }

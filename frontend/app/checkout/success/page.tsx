@@ -1,9 +1,11 @@
 "use client";
 
+import { GlobalLoader } from "@/components/ui/GlobalLoader";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function CheckoutSuccessPage() {
+function CheckoutSuccessContent() {
   const params = useSearchParams();
   const orderId = params.get("orderId");
 
@@ -22,6 +24,14 @@ export default function CheckoutSuccessPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={<GlobalLoader />}>
+      <CheckoutSuccessContent />
+    </Suspense>
   );
 }
 
