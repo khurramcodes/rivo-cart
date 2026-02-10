@@ -14,6 +14,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearCartServer } from "@/store/cartThunks";
 import { orderApi } from "@/services/orderApi";
 import { cartApi } from "@/services/cartApi";
+import { shippingApi, type ShippingQuote } from "@/services/shippingApi";
 import { formatPrice } from "@/config/currency";
 import { addAddress, fetchAddresses, updateAddress } from "@/store/slices/addressSlice";
 import type { Address } from "@/types";
@@ -38,12 +39,14 @@ export default function CheckoutPage() {
 
   const total = items.reduce((sum, i) => sum + i.priceSnapshot * i.quantity, 0);
   const subtotal = total;
-  const shipping = 0;
   const [pricing, setPricing] = useState<{
     discountedPrice: number;
     totalSavings: number;
     appliedCoupon: { code: string; amount: number } | null;
   } | null>(null);
+  const [shippingQuotes, setShippingQuotes] = useState<ShippingQuote[]>([]);
+  const [shippingError, setShippingError] = useState<string | null>(null);
+  const [selectedShippingMethodId, setSelectedShippingMethodId] = useState<string | null>(null);
 
   const formatVariantDetails = (attrs: { name: string; value: string }[] | undefined) =>
     attrs && attrs.length > 0 ? attrs.map((attr) => `${attr.name}: ${attr.value}`).join(", ") : "";
@@ -62,6 +65,17 @@ export default function CheckoutPage() {
   const [addressMessage, setAddressMessage] = useState<string | null>(null);
   const [addressError, setAddressError] = useState<string | null>(null);
   const [orderError, setOrderError] = useState<string | null>(null);
+
+  const itemsSignature = useMemo(
+    () => items.map((i) => `${i.id}:${i.quantity}`).join(","),
+    [items],
+  );
+
+  const selectedQuote = useMemo(
+    () => shippingQuotes.find((q) => q.method.id === selectedShippingMethodId) ?? shippingQuotes[0] ?? null,
+    [selectedShippingMethodId, shippingQuotes],
+  );
+  const shippingCost = selectedQuote?.cost ?? 0;
 
   // Auto-fill form with logged-in user data
   useEffect(() => {
@@ -108,6 +122,35 @@ export default function CheckoutPage() {
       setActiveAddress(defaultAddress);
     }
   }, [activeAddress, defaultAddress]);
+
+  useEffect(() => {
+    if (!activeAddress?.id || !cart?.id || items.length === 0) {
+      setShippingQuotes([]);
+      setSelectedShippingMethodId(null);
+      return;
+    }
+    let mounted = true;
+    setShippingError(null);
+    shippingApi
+      .quote(activeAddress.id)
+      .then((data) => {
+        if (!mounted) return;
+        setShippingQuotes(data.quotes);
+        const next = data.quotes[0]?.method.id ?? null;
+        setSelectedShippingMethodId((current) =>
+          data.quotes.some((q) => q.method.id === current) ? current : next
+        );
+      })
+      .catch((err) => {
+        if (!mounted) return;
+        setShippingQuotes([]);
+        setSelectedShippingMethodId(null);
+        setShippingError(err?.message ?? "Failed to load shipping options.");
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [activeAddress?.id, cart?.id, itemsSignature, cart?.appliedCouponId]);
 
   const formatShippingAddress = (address: Address) => {
     const line = [
@@ -162,6 +205,8 @@ export default function CheckoutPage() {
         customerEmail: values.customerEmail,
         customerPhone: activeAddress.phone,
         shippingAddress: formatShippingAddress(activeAddress),
+        shippingAddressId: activeAddress.id,
+        shippingMethodId: selectedQuote?.method.id ?? undefined,
         items: items.map((i) => ({
           productId: i.productId,
           variantId: i.variantId,
@@ -236,13 +281,53 @@ export default function CheckoutPage() {
               <h2 className="text-lg font-semibold text-zinc-900">Shipping Address</h2>
               <div className="mt-4 space-y-3">
                 <ShippingAddressForm
-                  initialValues={activeAddress ?? defaultAddress ?? undefined}
-                  fullNameValue={defaultAddress?.fullName ?? user?.name ?? ""}
+                  initialValues={
+                    activeAddress ?? defaultAddress
+                      ? {
+                          ...(activeAddress ?? defaultAddress ?? {}),
+                          fullName: undefined,
+                        }
+                      : undefined
+                  }
+                  fullNameValue={form.watch("customerName") || user?.name || ""}
                   submitLabel="Save shipping address"
                   onSubmit={handleAddressSubmit}
                 />
                 {addressError ? <p className="text-sm text-red-600">{addressError}</p> : null}
                 {addressMessage ? <p className="text-sm text-emerald-600">{addressMessage}</p> : null}
+              </div>
+            </div>
+
+            {/* Shipping Method Section */}
+            <div className="rounded border border-zinc-200 p-6">
+              <h2 className="text-lg font-semibold text-zinc-900">Shipping Method</h2>
+              <div className="mt-4 space-y-3">
+                {shippingQuotes.length === 0 ? (
+                  <p className="text-sm text-zinc-600">No shipping options available.</p>
+                ) : (
+                  shippingQuotes.map((quote) => (
+                    <label key={quote.method.id} className="flex items-center justify-between gap-3 cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="radio"
+                          name="shippingMethod"
+                          value={quote.method.id}
+                          checked={selectedQuote?.method.id === quote.method.id}
+                          onChange={() => setSelectedShippingMethodId(quote.method.id)}
+                          className="h-4 w-4 border-zinc-300 text-black focus:ring-black"
+                        />
+                        <div>
+                          <span className="text-sm font-medium text-zinc-900">{quote.method.name}</span>
+                          {quote.method.description ? (
+                            <p className="text-xs text-zinc-500">{quote.method.description}</p>
+                          ) : null}
+                        </div>
+                      </div>
+                      <span className="text-sm font-medium text-zinc-900">{formatPrice(quote.cost)}</span>
+                    </label>
+                  ))
+                )}
+                {shippingError ? <p className="text-sm text-red-600">{shippingError}</p> : null}
               </div>
             </div>
 
@@ -332,7 +417,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-600">Shipping</span>
                   <span className="text-zinc-900">
-                    {shipping === 0 ? 'Free' : formatPrice(shipping)}
+                    {shippingCost === 0 ? "Free" : formatPrice(shippingCost)}
                   </span>
                 </div>
               </div>
@@ -345,7 +430,7 @@ export default function CheckoutPage() {
                 <span className="text-base font-semibold text-zinc-900">Total</span>
                 <div className="text-right">
                   <div className="text-xl font-semibold text-zinc-900">
-                    {formatPrice(pricing?.discountedPrice ?? total)}
+                    {formatPrice((pricing?.discountedPrice ?? total) + shippingCost)}
                   </div>
                 </div>
               </div>

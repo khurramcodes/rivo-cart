@@ -6,14 +6,23 @@ import { ApiError } from "../utils/ApiError.js";
 export const place = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) throw new ApiError(401, "UNAUTHORIZED", "Missing authentication");
 
-  const { customerName, customerPhone, shippingAddress, items } = req.body as {
+  const { customerName, customerPhone, shippingAddress, shippingAddressId, shippingMethodId, items } = req.body as {
     customerName: string;
     customerPhone: string;
     shippingAddress: string;
+    shippingAddressId?: string;
+    shippingMethodId?: string;
     items: { productId: string; variantId: string; quantity: number }[];
   };
 
-  const order = await orderService.placeOrder(req.user.sub, { customerName, customerPhone, shippingAddress, items });
+  const order = await orderService.placeOrder(req.user.sub, {
+    customerName,
+    customerPhone,
+    shippingAddress,
+    shippingAddressId,
+    shippingMethodId,
+    items,
+  });
   res.status(201).json({ order });
 });
 

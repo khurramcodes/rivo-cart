@@ -104,6 +104,8 @@ export type Order = {
   id: string;
   userId: string;
   totalAmount: number; // cents
+  shippingCost?: number;
+  shippingMethodId?: string | null;
   paymentMethod: "COD";
   status: OrderStatus;
   customerName: string;
@@ -112,6 +114,46 @@ export type Order = {
   createdAt: string;
   items?: OrderItem[];
   user?: Pick<User, "id" | "name" | "email" | "role" | "createdAt">;
+};
+
+export type ShippingType = "STANDARD" | "EXPRESS";
+export type ShippingScope = "COUNTRY" | "STATE" | "CITY";
+export type ShippingConditionType = "NONE" | "MIN_ORDER_VALUE" | "WEIGHT_RANGE" | "DIMENSION_RANGE";
+
+export type ShippingZone = {
+  id: string;
+  scope: ShippingScope;
+  country?: string | null;
+  state?: string | null;
+  city?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ShippingMethod = {
+  id: string;
+  type: ShippingType;
+  name: string;
+  description?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ShippingRule = {
+  id: string;
+  zoneId: string;
+  methodId: string;
+  baseCost: number;
+  priority: number;
+  isActive: boolean;
+  conditionType: ShippingConditionType;
+  conditionConfig?: { minOrderValue?: number } | null;
+  createdAt: string;
+  updatedAt: string;
+  zone?: ShippingZone;
+  method?: ShippingMethod;
 };
 
 export type CartItem = {

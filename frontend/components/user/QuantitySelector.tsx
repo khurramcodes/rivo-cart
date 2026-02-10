@@ -17,9 +17,9 @@ type QuantitySelectorProps = {
 };
 
 const BASE_CONTAINER = "inline-flex items-center";
-const BASE_BUTTON = "flex items-center justify-center border";
+const BASE_BUTTON = "flex items-center justify-center border cursor-pointer";
 const BASE_VALUE = "min-w-12 text-center font-medium";
-const DEFAULT_GAP = "gap-3";
+const DEFAULT_GAP = "gap-2";
 const DEFAULT_BUTTON_SIZE = "";
 const DEFAULT_BUTTON_CLASS = "text-zinc-900";
 const DEFAULT_VALUE_CLASS = "text-zinc-900";

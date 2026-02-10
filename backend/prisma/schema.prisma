@@ -40,6 +40,24 @@ enum DiscountScope {
   COLLECTION
 }
 
+enum ShippingType {
+  STANDARD
+  EXPRESS
+}
+
+enum ShippingScope {
+  COUNTRY
+  STATE
+  CITY
+}
+
+enum ShippingConditionType {
+  NONE
+  MIN_ORDER_VALUE
+  WEIGHT_RANGE
+  DIMENSION_RANGE
+}
+
 model User {
   id        String    @id @default(cuid())
   name      String
@@ -158,6 +176,8 @@ model Order {
   userId          String
   // stored in cents
   totalAmount     Int
+  shippingCost    Int           @default(0)
+  shippingMethodId String?
   paymentMethod   PaymentMethod @default(COD)
   status          OrderStatus   @default(PENDING)
   customerName    String
@@ -169,6 +189,7 @@ model Order {
   user              User               @relation(fields: [userId], references: [id], onDelete: Restrict)
   items             OrderItem[]
   couponRedemptions CouponRedemption[]
+  shippingMethod    ShippingMethod?    @relation(fields: [shippingMethodId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([status])
@@ -266,6 +287,64 @@ model Address {
 
   @@index([userId])
   @@index([isDefault])
+}
+
+model ShippingZone {
+  id        String        @id @default(cuid())
+  scope     ShippingScope
+  country   String?
+  state     String?
+  city      String?
+  isActive  Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  rules     ShippingRule[]
+
+  @@index([scope])
+  @@index([country])
+  @@index([state])
+  @@index([city])
+  @@index([isActive])
+}
+
+model ShippingMethod {
+  id          String        @id @default(cuid())
+  type        ShippingType
+  name        String
+  description String?
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  rules       ShippingRule[]
+  orders      Order[]
+
+  @@index([type])
+  @@index([isActive])
+}
+
+model ShippingRule {
+  id             String                 @id @default(cuid())
+  zoneId         String
+  methodId       String
+  conditionType  ShippingConditionType  @default(NONE)
+  conditionConfig Json?
+  baseCost       Int                    // stored in cents
+  priority       Int                    @default(0)
+  isActive       Boolean                @default(true)
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  zone           ShippingZone           @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  method         ShippingMethod         @relation(fields: [methodId], references: [id], onDelete: Cascade)
+
+  @@index([zoneId])
+  @@index([methodId])
+  @@index([conditionType])
+  @@index([priority])
+  @@index([isActive])
+  @@unique([zoneId, methodId, conditionType, priority])
 }
 
 model Discount {

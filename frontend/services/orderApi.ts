@@ -7,6 +7,8 @@ export const orderApi = {
     customerEmail?: string;
     customerPhone: string;
     shippingAddress: string;
+    shippingAddressId?: string;
+    shippingMethodId?: string;
     items: { productId: string; variantId: string; quantity: number }[];
   }) {
     const { data } = await apiClient.post<{ order: Order }>("/orders", payload);

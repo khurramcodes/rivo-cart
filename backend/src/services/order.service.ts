@@ -1,6 +1,7 @@
 import { prisma } from "../prisma/client.js";
 import { ApiError } from "../utils/ApiError.js";
 import { resolveCartPricing } from "./pricing.service.js";
+import { resolveShippingForOrder } from "./shipping.service.js";
 
 export async function placeOrder(
   userId: string,
@@ -8,6 +9,8 @@ export async function placeOrder(
     customerName: string;
     customerPhone: string;
     shippingAddress: string;
+    shippingAddressId?: string;
+    shippingMethodId?: string;
     items: { productId: string; variantId: string; quantity: number }[];
   },
 ) {
@@ -71,6 +74,8 @@ export async function placeOrder(
   // Calculate total using pricing engine if cart exists, otherwise use raw prices
   let totalAmount = normalized.reduce((sum, i) => sum + i.price * i.quantity, 0);
   let appliedCouponId: string | null = null;
+  let shippingCost = 0;
+  let shippingMethodId: string | null = null;
 
   if (cart) {
     try {
@@ -82,6 +87,17 @@ export async function placeOrder(
     } catch {
       // If pricing fails, fall back to raw total (already calculated above)
     }
+  }
+
+  if (input.shippingAddressId) {
+    const shipping = await resolveShippingForOrder({
+      userId,
+      addressId: input.shippingAddressId,
+      methodId: input.shippingMethodId,
+    });
+    shippingCost = shipping.shippingCost;
+    shippingMethodId = shipping.shippingMethodId;
+    totalAmount += shippingCost;
   }
 
   // Create order and deduct stock in a transaction
@@ -99,6 +115,8 @@ export async function placeOrder(
       data: {
         userId,
         totalAmount,
+        shippingCost,
+        shippingMethodId,
         paymentMethod: "COD",
         status: "PENDING",
         customerName: input.customerName.trim(),

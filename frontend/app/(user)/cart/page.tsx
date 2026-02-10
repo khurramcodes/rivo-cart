@@ -211,7 +211,7 @@ export default function CartPage() {
                       containerClassName="mt-0 bg-[#f2f2f2] border border-zinc-300 rounded-none p-1"
                       />
                   </div>
-                  <div className='text-sm font-medium text-zinc-900'>
+                  <div className='text-base font-medium text-zinc-900'>
                     {(() => {
                       const line = getLinePricing(i.id);
                       const rowTotal = line ? line.lineTotal : i.priceSnapshot * i.quantity;
