@@ -12,6 +12,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { cartApi } from "@/services/cartApi";
 import { setCart } from "@/store/slices/cartSlice";
+import { QuantitySelector } from "@/components/user/QuantitySelector";
 
 export default function CartPage() {
   const cart = useAppSelector((s) => s.cart.cart);
@@ -170,12 +171,12 @@ export default function CartPage() {
                       />
                     </div>
                     <div className=''>
-                    <p className='text-sm font-medium text-zinc-900'>
-                      {i.product?.name ?? "Product"}
-                    </p>
-                    {formatVariantDetails(i.variant?.attributes) ? (
+                      <p className='text-sm font-medium text-zinc-900'>
+                        {i.product?.name ?? "Product"}
+                      </p>
+                      {formatVariantDetails(i.variant?.attributes) ? (
                         <p className='mt-0.5 text-xs text-zinc-500'>
-                        {formatVariantDetails(i.variant?.attributes)}
+                          {formatVariantDetails(i.variant?.attributes)}
                         </p>
                       ) : null}
                       <div className='mt-1 text-sm text-zinc-600'>
@@ -192,24 +193,23 @@ export default function CartPage() {
                           );
                         })()}
                       </div>
-                    <p className='mt-0.5 text-xs text-zinc-400'>SKU: {i.variant?.sku}</p>
+                      <p className='mt-0.5 text-xs text-zinc-400'>SKU: {i.variant?.sku}</p>
 
                     </div>
                   </div>
-                  <div className='mt-3 flex flex-col items-start gap-3'>
-                    <Input
-                      className='w-4'
-                      type='number'
-                      min={1}
-                      max={Math.max(1, i.variant?.stock ?? 1)}
+                  <div className='flex flex-col items-start'>
+                    <QuantitySelector
                       value={i.quantity}
-                      onChange={(e) =>
-                        dispatch(
-                          updateQuantity({ itemId: i.id, quantity: Number(e.target.value) })
-                        )
-                      }
-                    />
+                      min={1}
+                      max={i.variant?.stock ?? 1}
+                      onChange={(quantity) => dispatch(updateQuantity({ itemId: i.id, quantity }))}
 
+                      gapClassName="gap-1"
+                      buttonSizeClassName="h-6 w-6"
+                      buttonClassName="bg-[#f2f2f2] text-zinc-900 border-none rounded-none"
+                      valueSizeClassName="text-sm text-zinc-900"
+                      containerClassName="mt-0 bg-[#f2f2f2] border border-zinc-300 rounded-none p-1"
+                      />
                   </div>
                   <div className='text-sm font-medium text-zinc-900'>
                     {(() => {

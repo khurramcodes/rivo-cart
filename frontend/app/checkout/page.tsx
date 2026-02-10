@@ -73,10 +73,11 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (!user) return;
-    if (addressStatus === "idle" && addresses.length === 0) {
-      void dispatch(fetchAddresses());
-    }
-  }, [addressStatus, addresses.length, dispatch, user]);
+    if (addressStatus === "idle") return;
+
+    dispatch(fetchAddresses());
+
+  }, [addressStatus, dispatch, user]);
 
   useEffect(() => {
     if (!cart?.id) return;

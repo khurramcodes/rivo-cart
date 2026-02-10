@@ -6,7 +6,7 @@ import { addressApi } from "@/services/addressApi";
 
 type AddressState = {
   items: Address[];
-  status: "idle" | "loading" | "error";
+  status: "idle" | "loading" | "succeeded" | "error";
   error?: string;
 };
 
@@ -122,7 +122,7 @@ const addressSlice = createSlice({
         state.error = undefined;
       })
       .addCase(fetchAddresses.fulfilled, (state, action: PayloadAction<Address[]>) => {
-        state.status = "idle";
+        state.status = "succeeded";
         state.items = action.payload;
       })
       .addCase(fetchAddresses.rejected, (state, action) => {
