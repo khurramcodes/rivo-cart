@@ -12,9 +12,9 @@ export const idParamSchema = z.object({
 
 const shippingZoneBodySchema = z.object({
   scope: scopeEnum,
-  country: z.string().trim().min(1).optional().nullable(),
-  state: z.string().trim().min(1).optional().nullable(),
-  city: z.string().trim().min(1).optional().nullable(),
+  country: z.string().trim().optional().nullable(),
+  state: z.string().trim().optional().nullable(),
+  city: z.string().trim().optional().nullable(),
   isActive: z.boolean().optional(),
 });
 

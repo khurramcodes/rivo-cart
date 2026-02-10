@@ -8,6 +8,7 @@ import { ShippingRuleForm } from "@/components/admin/shipping/ShippingRuleForm";
 import { ShippingZoneForm } from "@/components/admin/shipping/ShippingZoneForm";
 import type { ShippingMethod, ShippingRule, ShippingZone } from "@/types";
 import { Button } from "@/components/ui/Button";
+import { Check, EditIcon, Trash2, X } from "lucide-react";
 
 export default function AdminShippingPage() {
   const [zones, setZones] = useState<ShippingZone[]>([]);
@@ -102,57 +103,76 @@ export default function AdminShippingPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className='space-y-8'>
       <div>
-        <h1 className="text-2xl font-semibold text-zinc-900">Shipping</h1>
-        <p className="text-sm text-zinc-600">Manage zones, methods, and rates.</p>
+        <h1 className='text-2xl font-semibold text-zinc-900'>Shipping</h1>
+        <p className='text-sm text-zinc-600'>
+          Manage zones, methods, and rates.
+        </p>
       </div>
 
       {error ? (
-        <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</div>
+        <div className='rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800'>
+          {error}
+        </div>
       ) : null}
 
       {/* Zones */}
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-        <section className="rounded border border-zinc-200 bg-white p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-zinc-900">Zones</h2>
+      <div className='grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]'>
+        <section className='rounded border border-zinc-200 bg-white p-4'>
+          <div className='flex items-center justify-between'>
+            <h2 className='text-sm font-semibold text-zinc-900'>Zones</h2>
             {editingZone ? (
-              <Button variant="ghost" className="h-8 px-3" onClick={() => setEditingZone(null)}>
+              <Button
+                variant='ghost'
+                className='h-8 px-3'
+                onClick={() => setEditingZone(null)}>
                 New zone
               </Button>
             ) : null}
           </div>
           {zones.length === 0 && !loading ? (
-            <p className="mt-3 text-sm text-zinc-500">No zones created yet.</p>
+            <p className='mt-3 text-sm text-zinc-500'>No zones created yet.</p>
           ) : (
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full text-sm">
+            <div className='mt-3 overflow-x-auto'>
+              <table className='w-full text-sm'>
                 <thead>
-                  <tr className="text-left text-zinc-500">
-                    <th className="py-2">Scope</th>
-                    <th className="py-2">Country</th>
-                    <th className="py-2">State</th>
-                    <th className="py-2">City</th>
-                    <th className="py-2">Active</th>
-                    <th className="py-2 text-right">Actions</th>
+                  <tr className='text-left text-zinc-800'>
+                    <th className='py-2 font-semibold'>Scope</th>
+                    <th className='py-2 font-semibold'>Country</th>
+                    <th className='py-2 font-semibold'>State</th>
+                    <th className='py-2 font-semibold'>City</th>
+                    <th className='py-2 font-semibold'>Active</th>
+                    <th className='py-2 font-semibold text-right'>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {zones.map((zone) => (
-                    <tr key={zone.id} className="border-t border-zinc-100">
-                      <td className="py-2">{zone.scope}</td>
-                      <td className="py-2">{zone.country ?? "-"}</td>
-                      <td className="py-2">{zone.state ?? "-"}</td>
-                      <td className="py-2">{zone.city ?? "-"}</td>
-                      <td className="py-2">{zone.isActive ? "Yes" : "No"}</td>
-                      <td className="py-2 text-right space-x-2">
-                        <Button variant="ghost" className="h-8 px-3" onClick={() => setEditingZone(zone)}>
-                          Edit
-                        </Button>
-                        <Button variant="ghost" className="h-8 px-3" onClick={() => handleDeleteZone(zone.id)}>
-                          Delete
-                        </Button>
+                    <tr
+                      key={zone.id}
+                      className='border-t border-zinc-400 text-zinc-800'>
+                      <td className='py-2'>{zone.scope}</td>
+                      <td className='py-2'>{zone.country ?? "-"}</td>
+                      <td className='py-2'>{zone.state ?? "-"}</td>
+                      <td className='py-2'>{zone.city ?? "-"}</td>
+                      <td className='py-2'>
+                        {zone.isActive ? (
+                          <Check className='text-green-800' />
+                        ) : (
+                          <X className='text-red-800' />
+                        )}
+                      </td>
+                      <td className='py-2 text-right flex items-center justify-end gap-2'>
+                        <p
+                          className='cursor-pointer'
+                          onClick={() => setEditingZone(zone)}>
+                          <EditIcon className='h-5 w-5 text-blue-800' />
+                        </p>
+                        <p
+                          className='cursor-pointer'
+                          onClick={() => handleDeleteZone(zone.id)}>
+                          <Trash2 className='h-5 w-5 text-red-800' />
+                        </p>
                       </td>
                     </tr>
                   ))}
@@ -162,9 +182,11 @@ export default function AdminShippingPage() {
           )}
         </section>
 
-        <section className="rounded border border-zinc-200 bg-white p-4">
-          <h2 className="text-sm font-semibold text-zinc-900">{editingZone ? "Edit zone" : "Create zone"}</h2>
-          <div className="mt-4">
+        <section className='rounded border border-zinc-200 bg-white p-4'>
+          <h2 className='text-sm font-semibold text-zinc-900'>
+            {editingZone ? "Edit zone" : "Create zone"}
+          </h2>
+          <div className='mt-4'>
             <ShippingZoneForm
               initialValues={editingZone}
               onSubmit={handleZoneSubmit}
@@ -175,42 +197,59 @@ export default function AdminShippingPage() {
       </div>
 
       {/* Methods */}
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-        <section className="rounded border border-zinc-200 bg-white p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-zinc-900">Methods</h2>
+      <div className='grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]'>
+        <section className='rounded border border-zinc-200 bg-white p-4'>
+          <div className='flex items-center justify-between'>
+            <h2 className='text-sm font-semibold text-zinc-900'>Methods</h2>
             {editingMethod ? (
-              <Button variant="ghost" className="h-8 px-3" onClick={() => setEditingMethod(null)}>
+              <Button
+                variant='ghost'
+                className='h-8 px-3'
+                onClick={() => setEditingMethod(null)}>
                 New method
               </Button>
             ) : null}
           </div>
           {methods.length === 0 && !loading ? (
-            <p className="mt-3 text-sm text-zinc-500">No methods created yet.</p>
+            <p className='mt-3 text-sm text-zinc-500'>
+              No methods created yet.
+            </p>
           ) : (
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full text-sm">
+            <div className='mt-3 overflow-x-auto'>
+              <table className='w-full text-sm'>
                 <thead>
-                  <tr className="text-left text-zinc-500">
-                    <th className="py-2">Type</th>
-                    <th className="py-2">Name</th>
-                    <th className="py-2">Active</th>
-                    <th className="py-2 text-right">Actions</th>
+                  <tr className='text-left text-zinc-800'>
+                    <th className='py-2 font-semibold'>Type</th>
+                    <th className='py-2 font-semibold'>Name</th>
+                    <th className='py-2 font-semibold'>Active</th>
+                    <th className='py-2 text-right font-semibold'>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {methods.map((method) => (
-                    <tr key={method.id} className="border-t border-zinc-100">
-                      <td className="py-2">{method.type}</td>
-                      <td className="py-2">{method.name}</td>
-                      <td className="py-2">{method.isActive ? "Yes" : "No"}</td>
-                      <td className="py-2 text-right space-x-2">
-                        <Button variant="ghost" className="h-8 px-3" onClick={() => setEditingMethod(method)}>
-                          Edit
-                        </Button>
-                        <Button variant="ghost" className="h-8 px-3" onClick={() => handleDeleteMethod(method.id)}>
-                          Delete
-                        </Button>
+                    <tr
+                      key={method.id}
+                      className='border-t border-zinc-400 text-zinc-800'>
+                      <td className='py-2'>{method.type}</td>
+                      <td className='py-2'>{method.name}</td>
+                      <td className='py-2'>
+                        {method.isActive ? (
+                          <Check className='text-green-800' />
+                        ) : (
+                          <X className='text-red-800' />
+                        )}
+                      </td>
+                      <td className='py-2 text-right flex items-center justify-end gap-2'>
+                        <p
+                          className='cursor-pointer'
+                          onClick={() => setEditingMethod(method)}>
+                          <EditIcon className='h-5 w-5 text-blue-800' />
+                        </p>
+                        <p
+                          className='cursor-pointer'
+                          onClick={() => handleDeleteMethod(method.id)}>
+                          <Trash2 className='h-5 w-5 text-red-800' />
+                        </p>
                       </td>
                     </tr>
                   ))}
@@ -220,9 +259,11 @@ export default function AdminShippingPage() {
           )}
         </section>
 
-        <section className="rounded border border-zinc-200 bg-white p-4">
-          <h2 className="text-sm font-semibold text-zinc-900">{editingMethod ? "Edit method" : "Create method"}</h2>
-          <div className="mt-4">
+        <section className='rounded border border-zinc-200 bg-white p-4'>
+          <h2 className='text-sm font-semibold text-zinc-900'>
+            {editingMethod ? "Edit method" : "Create method"}
+          </h2>
+          <div className='mt-4'>
             <ShippingMethodForm
               initialValues={editingMethod}
               onSubmit={handleMethodSubmit}
@@ -233,30 +274,33 @@ export default function AdminShippingPage() {
       </div>
 
       {/* Rates */}
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-        <section className="rounded border border-zinc-200 bg-white p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-zinc-900">Rates</h2>
+      <div className='grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]'>
+        <section className='rounded border border-zinc-200 bg-white p-4'>
+          <div className='flex items-center justify-between'>
+            <h2 className='text-sm font-semibold text-zinc-900'>Rates</h2>
             {editingRule ? (
-              <Button variant="ghost" className="h-8 px-3" onClick={() => setEditingRule(null)}>
+              <Button
+                variant='ghost'
+                className='h-8 px-3'
+                onClick={() => setEditingRule(null)}>
                 New rate
               </Button>
             ) : null}
           </div>
           {rules.length === 0 && !loading ? (
-            <p className="mt-3 text-sm text-zinc-500">No rates created yet.</p>
+            <p className='mt-3 text-sm text-zinc-500'>No rates created yet.</p>
           ) : (
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full text-sm">
+            <div className='mt-3 overflow-x-auto'>
+              <table className='w-full text-sm'>
                 <thead>
-                  <tr className="text-left text-zinc-500">
-                    <th className="py-2">Zone</th>
-                    <th className="py-2">Method</th>
-                    <th className="py-2">Cost</th>
-                    <th className="py-2">Condition</th>
-                    <th className="py-2">Priority</th>
-                    <th className="py-2">Active</th>
-                    <th className="py-2 text-right">Actions</th>
+                  <tr className='text-left text-zinc-800'>
+                    <th className='py-2 font-semibold'>Zone</th>
+                    <th className='py-2 font-semibold'>Method</th>
+                    <th className='py-2 font-semibold'>Cost</th>
+                    <th className='py-2 font-semibold'>Condition</th>
+                    <th className='py-2 font-semibold'>Priority</th>
+                    <th className='py-2 font-semibold'>Active</th>
+                    <th className='py-2 text-right font-semibold'>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -265,25 +309,44 @@ export default function AdminShippingPage() {
                     const method = rule.method ?? methodById.get(rule.methodId);
                     const minOrderValue = rule.conditionConfig?.minOrderValue;
                     return (
-                      <tr key={rule.id} className="border-t border-zinc-100">
-                        <td className="py-2">
-                          {zone ? `${zone.scope} · ${zone.country}${zone.state ? ` / ${zone.state}` : ""}${zone.city ? ` / ${zone.city}` : ""}` : "-"}
+                      <tr
+                        key={rule.id}
+                        className='border-t border-zinc-400 text-zinc-800'>
+                        <td className='py-2'>
+                          {zone
+                            ? `${zone.country}${zone.state ? ` / ${zone.state}` : ""}${zone.city ? ` / ${zone.city}` : ""}`
+                            : "-"}
                         </td>
-                        <td className="py-2">{method ? `${method.name} (${method.type})` : "-"}</td>
-                        <td className="py-2">{formatPrice(rule.baseCost)}</td>
-                        <td className="py-2">
-                          {rule.conditionType === "MIN_ORDER_VALUE" && minOrderValue != null
+                        <td className='py-2'>
+                          {method ? `${method.name}` : "-"}
+                        </td>
+                        <td className='py-2'>{formatPrice(rule.baseCost)}</td>
+                        <td className='py-2'>
+                          {rule.conditionType === "MIN_ORDER_VALUE" &&
+                          minOrderValue != null
                             ? `Min order ${formatPrice(minOrderValue)}`
                             : rule.conditionType}
                         </td>
-                        <td className="py-2">{rule.priority}</td>
-                        <td className="py-2">{rule.isActive ? "Yes" : "No"}</td>
-                        <td className="py-2 text-right space-x-2">
-                          <Button variant="ghost" className="h-8 px-3" onClick={() => setEditingRule(rule)}>
-                            Edit
+                        <td className='py-2'>{rule.priority}</td>
+                        <td className='py-2'>
+                          {rule.isActive ? (
+                            <Check className='text-green-800' />
+                          ) : (
+                            <X className='text-red-800' />
+                          )}
+                        </td>
+                        <td className='py-2 text-right space-x-2'>
+                          <Button
+                            variant='ghost'
+                            className='h-8 px-3'
+                            onClick={() => setEditingRule(rule)}>
+                            <EditIcon className='h-5 w-5 text-blue-800' />
                           </Button>
-                          <Button variant="ghost" className="h-8 px-3" onClick={() => handleDeleteRule(rule.id)}>
-                            Delete
+                          <Button
+                            variant='ghost'
+                            className='h-8 px-3'
+                            onClick={() => handleDeleteRule(rule.id)}>
+                            <Trash2 className='h-5 w-5 text-red-800' />
                           </Button>
                         </td>
                       </tr>
@@ -295,9 +358,11 @@ export default function AdminShippingPage() {
           )}
         </section>
 
-        <section className="rounded border border-zinc-200 bg-white p-4">
-          <h2 className="text-sm font-semibold text-zinc-900">{editingRule ? "Edit rate" : "Create rate"}</h2>
-          <div className="mt-4">
+        <section className='rounded border border-zinc-200 bg-white p-4'>
+          <h2 className='text-sm font-semibold text-zinc-900'>
+            {editingRule ? "Edit rate" : "Create rate"}
+          </h2>
+          <div className='mt-4'>
             <ShippingRuleForm
               zones={zones}
               methods={methods}

@@ -27,7 +27,7 @@ shippingRoutes.post(
   requireAuth,
   requireRole("ADMIN"),
   requireCsrf,
-//   validate(createShippingZoneSchema),
+  validate(createShippingZoneSchema),
   shippingAdminController.createZone,
 );
 shippingRoutes.put(

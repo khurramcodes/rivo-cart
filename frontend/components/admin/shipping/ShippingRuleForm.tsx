@@ -1,18 +1,10 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import type { ShippingConditionType, ShippingMethod, ShippingRule, ShippingZone } from "@/types";
-
-type RuleFormValues = {
-  zoneId: string;
-  methodId: string;
-  baseCost: number;
-  priority: number;
-  isActive: boolean;
-  conditionType: ShippingConditionType;
-  minOrderValue?: number;
-};
+import type { ShippingMethod, ShippingRule, ShippingZone } from "@/types";
+import { shippingRuleSchema, type ShippingRuleFormData } from "@/schemas/shippingRule.schema";
 
 export function ShippingRuleForm({
   zones,
@@ -25,11 +17,12 @@ export function ShippingRuleForm({
   zones: ShippingZone[];
   methods: ShippingMethod[];
   initialValues?: ShippingRule | null;
-  onSubmit: (values: RuleFormValues) => void;
+  onSubmit: (values: ShippingRuleFormData) => void;
   onCancel?: () => void;
   submitting?: boolean;
 }) {
-  const form = useForm<RuleFormValues>({
+  const form = useForm<ShippingRuleFormData>({
+    resolver: zodResolver(shippingRuleSchema),
     defaultValues: {
       zoneId: "",
       methodId: "",
@@ -57,18 +50,31 @@ export function ShippingRuleForm({
     form.reset({
       zoneId: initialValues.zoneId,
       methodId: initialValues.methodId,
-      baseCost: initialValues.baseCost,
+      baseCost: initialValues.baseCost / 100,
       priority: initialValues.priority,
       isActive: initialValues.isActive,
       conditionType: initialValues.conditionType,
-      minOrderValue: initialValues.conditionConfig?.minOrderValue ?? undefined,
+      minOrderValue:
+        initialValues.conditionConfig?.minOrderValue != null
+          ? initialValues.conditionConfig.minOrderValue / 100
+          : undefined,
     });
   }, [form, initialValues, zones, methods]);
 
   const conditionType = form.watch("conditionType");
 
   return (
-    <form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)}>
+    <form
+      className="space-y-3"
+      onSubmit={form.handleSubmit((values) => {
+        onSubmit({
+          ...values,
+          baseCost: Math.round(values.baseCost * 100),
+          minOrderValue:
+            values.minOrderValue != null ? Math.round(values.minOrderValue * 100) : undefined,
+        });
+      })}
+    >
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className="text-sm font-medium text-zinc-800">Zone</label>
@@ -78,12 +84,15 @@ export function ShippingRuleForm({
           >
             {zones.map((zone) => (
               <option key={zone.id} value={zone.id}>
-                {zone.scope} · {zone.country}
+                {zone.country}
                 {zone.state ? ` / ${zone.state}` : ""}
                 {zone.city ? ` / ${zone.city}` : ""}
               </option>
             ))}
           </select>
+          {form.formState.errors.zoneId ? (
+            <p className="mt-1 text-xs text-red-600">{form.formState.errors.zoneId.message}</p>
+          ) : null}
         </div>
         <div>
           <label className="text-sm font-medium text-zinc-800">Method</label>
@@ -93,20 +102,29 @@ export function ShippingRuleForm({
           >
             {methods.map((method) => (
               <option key={method.id} value={method.id}>
-                {method.name} ({method.type})
+                {method.name}
               </option>
             ))}
           </select>
+          {form.formState.errors.methodId ? (
+            <p className="mt-1 text-xs text-red-600">{form.formState.errors.methodId.message}</p>
+          ) : null}
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="text-sm font-medium text-zinc-800">Base cost (cents)</label>
-          <Input className="mt-2" type="number" min={0} {...form.register("baseCost", { valueAsNumber: true })} />
+          <label className="text-sm font-medium text-zinc-800">Base cost (PKR)</label>
+          <Input className="mt-2" type="number" min={0} step="1" {...form.register("baseCost")} />
+          {form.formState.errors.baseCost ? (
+            <p className="mt-1 text-xs text-red-600">{form.formState.errors.baseCost.message}</p>
+          ) : null}
         </div>
         <div>
           <label className="text-sm font-medium text-zinc-800">Priority</label>
-          <Input className="mt-2" type="number" min={0} {...form.register("priority", { valueAsNumber: true })} />
+          <Input className="mt-2" type="number" min={0} {...form.register("priority")} />
+          {form.formState.errors.priority ? (
+            <p className="mt-1 text-xs text-red-600">{form.formState.errors.priority.message}</p>
+          ) : null}
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -122,8 +140,11 @@ export function ShippingRuleForm({
         </div>
         {conditionType === "MIN_ORDER_VALUE" ? (
           <div>
-            <label className="text-sm font-medium text-zinc-800">Min order value (cents)</label>
-            <Input className="mt-2" type="number" min={0} {...form.register("minOrderValue", { valueAsNumber: true })} />
+            <label className="text-sm font-medium text-zinc-800">Min order value (PKR)</label>
+            <Input className="mt-2" type="number" min={0} step="1" {...form.register("minOrderValue")} />
+            {form.formState.errors.minOrderValue ? (
+              <p className="mt-1 text-xs text-red-600">{form.formState.errors.minOrderValue.message}</p>
+            ) : null}
           </div>
         ) : null}
       </div>

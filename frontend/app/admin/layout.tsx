@@ -66,7 +66,7 @@ export default function AdminLayout({
   return (
     <div className="min-h-screen bg-white">
       <header className="border-b border-zinc-200">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-8xl items-center justify-between px-4 py-3">
           <Link href="/">
             <Image
               src="/images/logo.png"
@@ -105,7 +105,7 @@ export default function AdminLayout({
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-7xl">
+      <div className="mx-auto flex max-w-full">
         <aside className="hidden lg:block w-60 border-r border-zinc-200 px-4">
           <div className="sticky top-6 py-6 space-y-2">
             {navItems.map((item) => (

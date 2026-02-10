@@ -1,15 +1,10 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import type { ShippingMethod, ShippingType } from "@/types";
-
-type MethodFormValues = {
-  type: ShippingType;
-  name: string;
-  description?: string;
-  isActive: boolean;
-};
+import type { ShippingMethod } from "@/types";
+import { shippingMethodSchema, type ShippingMethodFormData } from "@/schemas/shippingMethod.schema";
 
 export function ShippingMethodForm({
   initialValues,
@@ -18,11 +13,12 @@ export function ShippingMethodForm({
   submitting,
 }: {
   initialValues?: ShippingMethod | null;
-  onSubmit: (values: MethodFormValues) => void;
+  onSubmit: (values: ShippingMethodFormData) => void;
   onCancel?: () => void;
   submitting?: boolean;
 }) {
-  const form = useForm<MethodFormValues>({
+  const form = useForm<ShippingMethodFormData>({
+    resolver: zodResolver(shippingMethodSchema),
     defaultValues: {
       type: "STANDARD",
       name: "",
@@ -60,6 +56,9 @@ export function ShippingMethodForm({
         <div>
           <label className="text-sm font-medium text-zinc-800">Name</label>
           <Input className="mt-2" {...form.register("name")} />
+          {form.formState.errors.name ? (
+            <p className="mt-1 text-xs text-red-600">{form.formState.errors.name.message}</p>
+          ) : null}
         </div>
       </div>
       <div>

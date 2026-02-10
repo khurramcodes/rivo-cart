@@ -1,16 +1,10 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import type { ShippingScope, ShippingZone } from "@/types";
-
-type ZoneFormValues = {
-  scope: ShippingScope;
-  country?: string;
-  state?: string;
-  city?: string;
-  isActive: boolean;
-};
+import type { ShippingZone } from "@/types";
+import { shippingZoneSchema, type ShippingZoneFormData } from "@/schemas/shippingZone.schema";
 
 export function ShippingZoneForm({
   initialValues,
@@ -19,11 +13,12 @@ export function ShippingZoneForm({
   submitting,
 }: {
   initialValues?: ShippingZone | null;
-  onSubmit: (values: ZoneFormValues) => void;
+  onSubmit: (values: ShippingZoneFormData) => void;
   onCancel?: () => void;
   submitting?: boolean;
 }) {
-  const form = useForm<ZoneFormValues>({
+  const form = useForm<ShippingZoneFormData>({
+    resolver: zodResolver(shippingZoneSchema),
     defaultValues: {
       scope: "COUNTRY",
       country: "",
@@ -66,11 +61,17 @@ export function ShippingZoneForm({
         <div>
           <label className="text-sm font-medium text-zinc-800">Country</label>
           <Input className="mt-2" {...form.register("country")} />
+          {form.formState.errors.country ? (
+            <p className="mt-1 text-xs text-red-600">{form.formState.errors.country.message}</p>
+          ) : null}
         </div>
         {scope !== "COUNTRY" ? (
           <div>
             <label className="text-sm font-medium text-zinc-800">State</label>
             <Input className="mt-2" {...form.register("state")} />
+            {form.formState.errors.state ? (
+              <p className="mt-1 text-xs text-red-600">{form.formState.errors.state.message}</p>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -78,6 +79,9 @@ export function ShippingZoneForm({
         <div>
           <label className="text-sm font-medium text-zinc-800">City</label>
           <Input className="mt-2" {...form.register("city")} />
+          {form.formState.errors.city ? (
+            <p className="mt-1 text-xs text-red-600">{form.formState.errors.city.message}</p>
+          ) : null}
         </div>
       ) : null}
       <label className="flex items-center gap-2 text-sm text-zinc-700">
