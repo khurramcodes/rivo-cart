@@ -1,3 +1,7 @@
+if (process.env.NODE_ENV !== "production") {
+  import("dotenv/config");
+}
+
 import { createApp } from "./app.js";
 import { startCartCleanupJob } from "./jobs/cartCleanup.js";
 
