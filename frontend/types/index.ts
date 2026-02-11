@@ -86,7 +86,7 @@ export type ProductGalleryImage = {
   updatedAt: string;
 };
 
-export type OrderStatus = "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED";
+export type OrderStatus = "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
 
 export type OrderItem = {
   id: string;

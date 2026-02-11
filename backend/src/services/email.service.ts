@@ -55,3 +55,20 @@ export async function sendOtpEmail(to: string, otp: string) {
     html: `<p>Your verification code is <strong>${otp}</strong>.</p><p>It expires in 10 minutes.</p>`,
   });
 }
+
+export async function sendOrderStatusEmail(to: string, orderId: string, status: "CONFIRMED" | "CANCELLED") {
+  const isConfirmed = status === "CONFIRMED";
+  const subject = isConfirmed
+    ? `Your order ${orderId} has been confirmed`
+    : `Your order ${orderId} has been cancelled`;
+
+  const text = isConfirmed
+    ? `Good news! Your order ${orderId} has been confirmed and is being prepared.`
+    : `Your order ${orderId} has been cancelled. If you have any questions, please contact support.`;
+
+  const html = isConfirmed
+    ? `<p>Good news!</p><p>Your order <strong>${orderId}</strong> has been <strong>confirmed</strong> and is being prepared.</p>`
+    : `<p>Your order <strong>${orderId}</strong> has been <strong>cancelled</strong>.</p><p>If you have any questions, please contact our support team.</p>`;
+
+  await sendEmail({ to, subject, text, html });
+}

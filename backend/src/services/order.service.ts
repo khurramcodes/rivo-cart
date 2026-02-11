@@ -2,6 +2,9 @@ import { prisma } from "../prisma/client.js";
 import { ApiError } from "../utils/ApiError.js";
 import { resolveCartPricing } from "./pricing.service.js";
 import { resolveShippingForOrder } from "./shipping.service.js";
+import { sendOrderStatusEmail } from "./email.service.js";
+import { Prisma } from "@prisma/client";
+import type { OrderStatus as PrismaOrderStatus } from "@prisma/client";
 
 export async function placeOrder(
   userId: string,
@@ -174,10 +177,47 @@ export async function listAllOrders() {
   });
 }
 
-export async function updateOrderStatus(id: string, status: "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED") {
+type OrderWithUserEmail = Prisma.OrderGetPayload<{
+  include: { user: { select: { email: true } } };
+}>;
+
+export async function updateOrderStatus(id: string, status: PrismaOrderStatus) {
   try {
-    return await prisma.order.update({ where: { id }, data: { status } });
-  } catch {
-    throw new ApiError(404, "ORDER_NOT_FOUND", "Order not found");
+    console.log("order status", status);
+    const order: OrderWithUserEmail = await prisma.order.update({
+      where: { id },
+      data: { status },
+      include: {
+        user: { select: { email: true } },
+      },
+    });
+
+
+    if (order.user?.email) {
+      // Fire-and-forget; email errors should not block status update
+      if (status === "CONFIRMED") {
+        void sendOrderStatusEmail(order.user.email, order.id, "CONFIRMED");
+      } else if ((status as any) === "CANCELLED") {
+        void sendOrderStatusEmail(order.user.email, order.id, "CANCELLED");
+      }
+    }
+
+    return order;
+  } catch (err) {
+    // Prisma "record not found" on update
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+      throw new ApiError(404, "ORDER_NOT_FOUND", "Order not found");
+    }
+
+    // Helpful error when DB/client enums are out of sync (e.g. CANCELLED not migrated/generated yet)
+    if (err instanceof Prisma.PrismaClientValidationError) {
+      throw new ApiError(
+        500,
+        "PRISMA_SCHEMA_OUT_OF_SYNC",
+        "Order status enum is out of sync. Run `npx prisma migrate dev` and `npx prisma generate`, then restart the backend.",
+      );
+    }
+
+    throw err;
   }
 }

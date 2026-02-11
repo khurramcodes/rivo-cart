@@ -26,7 +26,7 @@ export const updateOrderStatusSchema = z.object({
     id: z.string().min(1),
   }),
   body: z.object({
-    status: z.enum(["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED"]),
+    status: z.enum(["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"]),
   }),
 });
 

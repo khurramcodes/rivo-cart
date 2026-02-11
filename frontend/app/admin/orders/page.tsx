@@ -12,6 +12,7 @@ const statuses: OrderStatus[] = [
   "CONFIRMED",
   "SHIPPED",
   "DELIVERED",
+  "CANCELLED",
 ];
 
 export default function AdminOrdersPage() {
