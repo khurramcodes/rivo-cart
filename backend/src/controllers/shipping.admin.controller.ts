@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { Prisma } from "@prisma/client";
+import { Prisma, type ShippingType } from "@prisma/client";
 import { prisma } from "../prisma/client.js";
 import { ApiError } from "../utils/ApiError.js";
 
@@ -78,7 +78,7 @@ export const listMethods = asyncHandler(async (_req: Request, res: Response) => 
 
 export const createMethod = asyncHandler(async (req: Request, res: Response) => {
   const { type, name, description, isActive } = req.body as {
-    type: "STANDARD" | "EXPRESS";
+    type: ShippingType;
     name: string;
     description?: string | null;
     isActive?: boolean;
@@ -97,7 +97,7 @@ export const createMethod = asyncHandler(async (req: Request, res: Response) => 
 export const updateMethod = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params as { id: string };
   const { type, name, description, isActive } = req.body as {
-    type?: "STANDARD" | "EXPRESS";
+    type?: ShippingType;
     name?: string;
     description?: string | null;
     isActive?: boolean;

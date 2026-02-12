@@ -3,7 +3,7 @@ import { apiClient } from "./apiClient";
 export type ShippingQuote = {
   method: {
     id: string;
-    type: "STANDARD" | "EXPRESS";
+    type: "STANDARD" | "EXPRESS" | "FREE";
     name: string;
     description?: string | null;
   };

@@ -116,7 +116,7 @@ export type Order = {
   user?: Pick<User, "id" | "name" | "email" | "role" | "createdAt">;
 };
 
-export type ShippingType = "STANDARD" | "EXPRESS";
+export type ShippingType = "STANDARD" | "EXPRESS" | "FREE";
 export type ShippingScope = "COUNTRY" | "STATE" | "CITY";
 export type ShippingConditionType = "NONE" | "MIN_ORDER_VALUE" | "WEIGHT_RANGE" | "DIMENSION_RANGE";
 

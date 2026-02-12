@@ -51,6 +51,7 @@ export function ShippingMethodForm({
           >
             <option value="STANDARD">Standard</option>
             <option value="EXPRESS">Express</option>
+            <option value="FREE">Free Shipping</option>
           </select>
         </div>
         <div>

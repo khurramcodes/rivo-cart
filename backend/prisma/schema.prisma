@@ -44,6 +44,7 @@ enum DiscountScope {
 enum ShippingType {
   STANDARD
   EXPRESS
+  FREE
 }
 
 enum ShippingScope {

@@ -47,7 +47,6 @@ export function LatestProducts({ limit = 6 }: LatestProductsProps) {
 
         if (variantIds.length > 0) {
           const pricingResults = await pricingApi.getBulkVariantPricing(variantIds);
-          console.log(pricingResults);
           if (!mounted) return;
           const newMap = new Map<string, VariantPricing>();
           pricingResults.forEach((r) => {

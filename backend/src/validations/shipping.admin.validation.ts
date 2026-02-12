@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const scopeEnum = z.enum(["COUNTRY", "STATE", "CITY"]);
-const typeEnum = z.enum(["STANDARD", "EXPRESS"]);
+const typeEnum = z.enum(["STANDARD", "EXPRESS", "FREE"]);
 const conditionEnum = z.enum(["NONE", "MIN_ORDER_VALUE", "WEIGHT_RANGE", "DIMENSION_RANGE"]);
 
 export const idParamSchema = z.object({
