@@ -9,15 +9,17 @@ import { pricingApi, type VariantPricing } from "@/services/pricingApi";
 import type { Product, ProductVariant } from "@/types";
 import { formatPrice } from "@/config/currency";
 import { Button } from "@/components/ui/Button";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addToCart } from "@/store/cartThunks";
 import { addCacheBust } from "@/utils/imageCache";
-import { Minus, Plus, Package, X, CircleCheckBig, Tag } from "lucide-react";
+import { Package, X, CircleCheckBig, Tag } from "lucide-react";
 import { QuantitySelector } from "@/components/user/QuantitySelector";
 
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>();
   const id = useMemo(() => (Array.isArray(params.id) ? params.id[0] : params.id), [params.id]);
+  const cart = useAppSelector((s) => s.cart.cart);
+  
   const dispatch = useAppDispatch();
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -183,8 +185,22 @@ export default function ProductDetailPage() {
   const handleAddToCart = async () => {
     if (!product || !selectedVariant) return;
 
-    if (selectedVariant.stock === 0) {
-      alert("This variant is out of stock");
+    // if (selectedVariant.stock === 0) {
+    //   alert("This variant is out of stock");
+    //   return;
+    // }
+
+    const existingItem = cart?.items.find(
+      (i) => i.variantId === selectedVariant.id,
+    );
+
+    const existingQty = existingItem?.quantity ?? 0;
+    const requestedTotal = existingQty + quantity;
+
+    if (requestedTotal > selectedVariant.stock) {
+      alert(
+        `You already have ${existingQty} in your cart. Only ${selectedVariant.stock} available in stock.`,
+      );
       return;
     }
 

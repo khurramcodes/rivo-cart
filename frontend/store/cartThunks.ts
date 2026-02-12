@@ -1,7 +1,15 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { Cart, Product, ProductVariant } from "@/types";
 import { cartApi } from "@/services/cartApi";
-import { clearCart, optimisticAddItem, optimisticRemoveItem, optimisticUpdateItem, setCart, setError, setStatus } from "./slices/cartSlice";
+import {
+  clearCart,
+  optimisticAddItem,
+  optimisticRemoveItem,
+  optimisticUpdateItem,
+  setCart,
+  setError,
+  setStatus,
+} from "./slices/cartSlice";
 import type { AppDispatch, RootState } from "./store";
 
 function errorMessage(err: unknown) {
@@ -9,7 +17,10 @@ function errorMessage(err: unknown) {
   return "Cart request failed";
 }
 
-const quantityDebounceTimers: Record<string, ReturnType<typeof setTimeout>> = {};
+const quantityDebounceTimers: Record<
+  string,
+  ReturnType<typeof setTimeout>
+> = {};
 
 export const fetchCart = createAsyncThunk<Cart, void, { rejectValue: string }>(
   "cart/fetch",
@@ -39,7 +50,11 @@ export const addToCart = createAsyncThunk<
   dispatch(setStatus("syncing"));
 
   try {
-    const data = await cartApi.addItem({ productId: product.id, variantId: variant.id, quantity });
+    const data = await cartApi.addItem({
+      productId: product.id,
+      variantId: variant.id,
+      quantity,
+    });
     dispatch(setCart(data.cart));
     return data.cart;
   } catch (err) {
@@ -55,26 +70,30 @@ export const removeItem = createAsyncThunk<
   Cart,
   { itemId: string },
   { state: RootState; rejectValue: string }
->("cart/remove", async ({ itemId }, { dispatch, getState, rejectWithValue }) => {
-  const rollback = getState().cart.lastSyncedCart;
-  dispatch(optimisticRemoveItem({ itemId }));
-  dispatch(setStatus("syncing"));
+>(
+  "cart/remove",
+  async ({ itemId }, { dispatch, getState, rejectWithValue }) => {
+    const rollback = getState().cart.lastSyncedCart;
+    dispatch(optimisticRemoveItem({ itemId }));
+    dispatch(setStatus("syncing"));
 
-  try {
-    const data = await cartApi.removeItem(itemId);
-    dispatch(setCart(data.cart));
-    return data.cart;
-  } catch (err) {
-    dispatch(setCart(rollback ?? null));
-    dispatch(setError(errorMessage(err)));
-    return rejectWithValue(errorMessage(err));
-  } finally {
-    dispatch(setStatus("idle"));
-  }
-});
+    try {
+      const data = await cartApi.removeItem(itemId);
+      dispatch(setCart(data.cart));
+      return data.cart;
+    } catch (err) {
+      dispatch(setCart(rollback ?? null));
+      dispatch(setError(errorMessage(err)));
+      return rejectWithValue(errorMessage(err));
+    } finally {
+      dispatch(setStatus("idle"));
+    }
+  },
+);
 
 export const updateQuantity =
-  (payload: { itemId: string; quantity: number }) => (dispatch: AppDispatch, getState: () => RootState) => {
+  (payload: { itemId: string; quantity: number }) =>
+  (dispatch: AppDispatch, getState: () => RootState) => {
     dispatch(optimisticUpdateItem(payload));
     dispatch(setStatus("syncing"));
 
@@ -101,17 +120,16 @@ export const updateQuantity =
  * Note: After placing an order, the backend already clears the cart,
  * so this just syncs the frontend state with the server.
  */
-export const clearCartServer =
-  () => async (dispatch: AppDispatch) => {
-    dispatch(setStatus("syncing"));
-    try {
-      const data = await cartApi.getCart();
-      dispatch(setCart(data.cart));
-    } catch (err) {
-      // If fetching fails, clear local cart state
-      dispatch(clearCart());
-      dispatch(setError(errorMessage(err)));
-    } finally {
-      dispatch(setStatus("idle"));
-    }
-  };
+export const clearCartServer = () => async (dispatch: AppDispatch) => {
+  dispatch(setStatus("syncing"));
+  try {
+    const data = await cartApi.getCart();
+    dispatch(setCart(data.cart));
+  } catch (err) {
+    // If fetching fails, clear local cart state
+    dispatch(clearCart());
+    dispatch(setError(errorMessage(err)));
+  } finally {
+    dispatch(setStatus("idle"));
+  }
+};
