@@ -22,6 +22,18 @@ export const catalogApi = {
     return data;
   },
 
+  async listLatestProducts(limit?: number) {
+    const { data } = await apiClient.get<{ items: Product[] }>(
+      "/products/latest",
+      {
+        params: { limit },
+        skipLoading: true,
+      }
+    );
+
+    return data;
+  },
+
   async getProduct(id: string) {
     const { data } = await apiClient.get<{ product: Product }>(`/products/${id}`, {
       skipLoading: true,

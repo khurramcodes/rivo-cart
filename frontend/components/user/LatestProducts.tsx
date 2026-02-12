@@ -34,7 +34,7 @@ export function LatestProducts({ limit = 6 }: LatestProductsProps) {
 
     (async () => {
       try {
-        const data = await catalogApi.listProducts();
+        const data = await catalogApi.listLatestProducts(limit);
         if (!mounted) return;
 
         const limitedProducts = limit ? data.items.slice(0, limit) : data.items;

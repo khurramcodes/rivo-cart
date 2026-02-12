@@ -65,6 +65,31 @@ export async function listProducts(input: {
   return { items, total, page, limit };
 }
 
+export async function listLatestProducts(limit: number = 6) {
+  return prisma.product.findMany({
+    take: limit,
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      name: true,
+      type: true,
+      imageUrl: true,
+      updatedAt: true,
+      variants: {
+        select: {
+          id: true,
+          price: true,
+          stock: true,
+          isDefault: true,
+        },
+        orderBy: { isDefault: "desc" },
+        take: 1,
+      },
+    },
+  });
+}
+
+
 export async function getProduct(id: string) {
   const product = await prisma.product.findUnique({
     where: { id },

@@ -17,7 +17,7 @@ export default function Home() {
           imageAlt="Hero image"
         />
 
-        {/* <LatestProducts limit={6} /> */}
+        <LatestProducts limit={6} />
       </main>
       <Footer />
     </div>
