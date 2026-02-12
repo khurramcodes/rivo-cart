@@ -85,13 +85,13 @@ export default function CheckoutPage() {
     }
   }, [user, form]);
 
+
   useEffect(() => {
-    if (!user) return;
-    if (addressStatus === "idle") return;
+    if (user && addressStatus === "idle") {
+      dispatch(fetchAddresses());
+    }
+  }, [user, addressStatus, dispatch]);
 
-    dispatch(fetchAddresses());
-
-  }, [addressStatus, dispatch, user]);
 
   useEffect(() => {
     if (!cart?.id) return;
@@ -123,30 +123,69 @@ export default function CheckoutPage() {
     }
   }, [activeAddress, defaultAddress]);
 
+  // useEffect(() => {
+  //   if (!activeAddress?.id || !cart?.id || items.length === 0) {
+  //     setShippingQuotes([]);
+  //     setSelectedShippingMethodId(null);
+  //     return;
+  //   }
+  //   let mounted = true;
+  //   setShippingError(null);
+  //   shippingApi
+  //     .quote(activeAddress.id)
+  //     .then((data) => {
+  //       if (!mounted) return;
+  //       setShippingQuotes(data.quotes);
+  //       const next = data.quotes[0]?.method.id ?? null;
+  //       setSelectedShippingMethodId((current) =>
+  //         data.quotes.some((q) => q.method.id === current) ? current : next
+  //       );
+  //     })
+  //     .catch((err) => {
+  //       if (!mounted) return;
+  //       setShippingQuotes([]);
+  //       setSelectedShippingMethodId(null);
+  //       setShippingError(err?.message ?? "Failed to load shipping options.");
+  //     });
+  //   return () => {
+  //     mounted = false;
+  //   };
+  // }, [activeAddress?.id, cart?.id, itemsSignature, cart?.appliedCouponId]);
+
+
   useEffect(() => {
-    if (!activeAddress?.id || !cart?.id || items.length === 0) {
-      setShippingQuotes([]);
-      setSelectedShippingMethodId(null);
-      return;
-    }
+    if (!activeAddress?.id) return;
+    if (!cart?.id) return;
+    if (items.length === 0) return;
+
     let mounted = true;
     setShippingError(null);
+
     shippingApi
       .quote(activeAddress.id)
       .then((data) => {
         if (!mounted) return;
+
         setShippingQuotes(data.quotes);
+
         const next = data.quotes[0]?.method.id ?? null;
+
         setSelectedShippingMethodId((current) =>
-          data.quotes.some((q) => q.method.id === current) ? current : next
+          data.quotes.some((q) => q.method.id === current)
+            ? current
+            : next
         );
       })
       .catch((err) => {
         if (!mounted) return;
+
         setShippingQuotes([]);
         setSelectedShippingMethodId(null);
-        setShippingError(err?.message ?? "Failed to load shipping options.");
+        setShippingError(
+          err?.message ?? "Failed to load shipping options."
+        );
       });
+
     return () => {
       mounted = false;
     };

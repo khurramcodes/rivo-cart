@@ -335,19 +335,19 @@ export default function AdminShippingPage() {
                             <X className='text-red-800' />
                           )}
                         </td>
-                        <td className='py-2 text-right space-x-2'>
-                          <Button
-                            variant='ghost'
-                            className='h-8 px-3'
+                        <td className='py-2 text-right flex items-center justify-end gap-2'>
+                          <p
+                            
+                            className='cursor-pointer'
                             onClick={() => setEditingRule(rule)}>
                             <EditIcon className='h-5 w-5 text-blue-800' />
-                          </Button>
-                          <Button
-                            variant='ghost'
-                            className='h-8 px-3'
+                          </p>
+                          <p
+                            
+                            className='cursor-pointer'
                             onClick={() => handleDeleteRule(rule.id)}>
                             <Trash2 className='h-5 w-5 text-red-800' />
-                          </Button>
+                          </p>
                         </td>
                       </tr>
                     );
