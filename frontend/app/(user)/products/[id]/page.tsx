@@ -239,7 +239,9 @@ export default function ProductDetailPage() {
             <div className='text-sm text-emerald-800 flex items-center gap-2'>
               <CircleCheckBig size={16} />
               Product successfully added to cart!{" "}
-              <Link href='/cart' className='font-medium underline underline-offset-4'>
+              <Link
+                href='/cart'
+                className='font-medium underline underline-offset-4'>
                 View cart
               </Link>
             </div>
@@ -247,8 +249,7 @@ export default function ProductDetailPage() {
               type='button'
               aria-label='Dismiss'
               onClick={() => setShowAddedNotice(false)}
-              className='text-emerald-900 hover:text-emerald-700'
-            >
+              className='text-emerald-900 hover:text-emerald-700'>
               <X className='h-4 w-4 cursor-pointer' />
             </button>
           </div>
@@ -270,12 +271,12 @@ export default function ProductDetailPage() {
                       onClick={() => setSelectedImageIndex(idx)}
                       className={`
                         relative w-16 h-16 rounded overflow-hidden border-2 transition
-                        ${selectedImageIndex === idx
-                          ? 'border-black'
-                          : 'border-zinc-200 hover:border-zinc-300'
+                        ${
+                          selectedImageIndex === idx
+                            ? "border-black"
+                            : "border-zinc-200 hover:border-zinc-300"
                         }
-                      `}
-                    >
+                      `}>
                       <Image
                         src={imgUrl}
                         alt={`${product.name} thumbnail ${idx + 1}`}
@@ -292,8 +293,7 @@ export default function ProductDetailPage() {
               {/* Main Image */}
               <div
                 className='relative flex-1 aspect-square overflow-hidden rounded border border-zinc-200 bg-zinc-100 cursor-pointer'
-                onClick={() => setIsLightboxOpen(true)}
-              >
+                onClick={() => setIsLightboxOpen(true)}>
                 <Image
                   src={productImages[selectedImageIndex] || productImages[0]}
                   alt={product.name}
@@ -326,8 +326,8 @@ export default function ProductDetailPage() {
               {/* Price */}
               <div className='mt-2'>
                 {pricing && pricing.totalSavings > 0 ? (
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
+                  <div className='space-y-1'>
+                    <div className='flex items-center gap-2'>
                       <p className='text-xl text-zinc-400 line-through'>
                         {formatPrice(pricing.originalPrice)}
                       </p>
@@ -335,12 +335,14 @@ export default function ProductDetailPage() {
                         {formatPrice(pricing.discountedPrice)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-emerald-700">
+                    <div className='flex items-center gap-2 text-sm text-emerald-700'>
                       <Tag size={14} />
-                      <span className="font-medium">You save {formatPrice(pricing.totalSavings)}</span>
+                      <span className='font-medium'>
+                        You save {pricing.totalPercentageSavings}%
+                      </span>
                     </div>
                     {pricing.appliedDiscounts.length > 0 && (
-                      <p className="text-xs text-zinc-500">
+                      <p className='text-xs text-zinc-500'>
                         {pricing.appliedDiscounts.map((d) => d.name).join(", ")}
                       </p>
                     )}
@@ -375,7 +377,7 @@ export default function ProductDetailPage() {
               <div className='mt-6 space-y-6'>
                 {/* Variation Selectors (for VARIABLE products) */}
                 {product.type === "VARIABLE" &&
-                  Object.keys(attributeGroups).length > 0 ? (
+                Object.keys(attributeGroups).length > 0 ? (
                   <div className='space-y-4'>
                     {Object.entries(attributeGroups).map(
                       ([attrName, group]) => (
@@ -389,7 +391,7 @@ export default function ProductDetailPage() {
                                 selectedAttributes[attrName] === value;
                               const isAvailable = isVariantAvailable(
                                 attrName,
-                                value
+                                value,
                               );
 
                               return (
@@ -404,12 +406,13 @@ export default function ProductDetailPage() {
                                   disabled={!isAvailable}
                                   className={`
                                   px-4 py-2 rounded border text-sm font-medium transition cursor-pointer
-                                  ${isSelected
+                                  ${
+                                    isSelected
                                       ? "border-black bg-black text-white"
                                       : isAvailable
                                         ? "border-zinc-200 bg-white text-zinc-900 hover:border-zinc-300"
                                         : "border-zinc-200 bg-zinc-50 text-zinc-400 cursor-not-allowed line-through"
-                                    }
+                                  }
                                 `}>
                                   {value}
                                 </button>
@@ -417,7 +420,7 @@ export default function ProductDetailPage() {
                             })}
                           </div>
                         </div>
-                      )
+                      ),
                     )}
                   </div>
                 ) : null}
@@ -429,17 +432,15 @@ export default function ProductDetailPage() {
                   min={1}
                   max={selectedVariant.stock}
                   onChange={setQuantity}
-                  
-                  gapClassName="gap-1"
-                  buttonSizeClassName="h-10 w-10"
-                  buttonClassName="bg-[#f2f2f2] text-zinc-900 border-none rounded-none"
-                  valueSizeClassName="text-lg text-zinc-900"
-                  containerClassName="mt-0 bg-[#f2f2f2] border border-zinc-300 rounded-none py-0 p-1"
-
-                  />
+                  gapClassName='gap-1'
+                  buttonSizeClassName='h-10 w-10'
+                  buttonClassName='bg-[#f2f2f2] text-zinc-900 border-none rounded-none'
+                  valueSizeClassName='text-lg text-zinc-900'
+                  containerClassName='mt-0 bg-[#f2f2f2] border border-zinc-300 rounded-none py-0 p-1'
+                />
 
                 {quantity >= selectedVariant.stock &&
-                  selectedVariant.stock > 0 ? (
+                selectedVariant.stock > 0 ? (
                   <p className='mt-1 text-xs text-amber-600'>
                     Maximum available quantity selected
                   </p>
@@ -464,25 +465,22 @@ export default function ProductDetailPage() {
         {isLightboxOpen && productImages.length > 0 && (
           <div
             className='fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4'
-            onClick={() => setIsLightboxOpen(false)}
-          >
+            onClick={() => setIsLightboxOpen(false)}>
             {/* Close Button */}
             <button
               onClick={() => setIsLightboxOpen(false)}
               className='absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition text-white'
-              aria-label='Close lightbox'
-            >
+              aria-label='Close lightbox'>
               <X size={24} />
             </button>
 
             {/* Lightbox Image */}
             <div
               className='relative max-w-5xl max-h-[90vh] w-full h-full'
-              onClick={(e) => e.stopPropagation()}
-            >
+              onClick={(e) => e.stopPropagation()}>
               <Image
                 src={productImages[selectedImageIndex]}
-                alt={product?.name || 'Product image'}
+                alt={product?.name || "Product image"}
                 fill
                 className='object-contain'
                 priority

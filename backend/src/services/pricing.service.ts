@@ -35,6 +35,7 @@ type PricingResult = {
   appliedDiscounts: AppliedDiscount[];
   appliedCoupon: AppliedCoupon | null;
   totalSavings: number;
+  totalPercentageSavings: number;
 };
 
 const discountOrderBy = [{ priority: "desc" as const }, { createdAt: "desc" as const }];
@@ -275,6 +276,10 @@ export async function resolveVariantPricing(variantId: string): Promise<PricingR
     appliedDiscounts: pricing.applied,
     appliedCoupon: null,
     totalSavings: Math.max(0, originalPrice - discountedPrice),
+    totalPercentageSavings:
+      originalPrice > 0
+        ? Math.round(((originalPrice - discountedPrice) / originalPrice) * 100)
+        : 0,
   };
 }
 
@@ -394,5 +399,9 @@ export async function resolveCartPricing(cartId: string): Promise<PricingResult>
     appliedDiscounts: uniqueApplied,
     appliedCoupon,
     totalSavings: Math.max(0, originalPrice - discountedPrice),
+    totalPercentageSavings:
+      originalPrice > 0
+        ? Math.round(((originalPrice - discountedPrice) / originalPrice) * 100)
+        : 0,
   };
 }

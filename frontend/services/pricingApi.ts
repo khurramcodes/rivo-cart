@@ -14,6 +14,7 @@ export type VariantPricing = {
   discountedPrice: number;
   appliedDiscounts: DiscountInfo[];
   totalSavings: number;
+  totalPercentageSavings: number;
 };
 
 /**
