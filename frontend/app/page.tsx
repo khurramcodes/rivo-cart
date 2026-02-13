@@ -2,11 +2,13 @@ import { NavBar } from "@/components/user/NavBar";
 import { HeroSection } from "@/components/user/HeroSection";
 import { LatestProducts } from "@/components/user/LatestProducts";
 import Footer from "@/components/user/Footer";
+import { SecondaryNav } from "@/components/user/SecondaryNavbar";
 
 export default function Home() {
   return (
     <div className='min-h-screen bg-white'>
       <NavBar />
+      <SecondaryNav />
       <main>
         <HeroSection
           headline="Everything you need, nothing you don't."
