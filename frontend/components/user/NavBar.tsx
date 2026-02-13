@@ -8,7 +8,6 @@ import { useAppSelector } from "@/store/hooks";
 import { Input } from "../ui/Input";
 import { useAppDispatch } from "@/store/hooks";
 import { logout } from "@/store/slices/authSlice";
-import Image from "next/image";
 import { GlobalLoader } from "../ui/GlobalLoader";
 import Logo from "./Logo";
 

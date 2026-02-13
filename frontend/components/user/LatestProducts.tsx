@@ -2,17 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 
 import type { Product } from "@/types";
 import { catalogApi } from "@/services/catalogApi";
 import { pricingApi, type VariantPricing } from "@/services/pricingApi";
 import { formatPrice } from "@/config/currency";
-import { addCacheBust } from "@/utils/imageCache";
-import { Button } from "@/components/ui/Button";
 import { useAppDispatch } from "@/store/hooks";
-import { addToCart } from "@/store/cartThunks";
-import { Tag } from "lucide-react";
+import { ProductCard } from "./ProductCard";
 
 /**
  * Latest products section props
@@ -27,7 +23,9 @@ export function LatestProducts({ limit = 6 }: LatestProductsProps) {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [pricingMap, setPricingMap] = useState<Map<string, VariantPricing>>(new Map());
+  const [pricingMap, setPricingMap] = useState<Map<string, VariantPricing>>(
+    new Map(),
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -46,7 +44,8 @@ export function LatestProducts({ limit = 6 }: LatestProductsProps) {
           .filter((id): id is string => !!id);
 
         if (variantIds.length > 0) {
-          const pricingResults = await pricingApi.getBulkVariantPricing(variantIds);
+          const pricingResults =
+            await pricingApi.getBulkVariantPricing(variantIds);
           if (!mounted) return;
           const newMap = new Map<string, VariantPricing>();
           pricingResults.forEach((r) => {
@@ -112,84 +111,18 @@ export function LatestProducts({ limit = 6 }: LatestProductsProps) {
 
   return (
     <section className='w-full py-12'>
-      <h2 className='text-center text-4xl font-medium tracking-tight text-zinc-900 mb-8'>
+      <h2 className='text-center text-4xl font-normal tracking-tight text-zinc-900 mb-8'>
         Latest Products
       </h2>
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
         {products.map((product) => {
-          const priceInfo = getProductPrice(product);
           const defaultVariant = getDefaultVariant(product);
-          const pricing = defaultVariant ? pricingMap.get(defaultVariant.id) : null;
-          const hasDiscount = pricing && pricing.totalSavings > 0;
+          const pricing = defaultVariant
+            ? pricingMap.get(defaultVariant.id)
+            : null;
 
           return (
-            <div
-              key={product.id}
-              className='group rounded border border-zinc-200 bg-white p-4 transition hover:border-zinc-300'>
-              <Link href={`/products/${product.id}`}>
-                {product.imageUrl && (
-                  <div className='relative aspect-square overflow-hidden rounded bg-zinc-100'>
-                    <Image
-                      src={addCacheBust(product.imageUrl, product.updatedAt)}
-                      alt={product.name}
-                      fill
-                      className='object-cover transition group-hover:scale-[1.02]'
-                      unoptimized
-                    />
-                  </div>
-                )}
-
-                <div className='mt-3'>
-                  <p className='text-sm font-medium text-zinc-900'>
-                    {product.name}
-                  </p>
-                  <div className="mt-1">
-                    {hasDiscount ? (
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm text-zinc-400 line-through">
-                          {priceInfo.priceRange || formatPrice(priceInfo.price)}
-                        </p>
-                        <p className="text-sm font-semibold text-zinc-900">
-                          {formatPrice(pricing.discountedPrice)}
-                        </p>
-                        <p className="text-xs bg-red-800 text-white py-1 px-3 rounded-2xl">
-                          {pricing.totalPercentageSavings}% Off
-                        </p>
-                      </div>
-                    ) : (
-                      <p className='text-sm text-zinc-600'>
-                        {priceInfo.priceRange || formatPrice(priceInfo.price)}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </Link>
-
-              {product.type === "SIMPLE" && defaultVariant ? (
-                <Button
-                  variant='primary'
-                  className='mt-3 w-full'
-                  disabled={defaultVariant.stock === 0}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    dispatch(
-                      addToCart({
-                        product,
-                        variant: defaultVariant,
-                        quantity: 1,
-                      })
-                    );
-                  }}>
-                  {defaultVariant.stock === 0 ? "Out of Stock" : "Add to Cart"}
-                </Button>
-              ) : (
-                <Link href={`/products/${product.id}`} className="block">
-                  <Button variant='secondary' className='mt-3 w-full'>
-                    Select Options
-                  </Button>
-                </Link>
-              )}
-            </div>
+            <ProductCard key={product.id} product={product} pricing={pricing} />
           );
         })}
       </div>

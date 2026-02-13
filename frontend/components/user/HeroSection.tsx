@@ -19,7 +19,7 @@ export function HeroSection({
   imageAlt = "Hero image",
 }: HeroSectionProps) {
   return (
-    <section className='relative w-full min-h-110 lg:min-h-150 overflow-hidden'>
+    <section className='relative w-full h-100 lg:h-150 overflow-hidden'>
       {/* Background Image */}
       <div className='absolute inset-0'>
         <Image
@@ -34,7 +34,7 @@ export function HeroSection({
 
       {/* Containerized Content */}
       <div className='relative z-10 h-full text-center lg:text-left'>
-        <div className='mx-auto max-w-7xl px-6 lg:px-8 flex min-h-150 items-center'>
+        <div className='mx-auto max-w-7xl px-6 lg:px-8 flex h-100 lg:h-150 items-center'>
           <div className='max-w-2xl text-white'>
             <h1 className='text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl'>
               {headline}

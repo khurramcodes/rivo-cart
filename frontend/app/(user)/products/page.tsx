@@ -5,15 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { catalogApi } from "@/services/catalogApi";
 import { pricingApi, type VariantPricing } from "@/services/pricingApi";
 import { formatPrice } from "@/config/currency";
-import Image from "next/image";
-import Link from "next/link";
 import type { Product } from "@/types";
 import type { Category } from "@/types";
-import { addCacheBust } from "@/utils/imageCache";
-import { Button } from "@/components/ui/Button";
 import { useAppDispatch } from "@/store/hooks";
-import { addToCart } from "@/store/cartThunks";
-import { Tag } from "lucide-react";
+import { ProductCard } from "@/components/user/ProductCard";
 
 // Helper function to get product display price
 function getProductPrice(product: Product): { price: number; priceRange?: string } {
@@ -286,83 +281,16 @@ export default function ProductsPage() {
             ) : null}
             
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {items.map((p) => {
-                const priceInfo = getProductPrice(p);
-                const defaultVariant = getDefaultVariant(p);
+              {items.map((product) => {
+                const defaultVariant = getDefaultVariant(product);
                 const pricing = defaultVariant ? pricingMap.get(defaultVariant.id) : null;
-                const hasDiscount = pricing && pricing.totalSavings > 0;
                 
                 return (
-                  <div
-                    key={p.id}
-                    className="group rounded border border-zinc-200 bg-white p-4 transition hover:border-zinc-300"
-                  >
-                    <Link href={`/products/${p.id}`}>
-                      <div className="relative aspect-square overflow-hidden rounded bg-zinc-100">
-                        {hasDiscount && (
-                          <div className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded bg-red-600 px-2 py-1 text-xs font-semibold text-white shadow-sm">
-                            <Tag size={12} />
-                            Save {formatPrice(pricing.totalSavings)}
-                          </div>
-                        )}
-                        <Image 
-                          src={addCacheBust(p.imageUrl, p.updatedAt)} 
-                          alt={p.name} 
-                          fill 
-                          className="object-cover transition group-hover:scale-[1.02]"
-                          priority
-                          unoptimized
-                        />
-                      </div>
-                      <div className="mt-3">
-                        <p className="text-sm font-medium text-zinc-900">{p.name}</p>
-                        <div className="mt-1">
-                          {hasDiscount ? (
-                            <div className="flex items-center gap-2">
-                              <p className="text-sm text-zinc-400 line-through">
-                                {priceInfo.priceRange || formatPrice(priceInfo.price)}
-                              </p>
-                              <p className="text-sm font-semibold text-red-600">
-                                {formatPrice(pricing.discountedPrice)}
-                              </p>
-                            </div>
-                          ) : (
-                            <p className="text-sm text-zinc-600">
-                              {priceInfo.priceRange || formatPrice(priceInfo.price)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </Link>
-                    {p.type === "SIMPLE" && defaultVariant ? (
-                      <Button
-                        variant="primary"
-                        className="mt-3 w-full"
-                        disabled={!defaultVariant || defaultVariant.stock === 0}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (defaultVariant) {
-                            dispatch(addToCart({ 
-                              product: p, 
-                              variant: defaultVariant,
-                              quantity: 1 
-                            }));
-                          }
-                        }}
-                      >
-                        {defaultVariant && defaultVariant.stock === 0 ? "Out of Stock" : "Add to Cart"}
-                      </Button>
-                    ) : (
-                      <Link href={`/products/${p.id}`}>
-                        <Button
-                          variant="secondary"
-                          className="mt-3 w-full"
-                        >
-                          Select Options
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    pricing={pricing}
+                  />
                 );
               })}
             </div>
