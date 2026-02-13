@@ -185,11 +185,6 @@ export default function ProductDetailPage() {
   const handleAddToCart = async () => {
     if (!product || !selectedVariant) return;
 
-    // if (selectedVariant.stock === 0) {
-    //   alert("This variant is out of stock");
-    //   return;
-    // }
-
     const existingItem = cart?.items.find(
       (i) => i.variantId === selectedVariant.id,
     );

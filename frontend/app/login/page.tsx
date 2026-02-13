@@ -9,8 +9,10 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { login } from "@/store/slices/authSlice";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Suspense } from 'react';
+import { Suspense } from "react";
 import { GlobalLoader } from "@/components/ui/GlobalLoader";
+import Image from "next/image";
+import Logo from "@/components/user/Logo";
 
 const schema = z.object({
   email: z
@@ -45,8 +47,11 @@ function LoginForm() {
   }
 
   return (
-    <div className='min-h-screen bg-white'>
-      <main className='mx-auto max-w-md px-4 py-12'>
+    <div className='flex flex-col items-center justify-center min-h-screen bg-white'>
+      <div className="mb-4">
+        <Logo />
+      </div>
+      <main className='w-sm max-w-sm border border-zinc-200 px-10 py-12 rounded'>
         <h1 className='text-2xl font-semibold tracking-tight text-zinc-900'>
           Login
         </h1>

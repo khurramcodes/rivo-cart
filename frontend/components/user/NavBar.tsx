@@ -10,13 +10,14 @@ import { useAppDispatch } from "@/store/hooks";
 import { logout } from "@/store/slices/authSlice";
 import Image from "next/image";
 import { GlobalLoader } from "../ui/GlobalLoader";
+import Logo from "./Logo";
 
 export function NavBar() {
   const router = useRouter();
   const cartCount = useAppSelector((s) =>
     (s.cart.cart?.items ?? []).reduce((sum, i) => sum + i.quantity, 0),
   );
-  const {user, hydrated} = useAppSelector((s) => s.auth);
+  const { user, hydrated } = useAppSelector((s) => s.auth);
 
   const dispatch = useAppDispatch();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -41,17 +42,7 @@ export function NavBar() {
   return (
     <header className='sticky top-0 z-20 border-b border-zinc-200 bg-white backdrop-blur'>
       <div className='mx-auto flex max-w-6xl lg:max-w-7xl items-center gap-4 px-4 py-4'>
-        <Link href='/'>
-          <Image
-            src='/images/logo.png'
-            alt='Logo'
-            width={160}
-            height={40}
-            className='object-cover'
-            priority
-            unoptimized
-          />
-        </Link>
+        <Logo />
 
         <Link href='/products' className='text-zinc-700 hover:text-black'>
           Products
@@ -66,7 +57,7 @@ export function NavBar() {
               if (e.key !== "Enter") return;
               const q = (e.currentTarget.value ?? "").trim();
               router.push(
-                q ? `/products?q=${encodeURIComponent(q)}` : "/products"
+                q ? `/products?q=${encodeURIComponent(q)}` : "/products",
               );
             }}
           />
@@ -94,8 +85,7 @@ export function NavBar() {
                 <button
                   type='button'
                   onClick={() => setMenuOpen((prev) => !prev)}
-                  className='inline-flex items-center gap-1 text-zinc-700 hover:text-black'
-                >
+                  className='inline-flex items-center gap-1 text-zinc-700 hover:text-black'>
                   <span className='hidden sm:inline text-zinc-600'>
                     Hi, {user.firstName || user.name}
                   </span>
@@ -106,8 +96,7 @@ export function NavBar() {
                     <Link
                       href='/account'
                       className='block px-3 py-2 text-zinc-700 hover:bg-zinc-100'
-                      onClick={() => setMenuOpen(false)}
-                    >
+                      onClick={() => setMenuOpen(false)}>
                       Account
                     </Link>
                     <button
@@ -116,8 +105,7 @@ export function NavBar() {
                       onClick={() => {
                         setMenuOpen(false);
                         void dispatch(logout());
-                      }}
-                    >
+                      }}>
                       Logout
                     </button>
                   </div>
@@ -139,5 +127,3 @@ export function NavBar() {
     </header>
   );
 }
-
-
