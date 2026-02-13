@@ -48,10 +48,10 @@ function LoginForm() {
 
   return (
     <div className='flex flex-col items-center justify-center min-h-screen bg-white'>
-      <div className="mb-4">
+      <div className='mb-4'>
         <Logo />
       </div>
-      <main className='w-sm max-w-sm border border-zinc-200 px-10 py-12 rounded'>
+      <main className='w-sm max-w-sm border border-zinc-300 bg-[#f5f3ef] px-10 py-12 rounded'>
         <h1 className='text-2xl font-semibold tracking-tight text-zinc-900'>
           Login
         </h1>
@@ -60,7 +60,12 @@ function LoginForm() {
         <form className='mt-6 space-y-4' onSubmit={form.handleSubmit(onSubmit)}>
           <div>
             <label className='text-sm font-medium text-zinc-800'>Email</label>
-            <Input className='mt-2' type='email' {...form.register("email")} />
+            <Input
+              className='mt-2 border border-zinc-300'
+              type='email'
+              placeholder='Email'
+              {...form.register("email")}
+            />
             {form.formState.errors.email ? (
               <p className='mt-1 text-sm text-red-600'>
                 {form.formState.errors.email.message}
@@ -72,8 +77,9 @@ function LoginForm() {
               Password
             </label>
             <Input
-              className='mt-2'
+              className='mt-2 border border-zinc-300'
               type='password'
+              placeholder='Password'
               {...form.register("password")}
             />
             {form.formState.errors.password ? (
