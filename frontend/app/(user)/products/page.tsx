@@ -4,31 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { catalogApi } from "@/services/catalogApi";
 import { pricingApi, type VariantPricing } from "@/services/pricingApi";
-import { formatPrice } from "@/config/currency";
 import type { Product } from "@/types";
 import type { Category } from "@/types";
-import { useAppDispatch } from "@/store/hooks";
 import { ProductCard } from "@/components/user/ProductCard";
-
-// Helper function to get product display price
-function getProductPrice(product: Product): { price: number; priceRange?: string } {
-  if (!product.variants || product.variants.length === 0) {
-    return { price: 0 };
-  }
-
-  const prices = product.variants.map((v) => v.price);
-  const minPrice = Math.min(...prices);
-  const maxPrice = Math.max(...prices);
-
-  // If variable product with different prices, show range
-  if (product.type === "VARIABLE" && minPrice !== maxPrice) {
-    return { price: minPrice, priceRange: `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}` };
-  }
-
-  // Otherwise, show default variant price or first variant
-  const defaultVariant = product.variants.find((v) => v.isDefault) || product.variants[0];
-  return { price: defaultVariant.price };
-}
 
 // Helper to get default variant for adding to cart
 function getDefaultVariant(product: Product) {
@@ -36,11 +14,17 @@ function getDefaultVariant(product: Product) {
   return product.variants.find((v) => v.isDefault) || product.variants[0];
 }
 
-export default function ProductsPage() {
+export default function ProductsPage({
+  initialCategoryIdProp,
+}: {
+  initialCategoryIdProp?: string;
+}) {
   const searchParams = useSearchParams();
+
   const initialQ = searchParams.get("q") ?? "";
-  const initialCategoryId = searchParams.get("categoryId") ?? "";
-  const dispatch = useAppDispatch();
+  // const initialCategoryId = searchParams.get("categoryId") ?? "";
+  const initialCategoryId =
+    initialCategoryIdProp ?? searchParams.get("categoryId") ?? "";
 
   const [categoryId, setCategoryId] = useState(initialCategoryId);
   const [minPrice, setMinPrice] = useState("");
@@ -51,7 +35,9 @@ export default function ProductsPage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const limit = 12;
-  const [pricingMap, setPricingMap] = useState<Map<string, VariantPricing>>(new Map());
+  const [pricingMap, setPricingMap] = useState<Map<string, VariantPricing>>(
+    new Map(),
+  );
 
   const hasMore = useMemo(() => items.length < total, [items.length, total]);
 
@@ -61,7 +47,12 @@ export default function ProductsPage() {
       try {
         const [cats, data] = await Promise.all([
           catalogApi.listCategories(),
-          catalogApi.listProducts({ q: initialQ || undefined, categoryId: initialCategoryId || undefined, page: 1, limit }),
+          catalogApi.listProducts({
+            q: initialQ || undefined,
+            categoryId: initialCategoryId || undefined,
+            page: 1,
+            limit,
+          }),
         ]);
 
         if (!mounted) return;
@@ -74,9 +65,10 @@ export default function ProductsPage() {
         const variantIds = data.items
           .map((p) => getDefaultVariant(p)?.id)
           .filter((id): id is string => !!id);
-        
+
         if (variantIds.length > 0) {
-          const pricingResults = await pricingApi.getBulkVariantPricing(variantIds);
+          const pricingResults =
+            await pricingApi.getBulkVariantPricing(variantIds);
           if (!mounted) return;
           const newMap = new Map<string, VariantPricing>();
           pricingResults.forEach((r) => {
@@ -94,7 +86,11 @@ export default function ProductsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialQ, initialCategoryId]);
 
-  async function applyFilters(next: { categoryId: string; minPrice?: string; maxPrice?: string }) {
+  async function applyFilters(next: {
+    categoryId: string;
+    minPrice?: string;
+    maxPrice?: string;
+  }) {
     setLoading(true);
     try {
       const data = await catalogApi.listProducts({
@@ -113,9 +109,10 @@ export default function ProductsPage() {
       const variantIds = data.items
         .map((p) => getDefaultVariant(p)?.id)
         .filter((id): id is string => !!id);
-      
+
       if (variantIds.length > 0) {
-        const pricingResults = await pricingApi.getBulkVariantPricing(variantIds);
+        const pricingResults =
+          await pricingApi.getBulkVariantPricing(variantIds);
         const newMap = new Map<string, VariantPricing>();
         pricingResults.forEach((r) => {
           if (r.pricing) newMap.set(r.variantId, r.pricing);
@@ -148,9 +145,10 @@ export default function ProductsPage() {
       const variantIds = data.items
         .map((p) => getDefaultVariant(p)?.id)
         .filter((id): id is string => !!id);
-      
+
       if (variantIds.length > 0) {
-        const pricingResults = await pricingApi.getBulkVariantPricing(variantIds);
+        const pricingResults =
+          await pricingApi.getBulkVariantPricing(variantIds);
         setPricingMap((prev) => {
           const newMap = new Map(prev);
           pricingResults.forEach((r) => {
@@ -165,40 +163,50 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <main className="mx-auto max-w-6xl lg:max-w-7xl px-4 py-10">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Products</h1>
+    <div className='min-h-screen bg-white'>
+      <main className='mx-auto max-w-6xl lg:max-w-7xl px-4 py-10'>
+        <h1 className='text-2xl font-semibold tracking-tight text-zinc-900'>
+          Products
+        </h1>
 
-        <div className="mt-6 flex gap-6">
+        <div className='mt-6 flex gap-6'>
           {/* Left Sidebar - Filters */}
-          <aside className="hidden w-60 shrink-0 md:block">
-            <div className="sticky top-24 space-y-4">
+          <aside className='hidden w-60 shrink-0 md:block'>
+            <div className='sticky top-24 space-y-4'>
               {/* Category Filter */}
-              <div className="rounded border border-zinc-200 bg-white p-4">
-                <h2 className="text-sm font-semibold text-zinc-900">Categories</h2>
-                <div className="mt-3 space-y-2">
+              <div className='rounded border border-zinc-200 bg-white p-4'>
+                <h2 className='text-sm font-semibold text-zinc-900'>
+                  Categories
+                </h2>
+                <div className='mt-3 space-y-2'>
                   <button
                     className={`block w-full text-left text-sm transition ${
-                      categoryId === "" ? "font-medium text-black" : "text-zinc-600 hover:text-black"
+                      categoryId === ""
+                        ? "font-medium text-black"
+                        : "text-zinc-600 hover:text-black"
                     }`}
                     onClick={() => {
                       setCategoryId("");
                       void applyFilters({ categoryId: "", minPrice, maxPrice });
-                    }}
-                  >
+                    }}>
                     All Products
                   </button>
                   {categories.map((c) => (
                     <button
                       key={c.id}
                       className={`block w-full text-left text-sm transition ${
-                        categoryId === c.id ? "font-medium text-black" : "text-zinc-600 hover:text-black"
+                        categoryId === c.id
+                          ? "font-medium text-black"
+                          : "text-zinc-600 hover:text-black"
                       }`}
                       onClick={() => {
                         setCategoryId(c.id);
-                        void applyFilters({ categoryId: c.id, minPrice, maxPrice });
-                      }}
-                    >
+                        void applyFilters({
+                          categoryId: c.id,
+                          minPrice,
+                          maxPrice,
+                        });
+                      }}>
                       {c.name}
                     </button>
                   ))}
@@ -206,46 +214,56 @@ export default function ProductsPage() {
               </div>
 
               {/* Price Filter */}
-              <div className="rounded border border-zinc-200 bg-white p-4">
-                <h2 className="text-sm font-semibold text-zinc-900">Price Range</h2>
-                <div className="mt-3 space-y-3">
+              <div className='rounded border border-zinc-200 bg-white p-4'>
+                <h2 className='text-sm font-semibold text-zinc-900'>
+                  Price Range
+                </h2>
+                <div className='mt-3 space-y-3'>
                   <div>
-                    <label className="block text-xs text-zinc-600 mb-1">Min Price ($)</label>
+                    <label className='block text-xs text-zinc-600 mb-1'>
+                      Min Price ($)
+                    </label>
                     <input
-                      type="number"
+                      type='number'
                       value={minPrice}
                       onChange={(e) => setMinPrice(e.target.value)}
-                      placeholder="0"
-                      className="w-full px-3 py-2 text-sm text-zinc-900 border border-zinc-200 rounded focus:outline-none focus:ring-2 focus:ring-black"
-                      min="0"
+                      placeholder='0'
+                      className='w-full px-3 py-2 text-sm text-zinc-900 border border-zinc-200 rounded focus:outline-none focus:ring-2 focus:ring-black'
+                      min='0'
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-zinc-600 mb-1">Max Price ($)</label>
+                    <label className='block text-xs text-zinc-600 mb-1'>
+                      Max Price ($)
+                    </label>
                     <input
-                      type="number"
+                      type='number'
                       value={maxPrice}
                       onChange={(e) => setMaxPrice(e.target.value)}
                       placeholder={maxPrice || "0"}
-                      className="w-full px-3 py-2 text-sm text-zinc-900 border border-zinc-200 rounded focus:outline-none focus:ring-2 focus:ring-black"
-                      min="0"
+                      className='w-full px-3 py-2 text-sm text-zinc-900 border border-zinc-200 rounded focus:outline-none focus:ring-2 focus:ring-black'
+                      min='0'
                     />
                   </div>
                   <button
-                    className="w-full rounded bg-black px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition"
-                    onClick={() => void applyFilters({ categoryId, minPrice, maxPrice })}
-                  >
+                    className='w-full rounded bg-black px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition'
+                    onClick={() =>
+                      void applyFilters({ categoryId, minPrice, maxPrice })
+                    }>
                     Apply
                   </button>
-                  {(minPrice || maxPrice) ? (
+                  {minPrice || maxPrice ? (
                     <button
-                      className="w-full rounded border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition"
+                      className='w-full rounded border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition'
                       onClick={() => {
                         setMinPrice("");
                         setMaxPrice("");
-                        void applyFilters({ categoryId, minPrice: "", maxPrice: "" });
-                      }}
-                    >
+                        void applyFilters({
+                          categoryId,
+                          minPrice: "",
+                          maxPrice: "",
+                        });
+                      }}>
                       Clear Price
                     </button>
                   ) : null}
@@ -255,17 +273,16 @@ export default function ProductsPage() {
           </aside>
 
           {/* Mobile Category Dropdown */}
-          <div className="mb-4 md:hidden w-full">
+          <div className='mb-4 md:hidden w-full'>
             <select
-              className="h-10 w-full rounded border border-zinc-200 bg-white px-3 text-sm text-zinc-900"
+              className='h-10 w-full rounded border border-zinc-200 bg-white px-3 text-sm text-zinc-900'
               value={categoryId}
               onChange={(e) => {
                 const next = e.target.value;
                 setCategoryId(next);
                 void applyFilters({ categoryId: next });
-              }}
-            >
-              <option value="">All categories</option>
+              }}>
+              <option value=''>All categories</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -275,16 +292,18 @@ export default function ProductsPage() {
           </div>
 
           {/* Product Grid */}
-          <div className="flex-1">
+          <div className='flex-1'>
             {loading && items.length === 0 ? (
-              <div className="text-sm text-zinc-600">Loading…</div>
+              <div className='text-sm text-zinc-600'>Loading…</div>
             ) : null}
-            
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+            <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
               {items.map((product) => {
                 const defaultVariant = getDefaultVariant(product);
-                const pricing = defaultVariant ? pricingMap.get(defaultVariant.id) : null;
-                
+                const pricing = defaultVariant
+                  ? pricingMap.get(defaultVariant.id)
+                  : null;
+
                 return (
                   <ProductCard
                     key={product.id}
@@ -296,20 +315,19 @@ export default function ProductsPage() {
             </div>
 
             {items.length === 0 && !loading ? (
-              <p className="text-sm text-zinc-600">No products found.</p>
+              <p className='text-sm text-zinc-600'>No products found.</p>
             ) : null}
 
-            <div className="mt-8 flex items-center justify-center">
+            <div className='mt-8 flex items-center justify-center'>
               {hasMore ? (
                 <button
-                  className="rounded border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100"
+                  className='rounded border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100'
                   disabled={loading}
-                  onClick={() => void loadMore()}
-                >
+                  onClick={() => void loadMore()}>
                   {loading ? "Loading…" : "Load more"}
                 </button>
               ) : items.length > 0 ? (
-                <p className="text-sm text-zinc-600">You've reached the end.</p>
+                <p className='text-sm text-zinc-600'>You've reached the end.</p>
               ) : null}
             </div>
           </div>

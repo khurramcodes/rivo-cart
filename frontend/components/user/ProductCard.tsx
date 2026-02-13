@@ -20,19 +20,53 @@ function getDefaultVariant(product: Product) {
   return product.variants.find((v) => v.isDefault) || product.variants[0];
 }
 
-function getProductPrice(product: Product) {
-  if (!product.variants?.length) return 0;
-  const defaultVariant =
-    product.variants.find((v) => v.isDefault) || product.variants[0];
-  return defaultVariant.price;
+
+function getDisplayPricing(product: Product, pricing?: VariantPricing | null) {
+  if (!product.variants?.length) {
+    return null;
+  }
+
+  const prices = product.variants.map((v) => v.price);
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+
+  const isVariable = product.type === "VARIABLE";
+  const isRange = minPrice !== maxPrice;
+
+  // SIMPLE PRODUCT
+  if (!isVariable) {
+    const defaultVariant =
+      product.variants.find((v) => v.isDefault) || product.variants[0];
+
+    return {
+      originalMin: defaultVariant.price,
+      originalMax: defaultVariant.price,
+      discountedMin: pricing?.discountedPrice ?? defaultVariant.price,
+      hasDiscount: pricing ? pricing.totalSavings > 0 : false,
+      percentage: pricing?.totalPercentageSavings ?? 0,
+      isRange: false,
+      isVariable: false,
+    };
+  }
+
+  // VARIABLE PRODUCT
+  return {
+    originalMin: minPrice,
+    originalMax: maxPrice,
+    discountedMin: pricing?.discountedPrice ?? minPrice,
+    hasDiscount: pricing ? pricing.totalSavings > 0 : false,
+    percentage: pricing?.totalPercentageSavings ?? 0,
+    isRange,
+    isVariable: true,
+  };
 }
 
 export function ProductCard({ product, pricing }: ProductCardProps) {
   const dispatch = useAppDispatch();
   const defaultVariant = getDefaultVariant(product);
-  const basePrice = getProductPrice(product);
 
-  const hasDiscount = pricing && pricing.totalSavings > 0;
+  const priceData = getDisplayPricing(product, pricing);
+  if (!priceData) return null;
 
   return (
     <div className='group rounded border border-zinc-200 bg-white p-4 transition hover:border-zinc-300'>
@@ -50,20 +84,34 @@ export function ProductCard({ product, pricing }: ProductCardProps) {
           <p className='text-sm font-medium text-zinc-900'>{product.name}</p>
 
           <div className='mt-1'>
-            {hasDiscount ? (
-              <div className='flex items-center gap-2'>
+            {priceData.hasDiscount ? (
+              <div className='flex flex-col gap-1'>
+                {/* Original Price */}
                 <p className='text-sm text-zinc-400 line-through'>
-                  {formatPrice(basePrice)}
+                  {priceData.isRange && priceData.isVariable
+                    ? `${formatPrice(priceData.originalMin)} – ${formatPrice(priceData.originalMax)}`
+                    : formatPrice(priceData.originalMin)}
                 </p>
-                <p className='text-sm font-semibold text-zinc-900'>
-                  {formatPrice(pricing!.discountedPrice)}
-                </p>
-                <p className='text-xs bg-red-800 text-white py-1 px-3 rounded-2xl'>
-                  {pricing.totalPercentageSavings}% Off
-                </p>
+
+                {/* Discounted Price */}
+                <div className='flex items-center gap-2'>
+                  <p className='text-sm font-semibold text-zinc-900'>
+                    {priceData.isRange && priceData.isVariable
+                      ? `From ${formatPrice(priceData.discountedMin)}`
+                      : formatPrice(priceData.discountedMin)}
+                  </p>
+
+                  <p className='text-xs bg-red-800 text-white py-1 px-3 rounded-2xl'>
+                    {priceData.percentage}% Off
+                  </p>
+                </div>
               </div>
             ) : (
-              <p className='text-sm text-zinc-600'>{formatPrice(basePrice)}</p>
+              <p className='text-sm text-zinc-600'>
+                {priceData.isRange && priceData.isVariable
+                  ? `${formatPrice(priceData.originalMin)} – ${formatPrice(priceData.originalMax)}`
+                  : formatPrice(priceData.originalMin)}
+              </p>
             )}
           </div>
         </div>

@@ -75,6 +75,8 @@ export async function listLatestProducts(limit: number = 6) {
       type: true,
       imageUrl: true,
       updatedAt: true,
+
+      // fetch ALL variant prices (lightweight)
       variants: {
         select: {
           id: true,
@@ -82,8 +84,6 @@ export async function listLatestProducts(limit: number = 6) {
           stock: true,
           isDefault: true,
         },
-        orderBy: { isDefault: "desc" },
-        take: 1,
       },
     },
   });

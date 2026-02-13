@@ -6,6 +6,14 @@ export async function listCategories() {
   return prisma.category.findMany({ orderBy: { name: "asc" } });
 }
 
+export async function getCategoryBySlug(slug: string) {
+  const category = await prisma.category.findUnique({
+    where: { slug },
+  });
+  if (!category) throw new ApiError(404, "CATEGORY_NOT_FOUND", "Category not found");
+  return category;
+}
+
 export async function createCategory(input: { name: string; description?: string; parentId?: string | null }) {
   const name = input.name.trim();
   const slug = await generateCategorySlug(name);

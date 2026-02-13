@@ -7,6 +7,12 @@ export const list = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ categories });
 });
 
+export const get = asyncHandler(async (req: Request, res: Response) => {
+  const { slug } = req.params as { slug: string };
+  const category = await categoryService.getCategoryBySlug(slug);
+  res.json({ category });
+});
+
 export const create = asyncHandler(async (req: Request, res: Response) => {
   const { name, description, parentId } = req.body as {
     name: string;

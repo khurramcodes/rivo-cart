@@ -28,6 +28,7 @@ export type Address = {
 export type Category = {
   id: string;
   name: string;
+  slug: string;
   description?: string | null;
   parentId?: string | null;
   createdAt: string;
