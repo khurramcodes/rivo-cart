@@ -2,7 +2,9 @@ import ProductsPage from "../../products/page";
 import { catalogApi } from "@/services/catalogApi";
 
 interface Props {
-  params: Promise<{ slug: string }>;
+  params: {
+    slug: string;
+  };
 }
 
 export default async function CategoryPage({ params }: Props) {
