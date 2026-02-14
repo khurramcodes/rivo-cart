@@ -41,7 +41,7 @@ export function SecondaryNav() {
         {parentCategories.map((cat) => (
           <Link
             key={cat.id}
-            href={`/products?category=${cat.slug}`}
+            href={`/category/${cat.slug}`}
             className='text-zinc-600 hover:text-black'>
             {cat.name}
           </Link>
