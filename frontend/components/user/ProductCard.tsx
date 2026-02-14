@@ -76,7 +76,7 @@ export function ProductCard({ product, pricing }: ProductCardProps) {
             src={addCacheBust(product.imageUrl, product.updatedAt)}
             alt={product.name}
             fill
-            className='object-cover transition group-hover:scale-[1.02]'
+            className='object-contain bg-transparent transition group-hover:scale-[1.02]'
           />
         </div>
 

@@ -1,4 +1,4 @@
-// import "dotenv/config";
+import "dotenv/config";
 import { createApp } from "./app.js";
 import { startCartCleanupJob } from "./jobs/cartCleanup.js";
 const PORT = Number(process.env.PORT ?? 4000);

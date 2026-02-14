@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import type { Category } from "@/types";
 import { adminApi } from "@/services/adminApi";
 import { uploadToImageKit } from "@/services/imagekitUpload";
-import { ProductForm, type ProductFormValues } from "@/components/admin/ProductForm";
+import {
+  ProductForm,
+  type ProductFormValues,
+} from "@/components/admin/ProductForm";
 
 export default function AdminCreateProductPage() {
   const router = useRouter();
@@ -37,7 +40,9 @@ export default function AdminCreateProductPage() {
       gallery1: null,
       gallery2: null,
       gallery3: null,
-      variants: [{ sku: "", price: "", stock: "0", isDefault: true, attributes: [] }],
+      variants: [
+        { sku: "", price: "", stock: "0", isDefault: true, attributes: [] },
+      ],
       deleteVariantIds: [],
     }),
     [],
@@ -72,14 +77,28 @@ export default function AdminCreateProductPage() {
     setSaving(true);
     try {
       const init = await adminApi.newProductId();
-      const mainUploaded = await uploadToImageKit(values.mainImage, init.imageFolderPath, "main.webp");
 
-      const galleryData: { index: number; url: string; fileId: string; filePath: string }[] = [];
+      const mainUploaded = await uploadToImageKit(
+        values.mainImage,
+        init.imageFolderPath,
+        "main.webp",
+      );
+
+      const galleryData: {
+        index: number;
+        url: string;
+        fileId: string;
+        filePath: string;
+      }[] = [];
       const galleries = [values.gallery1, values.gallery2, values.gallery3];
       for (let idx = 0; idx < galleries.length; idx += 1) {
         const image = galleries[idx];
         if (image instanceof File) {
-          const uploaded = await uploadToImageKit(image, init.imageFolderPath, `gallery-${idx + 1}.webp`);
+          const uploaded = await uploadToImageKit(
+            image,
+            init.imageFolderPath,
+            `gallery-${idx + 1}.webp`,
+          );
           galleryData.push({
             index: idx + 1,
             url: uploaded.url,
@@ -124,16 +143,16 @@ export default function AdminCreateProductPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-zinc-500">Loading...</p>
+      <div className='flex items-center justify-center h-64'>
+        <p className='text-zinc-500'>Loading...</p>
       </div>
     );
   }
 
   return (
     <ProductForm
-      title="Create Product"
-      submitLabel="Create Product"
+      title='Create Product'
+      submitLabel='Create Product'
       categories={categories}
       initialValues={initialValues}
       loading={saving}

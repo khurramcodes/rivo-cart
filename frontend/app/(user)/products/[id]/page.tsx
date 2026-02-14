@@ -309,7 +309,7 @@ export default function ProductDetailPage() {
                   src={productImages[selectedImageIndex] || productImages[0]}
                   alt={product.name}
                   fill
-                  className='object-cover'
+                  className='object-contain'
                   priority
                   unoptimized
                 />

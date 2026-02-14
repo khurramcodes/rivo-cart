@@ -66,34 +66,6 @@ export function LatestProducts({ limit = 6 }: LatestProductsProps) {
   }, [limit]);
 
   /**
-   * Resolve product price or price range
-   */
-  function getProductPrice(product: Product): {
-    price: number;
-    priceRange?: string;
-  } {
-    if (!product.variants || product.variants.length === 0) {
-      return { price: 0 };
-    }
-
-    const prices = product.variants.map((v) => v.price);
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
-
-    if (product.type === "VARIABLE" && minPrice !== maxPrice) {
-      return {
-        price: minPrice,
-        priceRange: `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`,
-      };
-    }
-
-    const defaultVariant =
-      product.variants.find((v) => v.isDefault) || product.variants[0];
-
-    return { price: defaultVariant.price };
-  }
-
-  /**
    * Resolve default variant for cart action
    */
   function getDefaultVariant(product: Product) {

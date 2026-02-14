@@ -5,7 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import type { Category, Product } from "@/types";
 import { adminApi } from "@/services/adminApi";
 import { uploadToImageKit } from "@/services/imagekitUpload";
-import { ProductForm, type ProductFormValues } from "@/components/admin/ProductForm";
+import {
+  ProductForm,
+  type ProductFormValues,
+} from "@/components/admin/ProductForm";
 
 function centsToDollars(cents: number): string {
   return (cents / 100).toFixed(2);
@@ -55,7 +58,9 @@ export default function AdminEditProductPage() {
         gallery1: null,
         gallery2: null,
         gallery3: null,
-        variants: [{ sku: "", price: "", stock: "0", isDefault: true, attributes: [] }],
+        variants: [
+          { sku: "", price: "", stock: "0", isDefault: true, attributes: [] },
+        ],
         deleteVariantIds: [],
       };
     }
@@ -69,15 +74,16 @@ export default function AdminEditProductPage() {
       gallery1: product.galleryImages?.find((g) => g.index === 1)?.url ?? null,
       gallery2: product.galleryImages?.find((g) => g.index === 2)?.url ?? null,
       gallery3: product.galleryImages?.find((g) => g.index === 3)?.url ?? null,
-      variants:
-        product.variants?.map((v) => ({
-          id: v.id,
-          sku: v.sku,
-          price: centsToDollars(v.price),
-          stock: String(v.stock),
-          isDefault: v.isDefault,
-          attributes: v.attributes || [],
-        })) ?? [{ sku: "", price: "", stock: "0", isDefault: true, attributes: [] }],
+      variants: product.variants?.map((v) => ({
+        id: v.id,
+        sku: v.sku,
+        price: centsToDollars(v.price),
+        stock: String(v.stock),
+        isDefault: v.isDefault,
+        attributes: v.attributes || [],
+      })) ?? [
+        { sku: "", price: "", stock: "0", isDefault: true, attributes: [] },
+      ],
       deleteVariantIds: [],
     };
   }, [product]);
@@ -118,13 +124,20 @@ export default function AdminEditProductPage() {
         payload.thumbFilePath = mainUploaded.filePath;
       }
 
-      const galleryData: { index: number; url: string; fileId: string; filePath: string }[] = [];
+      const galleryData: {
+        index: number;
+        url: string;
+        fileId: string;
+        filePath: string;
+      }[] = [];
       const galleryToDelete: number[] = [];
       const galleries = [values.gallery1, values.gallery2, values.gallery3];
 
       for (let idx = 0; idx < galleries.length; idx += 1) {
         const image = galleries[idx];
-        const existing = product.galleryImages?.find((g) => g.index === idx + 1);
+        const existing = product.galleryImages?.find(
+          (g) => g.index === idx + 1,
+        );
         if (image instanceof File) {
           const uploaded = await uploadToImageKit(
             image,
@@ -151,7 +164,8 @@ export default function AdminEditProductPage() {
       }
 
       if (galleryData.length > 0) payload.gallery = galleryData;
-      if (galleryToDelete.length > 0) payload.deleteGalleryIndexes = galleryToDelete;
+      if (galleryToDelete.length > 0)
+        payload.deleteGalleryIndexes = galleryToDelete;
 
       payload.variants = values.variants.map((v) => ({
         id: v.id,
@@ -162,7 +176,8 @@ export default function AdminEditProductPage() {
         attributes: v.attributes.filter((a) => a.name && a.value),
       }));
 
-      if (values.deleteVariantIds.length > 0) payload.deleteVariantIds = values.deleteVariantIds;
+      if (values.deleteVariantIds.length > 0)
+        payload.deleteVariantIds = values.deleteVariantIds;
 
       await adminApi.updateProduct(product.id, payload);
       router.push("/admin/products");
@@ -175,16 +190,16 @@ export default function AdminEditProductPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-zinc-500">Loading...</p>
+      <div className='flex items-center justify-center h-64'>
+        <p className='text-zinc-500'>Loading...</p>
       </div>
     );
   }
 
   return (
     <ProductForm
-      title="Edit Product"
-      submitLabel="Update Product"
+      title='Edit Product'
+      submitLabel='Update Product'
       categories={categories}
       initialValues={initialValues}
       loading={saving}
