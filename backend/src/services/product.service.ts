@@ -452,4 +452,3 @@ export async function deleteProduct(id: string) {
     throw new ApiError(500, "DELETE_FAILED", "Failed to delete product");
   }
 }
-

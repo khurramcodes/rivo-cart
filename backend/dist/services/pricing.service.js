@@ -185,6 +185,9 @@ export async function resolveVariantPricing(variantId) {
         appliedDiscounts: pricing.applied,
         appliedCoupon: null,
         totalSavings: Math.max(0, originalPrice - discountedPrice),
+        totalPercentageSavings: originalPrice > 0
+            ? Math.round(((originalPrice - discountedPrice) / originalPrice) * 100)
+            : 0,
     };
 }
 export async function resolveCartPricing(cartId) {
@@ -280,5 +283,8 @@ export async function resolveCartPricing(cartId) {
         appliedDiscounts: uniqueApplied,
         appliedCoupon,
         totalSavings: Math.max(0, originalPrice - discountedPrice),
+        totalPercentageSavings: originalPrice > 0
+            ? Math.round(((originalPrice - discountedPrice) / originalPrice) * 100)
+            : 0,
     };
 }

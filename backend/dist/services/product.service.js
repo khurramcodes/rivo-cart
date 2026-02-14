@@ -58,6 +58,28 @@ export async function listProducts(input) {
     ]);
     return { items, total, page, limit };
 }
+export async function listLatestProducts(limit = 6) {
+    return prisma.product.findMany({
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        select: {
+            id: true,
+            name: true,
+            type: true,
+            imageUrl: true,
+            updatedAt: true,
+            // fetch ALL variant prices (lightweight)
+            variants: {
+                select: {
+                    id: true,
+                    price: true,
+                    stock: true,
+                    isDefault: true,
+                },
+            },
+        },
+    });
+}
 export async function getProduct(id) {
     const product = await prisma.product.findUnique({
         where: { id },
@@ -350,6 +372,12 @@ export async function deleteProduct(id) {
                 await deleteFile(file.fileId);
             }
         }
+        // Delete all cart items associated with the product
+        await prisma.cartItem.deleteMany({
+            where: {
+                productId: id,
+            },
+        });
         // Delete product (cascades to variants, attributes, and gallery images)
         await prisma.product.delete({ where: { id } });
         return { success: true };

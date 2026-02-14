@@ -14,6 +14,11 @@ export const list = asyncHandler(async (req, res) => {
     });
     res.json(result);
 });
+export const latest = asyncHandler(async (req, res) => {
+    const limit = req.query.limit ? Number(req.query.limit) : 6;
+    const items = await productService.listLatestProducts(limit);
+    res.json({ items });
+});
 export const get = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const product = await productService.getProduct(id);

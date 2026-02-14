@@ -8,6 +8,7 @@ import { createCategorySchema, idParamSchema, updateCategorySchema } from "../va
 export const categoryRoutes = Router();
 // public
 categoryRoutes.get("/", categoryController.list);
+categoryRoutes.get("/:slug", categoryController.get);
 // admin
 categoryRoutes.post("/", requireAuth, requireRole("ADMIN"), requireCsrf, validate(createCategorySchema), categoryController.create);
 categoryRoutes.put("/:id", requireAuth, requireRole("ADMIN"), requireCsrf, validate(updateCategorySchema), categoryController.update);

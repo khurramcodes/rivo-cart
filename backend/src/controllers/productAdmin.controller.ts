@@ -11,7 +11,13 @@ export const newProductId = asyncHandler(async (_req: Request, res: Response) =>
   const now = new Date();
   const year = String(now.getFullYear());
   const month = pad2(now.getMonth() + 1);
-  const imageFolderPath = `RivoCart/products/${year}/${month}/prod_${raw}`;
+
+  const isProduction = process.env.NODE_ENV === "production";
+  const baseFolder = isProduction
+    ? (process.env.PRODUCT_IMAGE_FOLDER_BASE_PROD ?? "RivoCart")
+    : (process.env.PRODUCT_IMAGE_FOLDER_BASE_DEV ?? "RivoCart-dev");
+
+  const imageFolderPath = `${baseFolder}/products/${year}/${month}/prod_${raw}`;
   res.json({ id: raw, imageFolderPath });
 });
 

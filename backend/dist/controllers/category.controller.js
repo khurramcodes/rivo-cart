@@ -4,6 +4,11 @@ export const list = asyncHandler(async (_req, res) => {
     const categories = await categoryService.listCategories();
     res.json({ categories });
 });
+export const get = asyncHandler(async (req, res) => {
+    const { slug } = req.params;
+    const category = await categoryService.getCategoryBySlug(slug);
+    res.json({ category });
+});
 export const create = asyncHandler(async (req, res) => {
     const { name, description, parentId } = req.body;
     const category = await categoryService.createCategory({ name, description, parentId });

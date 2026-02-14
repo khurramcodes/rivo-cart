@@ -5,6 +5,8 @@ export const placeOrderSchema = z.object({
         customerPhone: z.string().min(6).max(30),
         customerEmail: z.string().email().optional(),
         shippingAddress: z.string().min(5).max(500),
+        shippingAddressId: z.string().min(1).optional(),
+        shippingMethodId: z.string().min(1).optional(),
         items: z
             .array(z.object({
             productId: z.string().min(1),
@@ -20,6 +22,6 @@ export const updateOrderStatusSchema = z.object({
         id: z.string().min(1),
     }),
     body: z.object({
-        status: z.enum(["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED"]),
+        status: z.enum(["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"]),
     }),
 });

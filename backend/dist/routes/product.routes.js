@@ -9,6 +9,7 @@ import { createProductSchema, idParamSchema, listProductsSchema, updateProductSc
 export const productRoutes = Router();
 // public
 productRoutes.get("/", validate(listProductsSchema), productController.list);
+productRoutes.get("/latest", validate(listProductsSchema), productController.latest);
 productRoutes.get("/:id", validate(idParamSchema), productController.get);
 // admin
 productRoutes.get("/admin/new-id", requireAuth, requireRole("ADMIN"), requireCsrf, productAdminController.newProductId);

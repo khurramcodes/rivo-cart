@@ -1,6 +1,9 @@
 import { prisma } from "../prisma/client.js";
 import { ApiError } from "../utils/ApiError.js";
 import { resolveCartPricing } from "./pricing.service.js";
+import { resolveShippingForOrder } from "./shipping.service.js";
+import { sendOrderStatusEmail } from "./email.service.js";
+import { Prisma } from "@prisma/client";
 export async function placeOrder(userId, input) {
     // Get the user's cart to check for applied coupon and calculate pricing
     const cart = await prisma.cart.findFirst({
@@ -51,6 +54,8 @@ export async function placeOrder(userId, input) {
     // Calculate total using pricing engine if cart exists, otherwise use raw prices
     let totalAmount = normalized.reduce((sum, i) => sum + i.price * i.quantity, 0);
     let appliedCouponId = null;
+    let shippingCost = 0;
+    let shippingMethodId = null;
     if (cart) {
         try {
             const pricing = await resolveCartPricing(cart.id);
@@ -62,6 +67,16 @@ export async function placeOrder(userId, input) {
         catch {
             // If pricing fails, fall back to raw total (already calculated above)
         }
+    }
+    if (input.shippingAddressId) {
+        const shipping = await resolveShippingForOrder({
+            userId,
+            addressId: input.shippingAddressId,
+            methodId: input.shippingMethodId,
+        });
+        shippingCost = shipping.shippingCost;
+        shippingMethodId = shipping.shippingMethodId;
+        totalAmount += shippingCost;
     }
     // Create order and deduct stock in a transaction
     const order = await prisma.$transaction(async (tx) => {
@@ -77,6 +92,8 @@ export async function placeOrder(userId, input) {
             data: {
                 userId,
                 totalAmount,
+                shippingCost,
+                shippingMethodId,
                 paymentMethod: "COD",
                 status: "PENDING",
                 customerName: input.customerName.trim(),
@@ -130,9 +147,34 @@ export async function listAllOrders() {
 }
 export async function updateOrderStatus(id, status) {
     try {
-        return await prisma.order.update({ where: { id }, data: { status } });
+        console.log("order status", status);
+        const order = await prisma.order.update({
+            where: { id },
+            data: { status },
+            include: {
+                user: { select: { email: true } },
+            },
+        });
+        if (order.user?.email) {
+            // Fire-and-forget; email errors should not block status update
+            if (status === "CONFIRMED") {
+                void sendOrderStatusEmail(order.user.email, order.id, "CONFIRMED");
+            }
+            else if (status === "CANCELLED") {
+                void sendOrderStatusEmail(order.user.email, order.id, "CANCELLED");
+            }
+        }
+        return order;
     }
-    catch {
-        throw new ApiError(404, "ORDER_NOT_FOUND", "Order not found");
+    catch (err) {
+        // Prisma "record not found" on update
+        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+            throw new ApiError(404, "ORDER_NOT_FOUND", "Order not found");
+        }
+        // Helpful error when DB/client enums are out of sync (e.g. CANCELLED not migrated/generated yet)
+        if (err instanceof Prisma.PrismaClientValidationError) {
+            throw new ApiError(500, "PRISMA_SCHEMA_OUT_OF_SYNC", "Order status enum is out of sync. Run `npx prisma migrate dev` and `npx prisma generate`, then restart the backend.");
+        }
+        throw err;
     }
 }
