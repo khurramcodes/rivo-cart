@@ -11,7 +11,7 @@ export default async function CategoryPage({ params }: Props) {
 
   console.log("Slug", slug)
 
-  if (!slug) notFound();
+  // if (!slug) notFound();
 
   let category;
   try {
