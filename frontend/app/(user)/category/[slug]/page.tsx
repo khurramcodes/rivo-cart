@@ -9,6 +9,8 @@ interface Props {
 export default async function CategoryPage({ params }: Props) {
   const { slug } = await params;
 
+  console.log("Slug", slug)
+
   if (!slug) notFound();
 
   let category;
