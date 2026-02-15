@@ -16,8 +16,10 @@ function getDefaultVariant(product: Product) {
 
 export default function ProductsListing({
   initialCategoryIdProp,
+  categorySlug,
 }: {
   initialCategoryIdProp?: string;
+  categorySlug?: string;
 }) {
   const searchParams = useSearchParams();
 

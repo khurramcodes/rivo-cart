@@ -1,28 +1,23 @@
-"use client"
-
 import ProductsListing from "@/components/user/product/ProductListing";
 import { catalogApi } from "@/services/catalogApi";
 import { notFound } from "next/navigation";
 
+export const dynamic = "force-dynamic"; // allows async API calls
+
 interface Props {
-  params: {
-    slug: string;
-  };
+  params: Promise<{ slug: string }>; // Note: params is now a Promise
 }
 
 export default async function CategoryPage({ params }: Props) {
-  try {
-    const category = await catalogApi.getCategoryBySlug(params.slug);
+  
+  const resolvedParams = await params;
+  const slug = resolvedParams.slug;
 
-    if (!category) {
-      notFound();
-    }
+  if (!slug) notFound();
 
-    return <ProductsListing initialCategoryIdProp={category.id} />;
-  } catch (error) {
-    console.error("Category fetch failed:", error);
+  const category = await catalogApi.getCategoryBySlug(slug);
 
-    // Show proper 404 instead of crashing server
-    notFound();
-  }
+  if (!category) notFound();
+
+  return <ProductsListing initialCategoryIdProp={category.id} />;
 }
