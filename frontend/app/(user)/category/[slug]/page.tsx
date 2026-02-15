@@ -1,5 +1,3 @@
-"use server";
-
 import ProductsListing from "@/components/user/product/ProductListing";
 import { catalogApi } from "@/services/catalogApi";
 import { notFound } from "next/navigation";
