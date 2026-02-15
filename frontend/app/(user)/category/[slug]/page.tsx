@@ -4,8 +4,6 @@ import ProductsListing from "@/components/user/product/ProductListing";
 import { catalogApi } from "@/services/catalogApi";
 import { notFound } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
 interface Props {
   params: Promise<{ slug: string }>;
 }
