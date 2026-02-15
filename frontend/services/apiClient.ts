@@ -4,9 +4,9 @@ import { getCookie } from "@/utils/cookies";
 // Always prefer the configured backend URL.
 // Fallback to "/api" only if you have Next rewrites/proxy set up.
 const baseURL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ??
-  process.env.API_BASE_URL ??
-  "/api";
+  process.env.NODE_ENV === "production"
+    ? "/api"
+    : process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export const apiClient = axios.create({
   baseURL,
