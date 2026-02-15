@@ -3,11 +3,11 @@ import { catalogApi } from "@/services/catalogApi";
 import { notFound } from "next/navigation";
 
 interface Props {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 }
 
 export default async function CategoryPage({ params }: Props) {
-  const { slug } = await params;
+  const { slug } = params;
 
   if (!slug) notFound();
 
