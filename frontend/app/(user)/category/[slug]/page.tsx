@@ -8,7 +8,7 @@ interface Props {
 }
 
 export default async function CategoryPage({ params }: Props) {
-  const { slug } = await params;
+  const slug  = params.slug;
 
   const category = await catalogApi.getCategoryBySlug(slug);
 
