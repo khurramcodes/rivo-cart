@@ -17,16 +17,43 @@ export const catalogApi = {
     return data.categories;
   },
 
-  async getCategoryBySlug(slug: string){
+  // async getCategoryBySlug(slug: string){
+  //   const baseURL = process.env.API_BASE_URL;
+  //   if (!baseURL) throw new Error("NEXT_PUBLIC_API_BASE_URL is missing");
+  //   const { data } = await apiClient.get<{ category: Category }>(
+  //     `${baseURL}/categories/${slug}`,
+  //     {
+  //       skipLoading: true,
+  //     },
+  //   );
+  //   return data.category;
+  // },
+
+  async getCategoryBySlug(slug: string) {
     const baseURL = process.env.API_BASE_URL;
-    if (!baseURL) throw new Error("NEXT_PUBLIC_API_BASE_URL is missing");
-    const { data } = await apiClient.get<{ category: Category }>(
-      `${baseURL}/categories/${slug}`,
-      {
-        skipLoading: true,
-      },
-    );
-    return data.category;
+
+    console.log("Environment:", process.env.NODE_ENV);
+    console.log("API Base URL:", baseURL);
+    console.log("Full URL:", `${baseURL}/categories/${slug}`);
+
+    if (!baseURL) {
+      console.error(
+        "API_BASE_URL is missing. Available env vars:",
+        Object.keys(process.env),
+      );
+      throw new Error("API_BASE_URL is missing");
+    }
+
+    try {
+      const { data } = await apiClient.get<{ category: Category }>(
+        `${baseURL}/categories/${slug}`,
+        { skipLoading: true },
+      );
+      return data.category;
+    } catch (error) {
+      console.error("Failed to fetch category:", error);
+      throw error;
+    }
   },
 
   async listProducts(params?: {
@@ -68,5 +95,3 @@ export const catalogApi = {
     return data.product;
   },
 };
-
-
