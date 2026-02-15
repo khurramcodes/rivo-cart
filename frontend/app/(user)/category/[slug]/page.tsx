@@ -1,5 +1,8 @@
+"use client"
+
 import ProductsListing from "@/components/user/product/ProductListing";
 import { catalogApi } from "@/services/catalogApi";
+import { notFound } from "next/navigation";
 
 interface Props {
   params: {
@@ -8,13 +11,18 @@ interface Props {
 }
 
 export default async function CategoryPage({ params }: Props) {
-  const slug  = params.slug;
+  try {
+    const category = await catalogApi.getCategoryBySlug(params.slug);
 
-  const category = await catalogApi.getCategoryBySlug(slug);
+    if (!category) {
+      notFound();
+    }
 
-  if (!category) {
-    return <div>Category not found</div>;
+    return <ProductsListing initialCategoryIdProp={category.id} />;
+  } catch (error) {
+    console.error("Category fetch failed:", error);
+
+    // Show proper 404 instead of crashing server
+    notFound();
   }
-
-  return <ProductsListing initialCategoryIdProp={category.id} />;
 }
