@@ -9,20 +9,17 @@ interface Props {
 export default async function CategoryPage({ params }: Props) {
   const { slug } = await params;
 
-  console.log("Slug", slug)
-
-  // if (!slug) notFound();
+  if (!slug) notFound();
 
   let category;
   try {
     category = await catalogApi.getCategoryBySlug(slug);
   } catch (err) {
     console.error("Error fetching category:", err);
-    // notFound();
+    notFound();
   }
 
-  // if (!category) notFound();
+  if (!category) notFound();
 
-  // return <ProductsListing initialCategoryIdProp={category.id} />;
-  return <>Category Products</>;
+  return <ProductsListing initialCategoryIdProp={category.id} />;
 }

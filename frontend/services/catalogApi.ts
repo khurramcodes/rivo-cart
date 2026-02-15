@@ -18,7 +18,7 @@ export const catalogApi = {
   },
 
   async getCategoryBySlug(slug: string){
-    const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const baseURL = process.env.API_BASE_URL;
     if (!baseURL) throw new Error("NEXT_PUBLIC_API_BASE_URL is missing");
     const { data } = await apiClient.get<{ category: Category }>(
       `${baseURL}/categories/${slug}`,
