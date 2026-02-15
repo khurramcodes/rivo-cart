@@ -21,6 +21,7 @@ export default function ProductsListing({
   initialCategoryIdProp?: string;
   categorySlug?: string;
 }) {
+  
   const searchParams = useSearchParams();
 
   const initialQ = searchParams.get("q") ?? "";
@@ -43,50 +44,121 @@ export default function ProductsListing({
 
   const hasMore = useMemo(() => items.length < total, [items.length, total]);
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const [cats, data] = await Promise.all([
-          catalogApi.listCategories(),
-          catalogApi.listProducts({
-            q: initialQ || undefined,
-            categoryId: initialCategoryId || undefined,
-            page: 1,
-            limit,
-          }),
-        ]);
+  // useEffect(() => {
+  //   let mounted = true;
+  //   (async () => {
+  //     try {
+  //       const [cats, data] = await Promise.all([
+  //         catalogApi.listCategories(),
+  //         catalogApi.listProducts({
+  //           q: initialQ || undefined,
+  //           categoryId: initialCategoryId || undefined,
+  //           page: 1,
+  //           limit,
+  //         }),
+  //       ]);
+
+  //       if (!mounted) return;
+  //       setCategories(cats);
+  //       setItems(data.items);
+  //       setTotal(data.total);
+  //       setPage(1);
+
+  //       // Fetch pricing for all default variants
+  //       const variantIds = data.items
+  //         .map((p) => getDefaultVariant(p)?.id)
+  //         .filter((id): id is string => !!id);
+
+  //       if (variantIds.length > 0) {
+  //         const pricingResults =
+  //           await pricingApi.getBulkVariantPricing(variantIds);
+  //         if (!mounted) return;
+  //         const newMap = new Map<string, VariantPricing>();
+  //         pricingResults.forEach((r) => {
+  //           if (r.pricing) newMap.set(r.variantId, r.pricing);
+  //         });
+  //         setPricingMap(newMap);
+  //       }
+  //     } finally {
+  //       if (mounted) setLoading(false);
+  //     }
+  //   })();
+  //   return () => {
+  //     mounted = false;
+  //   };
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [initialQ, initialCategoryId]);
+
+
+useEffect(() => {
+  let mounted = true;
+
+  (async () => {
+    try {
+      let resolvedCategoryId = initialCategoryId;
+
+      // ✅ STEP 1: resolve slug → categoryId
+      if (!resolvedCategoryId && categorySlug) {
+        try {
+          const category = await catalogApi.getCategoryBySlug(categorySlug);
+          resolvedCategoryId = category?.id ?? "";
+        } catch (err) {
+          console.error("Failed to resolve category slug:", err);
+        }
+      }
+
+      if (!mounted) return;
+
+      // ✅ STEP 2: set categoryId state
+      setCategoryId(resolvedCategoryId);
+
+      // ✅ STEP 3: fetch categories + products
+      const [cats, data] = await Promise.all([
+        catalogApi.listCategories(),
+        catalogApi.listProducts({
+          q: initialQ || undefined,
+          categoryId: resolvedCategoryId || undefined,
+          page: 1,
+          limit,
+        }),
+      ]);
+
+      if (!mounted) return;
+
+      setCategories(cats);
+      setItems(data.items);
+      setTotal(data.total);
+      setPage(1);
+
+      // ✅ STEP 4: fetch pricing
+      const variantIds = data.items
+        .map((p) => getDefaultVariant(p)?.id)
+        .filter((id): id is string => !!id);
+
+      if (variantIds.length > 0) {
+        const pricingResults =
+          await pricingApi.getBulkVariantPricing(variantIds);
 
         if (!mounted) return;
-        setCategories(cats);
-        setItems(data.items);
-        setTotal(data.total);
-        setPage(1);
 
-        // Fetch pricing for all default variants
-        const variantIds = data.items
-          .map((p) => getDefaultVariant(p)?.id)
-          .filter((id): id is string => !!id);
+        const newMap = new Map<string, VariantPricing>();
 
-        if (variantIds.length > 0) {
-          const pricingResults =
-            await pricingApi.getBulkVariantPricing(variantIds);
-          if (!mounted) return;
-          const newMap = new Map<string, VariantPricing>();
-          pricingResults.forEach((r) => {
-            if (r.pricing) newMap.set(r.variantId, r.pricing);
-          });
-          setPricingMap(newMap);
-        }
-      } finally {
-        if (mounted) setLoading(false);
+        pricingResults.forEach((r) => {
+          if (r.pricing) newMap.set(r.variantId, r.pricing);
+        });
+
+        setPricingMap(newMap);
       }
-    })();
-    return () => {
-      mounted = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialQ, initialCategoryId]);
+    } finally {
+      if (mounted) setLoading(false);
+    }
+  })();
+
+  return () => {
+    mounted = false;
+  };
+}, [categorySlug, initialCategoryId, initialQ]);
+
 
   async function applyFilters(next: {
     categoryId: string;

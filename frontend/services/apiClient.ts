@@ -1,7 +1,6 @@
 import axios from "axios";
 import { getCookie } from "@/utils/cookies";
 
-// Always prefer the configured backend URL.
 // Fallback to "/api" only if you have Next rewrites/proxy set up.
 const baseURL =
   process.env.NODE_ENV === "production"
