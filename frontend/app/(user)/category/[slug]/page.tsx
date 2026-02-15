@@ -1,4 +1,4 @@
-import ProductsPage from "../../products/page";
+import ProductsListing from "@/components/user/product/ProductListing";
 import { catalogApi } from "@/services/catalogApi";
 
 interface Props {
@@ -16,5 +16,5 @@ export default async function CategoryPage({ params }: Props) {
     return <div>Category not found</div>;
   }
 
-  return <ProductsPage initialCategoryIdProp={category.id} />;
+  return <ProductsListing initialCategoryIdProp={category.id} />;
 }

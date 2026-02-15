@@ -1,6 +1,6 @@
 import { NavBar } from "@/components/user/NavBar";
 import { HeroSection } from "@/components/user/HeroSection";
-import { LatestProducts } from "@/components/user/LatestProducts";
+import { LatestProducts } from "@/components/user/product/LatestProducts";
 import Footer from "@/components/user/Footer";
 import { SecondaryNav } from "@/components/user/SecondaryNavbar";
 
