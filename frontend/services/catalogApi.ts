@@ -1,11 +1,6 @@
 import { apiClient } from "./apiClient";
 import type { Category, Product } from "@/types";
 
-/**
- * Catalog API for reading products and categories.
- * Uses skipLoading: true to avoid blocking navigation with global loader.
- * Pages should manage their own local loading state for data fetching.
- */
 export const catalogApi = {
   async listCategories() {
     const { data } = await apiClient.get<{ categories: Category[] }>(

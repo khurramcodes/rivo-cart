@@ -25,7 +25,6 @@ export default function ProductsListing({
   const searchParams = useSearchParams();
 
   const initialQ = searchParams.get("q") ?? "";
-  // const initialCategoryId = searchParams.get("categoryId") ?? "";
   const initialCategoryId =
     initialCategoryIdProp ?? searchParams.get("categoryId") ?? "";
 
@@ -109,10 +108,8 @@ useEffect(() => {
 
       if (!mounted) return;
 
-      // ✅ STEP 2: set categoryId state
       setCategoryId(resolvedCategoryId);
 
-      // ✅ STEP 3: fetch categories + products
       const [cats, data] = await Promise.all([
         catalogApi.listCategories(),
         catalogApi.listProducts({
@@ -130,7 +127,6 @@ useEffect(() => {
       setTotal(data.total);
       setPage(1);
 
-      // ✅ STEP 4: fetch pricing
       const variantIds = data.items
         .map((p) => getDefaultVariant(p)?.id)
         .filter((id): id is string => !!id);
@@ -243,7 +239,7 @@ useEffect(() => {
           Products
         </h1>
 
-        <div className='mt-6 flex gap-6'>
+        <div className='mt-6 flex flex-col md:flex-row gap-6'>
           {/* Left Sidebar - Filters */}
           <aside className='hidden w-60 shrink-0 md:block'>
             <div className='sticky top-24 space-y-4'>

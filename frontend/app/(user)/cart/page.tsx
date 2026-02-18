@@ -166,7 +166,7 @@ export default function CartPage() {
                         src={i.product?.imageUrl ?? "/images/logo.png"}
                         alt={i.product?.name ?? "Product image"}
                         fill
-                        className='object-cover'
+                        className='object-contain'
                         unoptimized
                       />
                     </div>
@@ -208,7 +208,7 @@ export default function CartPage() {
                       buttonSizeClassName="h-6 w-6"
                       buttonClassName="bg-[#f2f2f2] text-zinc-900 border-none rounded-none"
                       valueSizeClassName="text-sm text-zinc-900"
-                      containerClassName="mt-0 bg-[#f2f2f2] border border-zinc-300 rounded-none p-1"
+                      containerClassName="mt-0 bg-[#f2f2f2] border border-zinc-300 rounded-none px-0 py-1 md:px-1"
                       />
                   </div>
                   <div className='text-base font-medium text-zinc-900'>
