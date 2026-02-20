@@ -22,6 +22,7 @@ frontend/out/
 # Production builds
 frontend/build
 backend/build
+backend/dist
 
 # Misc
 .DS_Store

@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -97,6 +98,14 @@ export default function AdminLoginPage() {
             {status === "loading" ? "Signing in…" : "Sign in"}
           </Button>
         </form>
+
+        <p className='mt-3 text-sm text-zinc-600'>
+          <Link
+            href='/forgot-password'
+            className='text-zinc-900 underline underline-offset-4'>
+            Forgot password?
+          </Link>
+        </p>
       </main>
     </div>
   );

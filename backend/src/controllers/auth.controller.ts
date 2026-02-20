@@ -18,6 +18,8 @@ import {
   startRegistration,
   verifyRegistrationOtp,
   resendRegistrationOtp,
+  forgotPassword,
+  resetPassword,
 } from "../services/auth.service.js";
 import { ApiError } from "../utils/ApiError.js";
 
@@ -132,4 +134,23 @@ export const me = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(401, "UNAUTHORIZED", "Missing authentication");
   const user = await getUserById(req.user.sub);
   res.json({ user });
+});
+
+export const forgotPasswordHandler = asyncHandler(async (req: Request, res: Response) => {
+  const { email } = req.body as { email: string };
+  // Never reveal whether the email exists
+  await forgotPassword({ email });
+  res.json({ message: "If an account exists for this email, a reset link has been sent." });
+});
+
+export const resetPasswordHandler = asyncHandler(async (req: Request, res: Response) => {
+  const { userId, token, password } = req.body as { userId: string; token: string; password: string };
+  await resetPassword({ userId, token, password });
+
+  // Clear cookies on this device too (sessions are deleted for all devices).
+  res.clearCookie(ACCESS_COOKIE, authCookieClearOptions());
+  res.clearCookie(REFRESH_COOKIE, authCookieClearOptions());
+  res.clearCookie(CSRF_COOKIE, csrfCookieClearOptions());
+
+  res.json({ message: "Password reset successful. Please log in again." });
 });

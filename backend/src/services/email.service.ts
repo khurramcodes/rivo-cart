@@ -72,3 +72,18 @@ export async function sendOrderStatusEmail(to: string, orderId: string, status: 
 
   await sendEmail({ to, subject, text, html });
 }
+
+export async function sendPasswordResetEmail(to: string, resetUrl: string) {
+  await sendEmail({
+    to,
+    subject: "Reset your password",
+    text:
+      `We received a request to reset your password.\n\n` +
+      `Reset link (valid for a short time): ${resetUrl}\n\n` +
+      `If you did not request this, you can ignore this email.`,
+    html:
+      `<p>We received a request to reset your password.</p>` +
+      `<p><a href="${resetUrl}">Click here to reset your password</a></p>` +
+      `<p>This link is valid for a short time. If you did not request this, you can ignore this email.</p>`,
+  });
+}

@@ -4,6 +4,8 @@ import type { User } from "@/types";
 type AuthResponse = { user: User; csrfToken?: string };
 type RegisterResponse = { message: string };
 type VerifyResponse = { message: string };
+type ForgotPasswordResponse = { message: string };
+type ResetPasswordResponse = { message: string };
 
 export const authApi = {
   async register(payload: {
@@ -36,6 +38,14 @@ export const authApi = {
   },
   async resendOtp(payload: { email: string }) {
     const { data } = await apiClient.post<VerifyResponse>("/auth/resend-otp", payload);
+    return data;
+  },
+  async forgotPassword(payload: { email: string }) {
+    const { data } = await apiClient.post<ForgotPasswordResponse>("/auth/forgot-password", payload);
+    return data;
+  },
+  async resetPassword(payload: { userId: string; token: string; password: string }) {
+    const { data } = await apiClient.post<ResetPasswordResponse>("/auth/reset-password", payload);
     return data;
   },
 };
