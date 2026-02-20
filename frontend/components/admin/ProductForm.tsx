@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Category, ProductType } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { ImageUpload } from "@/components/ui/ImageUpload";
@@ -49,9 +49,39 @@ export function ProductForm({
 }: ProductFormProps) {
   const [form, setForm] = useState<ProductFormValues>(initialValues);
 
+  const categoryById = useMemo(
+    () => new Map(categories.map((c) => [c.id, c])),
+    [categories],
+  );
+  const parentCategories = useMemo(
+    () => categories.filter((c) => !c.parentId),
+    [categories],
+  );
+
   useEffect(() => {
     setForm(initialValues);
   }, [initialValues]);
+
+  // Two-step category selection: parent -> subcategory (still saved as single categoryId)
+  const [parentCategoryId, setParentCategoryId] = useState<string>("");
+  const [subCategoryId, setSubCategoryId] = useState<string>("");
+
+  const subCategories = useMemo(
+    () => categories.filter((c) => c.parentId === parentCategoryId),
+    [categories, parentCategoryId],
+  );
+
+  useEffect(() => {
+    const current = form.categoryId ? categoryById.get(form.categoryId) : undefined;
+    if (current?.parentId) {
+      setParentCategoryId(current.parentId);
+      setSubCategoryId(current.id);
+      return;
+    }
+    // If current is a parent category (or empty), reflect that
+    setParentCategoryId(form.categoryId ?? "");
+    setSubCategoryId("");
+  }, [form.categoryId, categoryById]);
 
   const setField = <K extends keyof ProductFormValues>(key: K, value: ProductFormValues[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -204,24 +234,63 @@ export function ProductForm({
                   <option value="VARIABLE">Variable Product</option>
                 </select>
               </div>
-              <div>
+              <div className="space-y-2">
                 <label className="block text-sm font-medium text-zinc-700 mb-1">
                   Category <span className="text-red-500">*</span>
                 </label>
-                <select
-                  value={form.categoryId}
-                  onChange={(e) => setField("categoryId", e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-300 rounded focus:outline-none focus:ring-2 focus:ring-black text-zinc-900"
-                  disabled={loading}
-                  required
-                >
-                  <option value="">Select</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <div>
+                    <select
+                      value={parentCategoryId}
+                      onChange={(e) => {
+                        const nextParent = e.target.value;
+                        setParentCategoryId(nextParent);
+                        const nextSubs = categories.filter((c) => c.parentId === nextParent);
+                        if (nextSubs.length > 0) {
+                          setSubCategoryId("");
+                          setField("categoryId", "");
+                        } else {
+                          setSubCategoryId("");
+                          setField("categoryId", nextParent);
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-zinc-300 rounded focus:outline-none focus:ring-2 focus:ring-black text-zinc-900"
+                      disabled={loading}
+                    >
+                      <option value="">Select parent</option>
+                      {parentCategories.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <select
+                      value={subCategoryId}
+                      onChange={(e) => {
+                        const nextSub = e.target.value;
+                        setSubCategoryId(nextSub);
+                        setField("categoryId", nextSub);
+                      }}
+                      className="w-full px-3 py-2 border border-zinc-300 rounded focus:outline-none focus:ring-2 focus:ring-black text-zinc-900 disabled:bg-zinc-50"
+                      disabled={loading || !parentCategoryId || subCategories.length === 0}
+                    >
+                      <option value="">
+                        {subCategories.length === 0 ? "No subcategories" : "Select subcategory"}
+                      </option>
+                      {subCategories.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <p className="text-xs text-zinc-500">
+                  Choose a parent category, then a subcategory (if available).
+                </p>
               </div>
             </div>
           </div>

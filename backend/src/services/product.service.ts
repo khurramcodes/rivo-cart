@@ -3,6 +3,36 @@ import { ApiError } from "../utils/ApiError.js";
 import { generateProductSlug } from "../utils/slug.js";
 import { deleteFile, listFilesInPath, folderFromFilePath, normalizeFolderPath } from "./imagekit.service.js";
 
+
+// Helper function to get all descendant category IDs
+async function getDescendantCategoryIds(categoryId: string): Promise<string[]> {
+  const categories = await prisma.category.findMany({
+    select: { id: true, parentId: true },
+  });
+
+  const map = new Map<string, string[]>();
+
+  for (const cat of categories) {
+    if (!cat.parentId) continue;
+    if (!map.has(cat.parentId)) map.set(cat.parentId, []);
+    map.get(cat.parentId)!.push(cat.id);
+  }
+
+  const result: string[] = [];
+  const stack = [categoryId];
+
+  while (stack.length) {
+    const current = stack.pop()!;
+    result.push(current);
+
+    const children = map.get(current) || [];
+    stack.push(...children);
+  }
+
+  return result;
+}
+
+
 export async function listProducts(input: {
   q?: string;
   categoryId?: string;
@@ -18,7 +48,14 @@ export async function listProducts(input: {
   const skip = (page - 1) * limit;
 
   const where: any = {};
-  if (input.categoryId) where.categoryId = input.categoryId;
+  if (input.categoryId) {
+    const categoryIds = await getDescendantCategoryIds(input.categoryId);
+
+    where.categoryId = {
+      in: categoryIds,
+    };
+  }
+
   if (input.q) {
     where.OR = [
       { name: { contains: input.q, mode: "insensitive" } },
