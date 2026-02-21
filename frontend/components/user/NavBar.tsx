@@ -8,7 +8,7 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { Input } from "../ui/Input";
 import { logout } from "@/store/slices/authSlice";
 import { GlobalLoader } from "../ui/GlobalLoader";
-import Logo from "./Logo";
+import Logo from "../ui/Logo";
 
 export function NavBar() {
   const router = useRouter();

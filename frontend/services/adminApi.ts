@@ -1,5 +1,5 @@
 import { apiClient } from "./apiClient";
-import type { Category, Order, OrderStatus, Product } from "@/types";
+import type { Category, Order, OrderStatus, Product, Review } from "@/types";
 
 export type DiscountScope = "SITE_WIDE" | "PRODUCT" | "VARIANT" | "CATEGORY" | "COLLECTION";
 export type DiscountType = "PERCENTAGE" | "FIXED";
@@ -57,6 +57,21 @@ export const adminApi = {
   },
   async deleteCategory(id: string) {
     await apiClient.delete(`/categories/${id}`);
+  },
+
+  // reviews (admin moderation)
+  async listReviews(params?: { status?: "PENDING" | "APPROVED" | "REJECTED"; page?: number; limit?: number }) {
+    const { data } = await apiClient.get<{ items: Review[]; total: number; page: number; limit: number }>(
+      "/admin/reviews",
+      { params },
+    );
+    return data;
+  },
+  async approveReview(id: string) {
+    await apiClient.patch(`/admin/reviews/${id}/approve`, {});
+  },
+  async rejectReview(id: string) {
+    await apiClient.patch(`/admin/reviews/${id}/reject`, {});
   },
 
   // discounts

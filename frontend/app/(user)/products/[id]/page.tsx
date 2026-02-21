@@ -14,11 +14,16 @@ import { addToCart } from "@/store/cartThunks";
 import { addCacheBust } from "@/utils/imageCache";
 import { Package, X, CircleCheckBig, Tag } from "lucide-react";
 import { QuantitySelector } from "@/components/user/QuantitySelector";
+import { StarRating } from "@/components/ui/StarRating";
+import { reviewApi } from "@/services/reviewApi";
+import type { Review } from "@/types";
+import { ReviewEditor } from "@/components/user/reviews/ReviewEditor";
 
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>();
   const id = useMemo(() => (Array.isArray(params.id) ? params.id[0] : params.id), [params.id]);
   const cart = useAppSelector((s) => s.cart.cart);
+  const user = useAppSelector((s) => s.auth.user);
   
   const dispatch = useAppDispatch();
 
@@ -30,6 +35,7 @@ export default function ProductDetailPage() {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [showAddedNotice, setShowAddedNotice] = useState(false);
   const [pricing, setPricing] = useState<VariantPricing | null>(null);
+  const [topReviews, setTopReviews] = useState<Review[]>([]);
 
   // Combine main image and gallery images
   const productImages = useMemo(() => {
@@ -135,6 +141,22 @@ export default function ProductDetailPage() {
         if (mounted) setLoading(false);
       }
     })();
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    let mounted = true;
+    reviewApi
+      .top(id)
+      .then((items) => {
+        if (mounted) setTopReviews(items);
+      })
+      .catch(() => {
+        if (mounted) setTopReviews([]);
+      });
     return () => {
       mounted = false;
     };
@@ -270,9 +292,9 @@ export default function ProductDetailPage() {
           <div className='text-sm text-zinc-600'>Product not found.</div>
         ) : null}
         {product && selectedVariant ? (
-          <div className='grid gap-8 lg:grid-cols-2'>
+          <div className='grid gap-8 lg:grid-cols-2 items-start'>
             {/* Product Image Gallery */}
-            <div className='flex gap-4'>
+            <div className='flex gap-4 md:sticky md:top-40 md:self-start'>
               {/* Thumbnails Column */}
               {productImages.length > 1 && (
                 <div className='flex flex-col gap-2'>
@@ -333,6 +355,20 @@ export default function ProductDetailPage() {
               <h1 className='text-3xl font-semibold tracking-tight text-zinc-800'>
                 {product.name}
               </h1>
+
+              {/* Rating */}
+              <div className="mt-2 flex items-center gap-2">
+                <StarRating value={product.ratingAverage ?? 0} />
+                <span className="text-sm text-zinc-700">
+                  {(product.ratingAverage ?? 0).toFixed(1)}
+                </span>
+                <Link
+                  href={`/products/${product.id}/reviews`}
+                  className="text-sm text-zinc-500 underline underline-offset-4 hover:text-zinc-800"
+                >
+                  ({product.ratingCount ?? 0} ratings)
+                </Link>
+              </div>
 
               {/* Price */}
               <div className='mt-2'>
@@ -467,6 +503,49 @@ export default function ProductDetailPage() {
                   onClick={handleAddToCart}>
                   {selectedVariant.stock === 0 ? "Out of Stock" : "Add to cart"}
                 </Button>
+
+                {/* Top reviews */}
+                <div className="pt-6 border-t border-zinc-200">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-sm font-semibold text-zinc-900">Top reviews</h2>
+                    <Link
+                      href={`/products/${product.id}/reviews`}
+                      className="text-xs text-zinc-600 underline underline-offset-4 hover:text-zinc-900"
+                    >
+                      View all
+                    </Link>
+                  </div>
+
+                  {topReviews.length === 0 ? (
+                    <p className="mt-2 text-sm text-zinc-600">No reviews yet.</p>
+                  ) : (
+                    <div className="mt-3 space-y-3">
+                      {topReviews.map((r) => (
+                        <div key={r.id} className="rounded border border-zinc-200 bg-white p-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2">
+                              <StarRating value={r.rating} />
+                              {r.isVerifiedPurchase ? (
+                                <span className="text-[11px] rounded bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700">
+                                  Verified purchase
+                                </span>
+                              ) : null}
+                            </div>
+                            <span className="text-xs text-zinc-500">
+                              {new Date(r.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="mt-2 text-sm text-zinc-800">{r.comment}</p>
+                          <p className="mt-2 text-xs text-zinc-500">by {r.user?.name ?? "Customer"}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-6 border-t border-zinc-200">
+                  <ReviewEditor productId={product.id} isAuthenticated={Boolean(user)} />
+                </div>
               </div>
             </div>
           </div>

@@ -71,9 +71,31 @@ export type Product = {
   galleryImages?: ProductGalleryImage[];
   variants?: ProductVariant[];
   categoryId: string;
+  ratingAverage?: number;
+  ratingCount?: number;
+  reviewCount?: number;
   createdAt: string;
   updatedAt?: string;
   category?: Category;
+};
+
+export type ReviewStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export type Review = {
+  id: string;
+  productId: string;
+  userId: string;
+  rating: number;
+  comment: string;
+  status: ReviewStatus;
+  isVerifiedPurchase: boolean;
+  helpfulCount: number;
+  approvedAt?: string | null;
+  approvedBy?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  user?: Pick<User, "id" | "name"> & { email?: string };
+  product?: Pick<Product, "id" | "name">;
 };
 
 export type ProductGalleryImage = {

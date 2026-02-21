@@ -9,7 +9,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { register } from "@/store/slices/authSlice";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Logo from "@/components/user/Logo";
+import Logo from "@/components/ui/Logo";
 
 const schema = z.object({
   firstName: z.string().min(2, "First name is required"),

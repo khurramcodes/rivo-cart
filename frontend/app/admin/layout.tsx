@@ -7,8 +7,8 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { Button } from "@/components/ui/Button";
 import { authApi } from "@/services/authApi";
 import { logout, setUser } from "@/store/slices/authSlice";
-import Image from "next/image";
 import { Menu, X } from "lucide-react";
+import Logo from "@/components/ui/Logo";
 
 export default function AdminLayout({
   children,
@@ -47,6 +47,7 @@ export default function AdminLayout({
     { label: "Categories", href: "/admin/categories" },
     { label: "Products", href: "/admin/products" },
     { label: "Orders", href: "/admin/orders" },
+    { label: "Reviews", href: "/admin/reviews" },
     { label: "Discounts", href: "/admin/discounts" },
     { label: "Shipping", href: "/admin/shipping" },
   ];
@@ -67,17 +68,9 @@ export default function AdminLayout({
     <div className="min-h-screen bg-white">
       <header className="border-b border-zinc-200">
         <div className="mx-auto flex max-w-8xl items-center justify-between px-4 py-3">
-          <Link href="/">
-            <Image
-              src="/images/logo.png"
-              alt="Logo"
-              width={120}
-              height={40}
-              className="object-cover w-auto h-10"
-              priority
-              unoptimized
-            />
-          </Link>
+
+          <Logo />
+
           <button
             type="button"
             className="lg:hidden inline-flex items-center justify-center rounded border border-zinc-200 p-2 text-zinc-700 hover:bg-zinc-50"
@@ -112,11 +105,10 @@ export default function AdminLayout({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`block rounded px-3 py-2 text-sm font-medium transition ${
-                  isActive(item.href)
+                className={`block rounded px-3 py-2 text-sm font-medium transition ${isActive(item.href)
                     ? "bg-zinc-900 text-white"
                     : "text-zinc-700 hover:bg-zinc-100"
-                }`}
+                  }`}
               >
                 {item.label}
               </Link>
@@ -151,11 +143,10 @@ export default function AdminLayout({
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileNavOpen(false)}
-                  className={`block rounded px-3 py-2 text-sm font-medium transition ${
-                    isActive(item.href)
+                  className={`block rounded px-3 py-2 text-sm font-medium transition ${isActive(item.href)
                       ? "bg-zinc-900 text-white"
                       : "text-zinc-700 hover:bg-zinc-100"
-                  }`}
+                    }`}
                 >
                   {item.label}
                 </Link>

@@ -9,6 +9,7 @@ import type { Product } from "@/types";
 import type { VariantPricing } from "@/services/pricingApi";
 import { useAppDispatch } from "@/store/hooks";
 import { addToCart } from "@/store/cartThunks";
+import { StarRating } from "@/components/ui/StarRating";
 
 interface ProductCardProps {
   product: Product;
@@ -68,6 +69,9 @@ export function ProductCard({ product, pricing }: ProductCardProps) {
   const priceData = getDisplayPricing(product, pricing);
   if (!priceData) return null;
 
+  const ratingAverage = product.ratingAverage ?? 0;
+  const ratingCount = product.ratingCount ?? 0;
+
   return (
     <div className='group rounded border border-zinc-200 bg-white p-4 transition hover:border-zinc-300'>
       <Link href={`/products/${product.id}`}>
@@ -82,6 +86,13 @@ export function ProductCard({ product, pricing }: ProductCardProps) {
 
         <div className='mt-3'>
           <p className='text-sm font-medium text-zinc-900'>{product.name}</p>
+
+          <div className="mt-1 flex items-center gap-2">
+            <StarRating value={ratingAverage} />
+            <span className="text-xs text-zinc-600">
+              {ratingAverage.toFixed(1)} ({ratingCount})
+            </span>
+          </div>
 
           <div className='mt-1'>
             {priceData.hasDiscount ? (

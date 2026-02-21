@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { authApi } from "@/services/authApi";
 import { GlobalLoader } from "@/components/ui/GlobalLoader";
-import Logo from "@/components/user/Logo";
+import Logo from "@/components/ui/Logo";
 
 const schema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),

@@ -12,7 +12,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { GlobalLoader } from "@/components/ui/GlobalLoader";
 import Image from "next/image";
-import Logo from "@/components/user/Logo";
+import Logo from "@/components/ui/Logo";
 
 const schema = z.object({
   email: z

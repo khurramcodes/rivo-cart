@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { authApi } from "@/services/authApi";
 import { GlobalLoader } from "@/components/ui/GlobalLoader";
-import Logo from "@/components/user/Logo";
+import Logo from "@/components/ui/Logo";
 
 const schema = z.object({
   email: z.string().min(1, "Email is required").pipe(z.email({ message: "Invalid email" })),
