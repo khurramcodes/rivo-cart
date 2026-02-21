@@ -6,6 +6,8 @@ import { requireCsrf } from "../middlewares/csrf.js";
 import * as productController from "../controllers/product.controller.js";
 import * as productAdminController from "../controllers/productAdmin.controller.js";
 import { createProductSchema, idParamSchema, listProductsSchema, updateProductSchema } from "../validations/product.validation.js";
+import * as reviewPublicController from "../controllers/review.public.controller.js";
+import { listProductReviewsSchema, topProductReviewsSchema } from "../validations/review.validation.js";
 
 export const productRoutes = Router();
 
@@ -15,6 +17,10 @@ productRoutes.get("/", validate(listProductsSchema), productController.list);
 productRoutes.get("/latest", validate(listProductsSchema), productController.latest);
 
 productRoutes.get("/:id", validate(idParamSchema), productController.get);
+
+// reviews (public - approved only)
+productRoutes.get("/:productId/reviews", validate(listProductReviewsSchema), reviewPublicController.listApprovedForProduct);
+productRoutes.get("/:productId/reviews/top", validate(topProductReviewsSchema), reviewPublicController.topApprovedForProduct);
 
 // admin
 productRoutes.get(

@@ -112,6 +112,9 @@ export async function listLatestProducts(limit: number = 6) {
       type: true,
       imageUrl: true,
       updatedAt: true,
+      ratingAverage: true,
+      ratingCount: true,
+      reviewCount: true,
 
       // fetch ALL variant prices (lightweight)
       variants: {
