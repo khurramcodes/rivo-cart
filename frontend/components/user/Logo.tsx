@@ -6,6 +6,7 @@ interface LogoProps {
   height?: number;
   priority?: boolean;
   className?: string;
+  variant?: "white" | "black";
 }
 
 export default function Logo({
@@ -13,17 +14,22 @@ export default function Logo({
   height = 40,
   priority = false,
   className = "",
+  variant = "black",
 }: LogoProps) {
+
+  const src =
+    variant === "white" ? "/images/logo-white.png" : "/images/logo-black.png";
+
   return (
     <Link href='/'>
-        <Image
-          src='/images/logo.png'
-          alt='Logo'
-          width={width}
-          height={height}
-          priority={priority}
-          className={className}
-        />
+      <Image
+        src={src}
+        alt='Logo'
+        width={width}
+        height={height}
+        priority={priority}
+        className={className}
+      />
     </Link>
   );
 }

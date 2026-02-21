@@ -33,7 +33,7 @@ export function SecondaryNav() {
 
   return (
     <div className='border-b bg-zinc-50'>
-      <div className='mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-4 py-3 text-sm'>
+      <div className='mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-6 px-4 py-3 text-sm'>
         <Link href='/products' className='font-medium text-zinc-600 hover:text-black'>
           Products
         </Link>

@@ -38,9 +38,9 @@ export function NavBar() {
   if (!hydrated) return <GlobalLoader />;
 
   return (
-    <header className='sticky top-0 z-30 border-b bg-white'>
+    <header className='sticky top-0 z-30 border-b border-b-black bg-black/90'>
       <div className='mx-auto flex max-w-7xl items-center gap-4 px-4 py-4'>
-        <Logo />
+        <Logo variant="white" />
 
         {/* Search */}
         <div className='relative hidden flex-1 md:block'>
@@ -63,7 +63,7 @@ export function NavBar() {
           {/* Cart */}
           <Link
             href='/cart'
-            className='relative text-zinc-700 hover:text-black'>
+            className='relative text-white'>
             <ShoppingCart className='h-5 w-5' />
             {cartCount > 0 && (
               <span className='absolute -right-2 -top-2 rounded-full bg-black px-1.5 text-xs text-white'>
@@ -73,7 +73,7 @@ export function NavBar() {
           </Link>
 
           {/* Desktop Account */}
-          <div className='hidden md:flex items-center gap-3 text-sm text-zinc-900'>
+          <div className='hidden md:flex items-center gap-3 text-sm text-white'>
             {user ? (
               user.role === "ADMIN" ? (
                 <Link href='/admin'>Admin</Link>
@@ -106,9 +106,8 @@ export function NavBar() {
                 </div>
               )
             ) : (
-              <p className="text-zinc-900 flex items-center gap-4">
+              <p className="text-white flex items-center gap-4">
                 <Link href='/login'>Login</Link>
-                <Link href='/register'>Register</Link>
               </p>
             )}
           </div>
