@@ -38,7 +38,7 @@ export function NavBar() {
   if (!hydrated) return <GlobalLoader />;
 
   return (
-    <header className='sticky top-0 z-30 border-b border-b-black bg-black/90'>
+    <header className='border-b border-b-black bg-black/90'>
       <div className='mx-auto flex max-w-7xl items-center gap-4 px-4 py-4'>
         <Logo variant="white" />
 

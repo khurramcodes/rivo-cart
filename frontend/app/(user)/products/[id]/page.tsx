@@ -294,10 +294,10 @@ export default function ProductDetailPage() {
         {product && selectedVariant ? (
           <div className='grid gap-8 lg:grid-cols-2 items-start'>
             {/* Product Image Gallery */}
-            <div className='flex gap-4 md:sticky md:top-40 md:self-start'>
+            <div className='flex flex-col-reverse md:flex-row gap-4 md:sticky md:top-40 md:self-start'>
               {/* Thumbnails Column */}
               {productImages.length > 1 && (
-                <div className='flex flex-col gap-2'>
+                <div className='flex md:flex-col gap-2'>
                   {productImages.map((imgUrl, idx) => (
                     <button
                       key={idx}

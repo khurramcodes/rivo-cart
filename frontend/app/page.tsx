@@ -7,8 +7,10 @@ import { SecondaryNav } from "@/components/user/SecondaryNavbar";
 export default function Home() {
   return (
     <div className='min-h-screen bg-white'>
-      <NavBar />
-      <SecondaryNav />
+      <div className="sticky top-0 z-50">
+        <NavBar />
+        <SecondaryNav />
+      </div>
       <main>
         <HeroSection
           headline="Everything you need, nothing you don't."

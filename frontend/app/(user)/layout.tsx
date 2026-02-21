@@ -9,8 +9,10 @@ export default function RootLayout({
 }>) {
   return (
     <>
-      <NavBar />
-      <SecondaryNav />
+      <div className="sticky top-0 z-50">
+        <NavBar />
+        <SecondaryNav />
+      </div>
       {children}
       <Footer />
     </>
