@@ -19,8 +19,8 @@ export const qaApi = {
     await apiClient.post(`/qa/questions/${questionId}/report`, { reason });
   },
 
-  async markAnswerHelpful(answerId: string) {
-    await apiClient.put(`/qa/answers/${answerId}/helpful`, {});
+  async setAnswerHelpful(answerId: string, helpful: boolean) {
+    await apiClient.put(`/qa/answers/${answerId}/helpful`, { helpful });
   },
 
   async myAnswerHelpful(answerId: string) {

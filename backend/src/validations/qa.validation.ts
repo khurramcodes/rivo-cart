@@ -28,8 +28,9 @@ export const answerIdParamSchema = z.object({
   params: z.object({ id: z.string().min(1) }),
 });
 
-export const markAnswerHelpfulSchema = z.object({
+export const setAnswerHelpfulSchema = z.object({
   params: z.object({ id: z.string().min(1) }),
+  body: z.object({ helpful: z.boolean() }),
 });
 
 export const reportAnswerSchema = z.object({

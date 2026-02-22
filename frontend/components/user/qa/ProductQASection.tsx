@@ -73,16 +73,25 @@ export function ProductQASection({ productId }: ProductQASectionProps) {
     }
   };
 
-  const handleMarkHelpful = async (answerId: string) => {
+  const handleToggleHelpful = async (answerId: string) => {
     if (!user) return;
+    const alreadyHelpful = helpfulIds.has(answerId);
+    const newHelpful = !alreadyHelpful;
     try {
-      await qaApi.markAnswerHelpful(answerId);
-      setHelpfulIds((prev) => new Set(prev).add(answerId));
+      await qaApi.setAnswerHelpful(answerId, newHelpful);
+      setHelpfulIds((prev) => {
+        const next = new Set(prev);
+        if (newHelpful) next.add(answerId);
+        else next.delete(answerId);
+        return next;
+      });
       setItems((prev) =>
         prev.map((q) => ({
           ...q,
           answers: q.answers?.map((a) =>
-            a.id === answerId ? { ...a, helpfulCount: a.helpfulCount + 1 } : a,
+            a.id === answerId
+              ? { ...a, helpfulCount: Math.max(0, a.helpfulCount + (newHelpful ? 1 : -1)) }
+              : a,
           ),
         })),
       );
@@ -170,19 +179,19 @@ export function ProductQASection({ productId }: ProductQASectionProps) {
                     <p className="mt-1 text-xs text-zinc-500">— {a.admin?.name ?? "Admin"}</p>
                     <div className="mt-2 flex items-center gap-4">
                       {user ? (
-                        <>
+  <>
                           <button
                             type="button"
-                            onClick={() => void handleMarkHelpful(a.id)}
-                            disabled={helpfulIds.has(a.id)}
-                            className={`flex items-center gap-1 text-xs ${helpfulIds.has(a.id) ? "text-blue-600" : "text-zinc-500 hover:text-zinc-700"}`}
+                            onClick={() => void handleToggleHelpful(a.id)}
+                            className={`cursor-pointer flex items-center gap-1 text-xs ${helpfulIds.has(a.id) ? "text-blue-600" : "text-zinc-500 hover:text-zinc-700"}`}
                           >
-                            <ThumbsUp className="h-3.5 w-3.5" /> Helpful ({a.helpfulCount})
+                            <ThumbsUp className={`h-3.5 w-3.5 ${helpfulIds.has(a.id) ? "fill-current" : ""}`} />
+                            Helpful ({a.helpfulCount})
                           </button>
                           <button
                             type="button"
                             onClick={() => setReportModal({ type: "answer", id: a.id })}
-                            className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
+                            className="cursor-pointer flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
                           >
                             <Flag className="h-3.5 w-3.5" /> Report
                           </button>

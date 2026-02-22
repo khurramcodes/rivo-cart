@@ -48,7 +48,7 @@ export function ReviewCard({ review, onHelpfulChange, onReported }: ReviewCardPr
       const next = helpful !== true;
       await reviewApi.markHelpful(review.id, next);
       setHelpful(next);
-      setHelpfulCount((c) => (next ? c + 1 : c - 1));
+      setHelpfulCount((c) => Math.max(0, next ? c + 1 : c - 1));
       onHelpfulChange?.();
     } catch {
       // ignore
@@ -104,21 +104,21 @@ export function ReviewCard({ review, onHelpfulChange, onReported }: ReviewCardPr
           <>
             <button
               type="button"
-              onClick={handleHelpful}
+              onClick={() => void handleHelpful()}
               disabled={loadingHelpful}
               className={`
-                flex items-center gap-1.5 text-xs font-medium transition
+                cursor-pointer flex items-center gap-1.5 text-xs font-medium transition
                 ${helpful === true ? "text-blue-600" : "text-zinc-500 hover:text-zinc-700"}
               `}
             >
-              <ThumbsUp className="h-3.5 w-3.5" />
+              <ThumbsUp className={`h-3.5 w-3.5 ${helpful === true ? "fill-current" : ""}`} />
               Helpful ({helpfulCount})
             </button>
             <button
               type="button"
               onClick={() => setShowReportModal(true)}
               disabled={reported}
-              className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-700 disabled:opacity-50"
+              className="cursor-pointer flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-700 disabled:opacity-50"
             >
               <Flag className="h-3.5 w-3.5" />
               {reported ? "Reported" : "Report"}

@@ -56,23 +56,32 @@ async function updateAnswerHelpfulCount(answerId: string) {
   });
 }
 
-export async function markAnswerHelpful(input: { answerId: string; userId: string }) {
+export async function setAnswerHelpful(input: { answerId: string; userId: string; helpful: boolean }) {
   const answer = await prisma.answer.findUnique({
     where: { id: input.answerId },
     select: { id: true },
   });
   if (!answer) throw new ApiError(404, "ANSWER_NOT_FOUND", "Answer not found");
 
-  await prisma.answerHelpful.upsert({
-    where: {
-      answerId_userId: { answerId: input.answerId, userId: input.userId },
-    },
-    create: {
-      answerId: input.answerId,
-      userId: input.userId,
-    },
-    update: {},
-  });
+  if (input.helpful) {
+    await prisma.answerHelpful.upsert({
+      where: {
+        answerId_userId: { answerId: input.answerId, userId: input.userId },
+      },
+      create: {
+        answerId: input.answerId,
+        userId: input.userId,
+      },
+      update: {},
+    });
+  } else {
+    await prisma.answerHelpful.deleteMany({
+      where: {
+        answerId: input.answerId,
+        userId: input.userId,
+      },
+    });
+  }
 
   await updateAnswerHelpfulCount(input.answerId);
 }

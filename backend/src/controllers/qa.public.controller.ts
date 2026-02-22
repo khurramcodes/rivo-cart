@@ -34,10 +34,11 @@ export const reportQuestion = asyncHandler(async (req: Request, res: Response) =
   res.status(204).send();
 });
 
-export const markAnswerHelpful = asyncHandler(async (req: Request, res: Response) => {
+export const setAnswerHelpful = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) throw new ApiError(401, "UNAUTHORIZED", "Missing authentication");
   const { id } = req.params as { id: string };
-  await qaService.markAnswerHelpful({ answerId: id, userId: req.user.sub });
+  const { helpful } = req.body as { helpful: boolean };
+  await qaService.setAnswerHelpful({ answerId: id, userId: req.user.sub, helpful });
   res.status(204).send();
 });
 
