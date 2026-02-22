@@ -1,5 +1,5 @@
 import { apiClient } from "./apiClient";
-import type { Category, Order, OrderStatus, Product, Review } from "@/types";
+import type { Category, Order, OrderStatus, Product, Question, Review } from "@/types";
 
 export type DiscountScope = "SITE_WIDE" | "PRODUCT" | "VARIANT" | "CATEGORY" | "COLLECTION";
 export type DiscountType = "PERCENTAGE" | "FIXED";
@@ -60,7 +60,7 @@ export const adminApi = {
   },
 
   // reviews (admin moderation)
-  async listReviews(params?: { status?: "PENDING" | "APPROVED" | "REJECTED"; page?: number; limit?: number }) {
+  async listReviews(params?: { status?: "PENDING" | "APPROVED" | "REJECTED" | "REMOVED"; page?: number; limit?: number }) {
     const { data } = await apiClient.get<{ items: Review[]; total: number; page: number; limit: number }>(
       "/admin/reviews",
       { params },
@@ -72,6 +72,49 @@ export const adminApi = {
   },
   async rejectReview(id: string) {
     await apiClient.patch(`/admin/reviews/${id}/reject`, {});
+  },
+  async removeReview(id: string) {
+    await apiClient.patch(`/admin/reviews/${id}/remove`, {});
+  },
+  async createReviewReply(reviewId: string, message: string) {
+    const { data } = await apiClient.post<{ reply: import("@/types").ReviewReply }>(`/admin/reviews/${reviewId}/reply`, { message });
+    return data.reply;
+  },
+  async updateReviewReply(reviewId: string, message: string) {
+    const { data } = await apiClient.put<{ reply: import("@/types").ReviewReply }>(`/admin/reviews/${reviewId}/reply`, { message });
+    return data.reply;
+  },
+  async deleteReviewReply(reviewId: string) {
+    await apiClient.delete(`/admin/reviews/${reviewId}/reply`);
+  },
+
+  // Q&A
+  async listQuestions(params?: { productId?: string; status?: "VISIBLE" | "HIDDEN" | "REMOVED"; page?: number; limit?: number }) {
+    const { data } = await apiClient.get<{ items: Question[]; total: number; page: number; limit: number }>(
+      "/admin/qa/questions",
+      { params },
+    );
+    return data;
+  },
+  async hideQuestion(questionId: string) {
+    await apiClient.patch(`/admin/qa/questions/${questionId}/hide`, {});
+  },
+  async removeQuestion(questionId: string) {
+    await apiClient.patch(`/admin/qa/questions/${questionId}/remove`, {});
+  },
+  async createAnswer(questionId: string, answer: string) {
+    const { data } = await apiClient.post<{ answer: import("@/types").Answer }>(`/admin/qa/questions/${questionId}/answers`, { answer });
+    return data.answer;
+  },
+  async updateAnswer(answerId: string, answer: string) {
+    const { data } = await apiClient.put<{ answer: import("@/types").Answer }>(`/admin/qa/answers/${answerId}`, { answer });
+    return data.answer;
+  },
+  async hideAnswer(answerId: string) {
+    await apiClient.patch(`/admin/qa/answers/${answerId}/hide`, {});
+  },
+  async removeAnswer(answerId: string) {
+    await apiClient.patch(`/admin/qa/answers/${answerId}/remove`, {});
   },
 
   // discounts

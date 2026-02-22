@@ -8,6 +8,7 @@ import { reviewApi, type ReviewSort } from "@/services/reviewApi";
 import { catalogApi } from "@/services/catalogApi";
 import { StarRating } from "@/components/ui/StarRating";
 import { ReviewEditor } from "@/components/user/reviews/ReviewEditor";
+import { ReviewCard } from "@/components/user/reviews/ReviewCard";
 import { useAppSelector } from "@/store/hooks";
 
 export default function ProductReviewsPage() {
@@ -111,23 +112,7 @@ export default function ProductReviewsPage() {
           <ReviewEditor productId={productId} isAuthenticated={Boolean(user)} />
 
           {items.map((r) => (
-            <div key={r.id} className="rounded border border-zinc-200 bg-white p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <StarRating value={r.rating} />
-                  {r.isVerifiedPurchase ? (
-                    <span className="text-[11px] rounded bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700">
-                      Verified purchase
-                    </span>
-                  ) : null}
-                </div>
-                <span className="text-xs text-zinc-500">
-                  {new Date(r.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-              <p className="mt-3 text-sm text-zinc-800">{r.comment}</p>
-              <p className="mt-2 text-xs text-zinc-500">by {r.user?.name ?? "Customer"}</p>
-            </div>
+            <ReviewCard key={r.id} review={r} />
           ))}
         </div>
 

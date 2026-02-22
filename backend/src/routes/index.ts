@@ -13,6 +13,8 @@ import { pricingRoutes } from "./pricing.routes.js";
 import { shippingRoutes } from "./shipping.routes.js";
 import { reviewRoutes } from "./review.routes.js";
 import { reviewAdminRoutes } from "./review.admin.routes.js";
+import { qaRoutes } from "./qa.routes.js";
+import { qaAdminRoutes } from "./qa.admin.routes.js";
 
 export const routes = Router();
 
@@ -30,5 +32,7 @@ routes.use("/pricing", pricingRoutes);
 routes.use("/shipping", shippingRoutes);
 routes.use("/reviews", reviewRoutes);
 routes.use("/admin/reviews", reviewAdminRoutes);
+routes.use("/qa", qaRoutes);
+routes.use("/admin/qa", qaAdminRoutes);
 
 

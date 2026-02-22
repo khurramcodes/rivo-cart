@@ -79,7 +79,17 @@ export type Product = {
   category?: Category;
 };
 
-export type ReviewStatus = "PENDING" | "APPROVED" | "REJECTED";
+export type ReviewStatus = "PENDING" | "APPROVED" | "REJECTED" | "REMOVED";
+
+export type ReviewReply = {
+  id: string;
+  reviewId: string;
+  adminId: string;
+  message: string;
+  createdAt: string;
+  updatedAt: string;
+  admin?: Pick<User, "id" | "name">;
+};
 
 export type Review = {
   id: string;
@@ -90,12 +100,45 @@ export type Review = {
   status: ReviewStatus;
   isVerifiedPurchase: boolean;
   helpfulCount: number;
+  reportCount: number;
   approvedAt?: string | null;
   approvedBy?: string | null;
   createdAt: string;
   updatedAt: string;
   user?: Pick<User, "id" | "name"> & { email?: string };
   product?: Pick<Product, "id" | "name">;
+  reply?: ReviewReply | null;
+};
+
+export type QuestionStatus = "VISIBLE" | "HIDDEN" | "REMOVED";
+export type AnswerStatus = "VISIBLE" | "HIDDEN" | "REMOVED";
+
+export type Question = {
+  id: string;
+  productId: string;
+  userId: string;
+  question: string;
+  status: QuestionStatus;
+  helpfulCount: number;
+  reportCount: number;
+  createdAt: string;
+  updatedAt: string;
+  user?: Pick<User, "id" | "name">;
+  product?: Pick<Product, "id" | "name">;
+  answers?: Answer[];
+};
+
+export type Answer = {
+  id: string;
+  questionId: string;
+  adminId: string;
+  answer: string;
+  status: AnswerStatus;
+  helpfulCount: number;
+  reportCount: number;
+  createdAt: string;
+  updatedAt: string;
+  admin?: Pick<User, "id" | "name">;
 };
 
 export type ProductGalleryImage = {

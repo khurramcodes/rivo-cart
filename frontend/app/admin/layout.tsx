@@ -48,6 +48,7 @@ export default function AdminLayout({
     { label: "Products", href: "/admin/products" },
     { label: "Orders", href: "/admin/orders" },
     { label: "Reviews", href: "/admin/reviews" },
+    { label: "Q&A", href: "/admin/qa" },
     { label: "Discounts", href: "/admin/discounts" },
     { label: "Shipping", href: "/admin/shipping" },
   ];

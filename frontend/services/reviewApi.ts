@@ -33,5 +33,23 @@ export const reviewApi = {
     const { data } = await apiClient.get<{ items: Review[] }>(`/products/${productId}/reviews/top`);
     return data.items;
   },
+
+  async markHelpful(reviewId: string, isHelpful: boolean) {
+    await apiClient.put(`/reviews/${reviewId}/helpful`, { isHelpful });
+  },
+
+  async report(reviewId: string, reason: string) {
+    await apiClient.post(`/reviews/${reviewId}/report`, { reason });
+  },
+
+  async myHelpful(reviewId: string) {
+    const { data } = await apiClient.get<{ isHelpful: boolean | null }>(`/reviews/${reviewId}/helpful`);
+    return data.isHelpful;
+  },
+
+  async myReported(reviewId: string) {
+    const { data } = await apiClient.get<{ reported: boolean }>(`/reviews/${reviewId}/reported`);
+    return data.reported;
+  },
 };
 

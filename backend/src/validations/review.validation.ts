@@ -44,11 +44,37 @@ export const topProductReviewsSchema = z.object({
 export const adminListReviewsSchema = z.object({
   query: z
     .object({
-      status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
+      status: z.enum(["PENDING", "APPROVED", "REJECTED", "REMOVED"]).optional(),
       page: z.string().optional(),
       limit: z.string().optional(),
     })
     .optional(),
+});
+
+export const reviewIdParamSchema = z.object({
+  params: z.object({
+    id: z.string().min(1),
+  }),
+});
+
+export const markHelpfulSchema = z.object({
+  params: z.object({ id: z.string().min(1) }),
+  body: z.object({ isHelpful: z.boolean() }),
+});
+
+export const reportReviewSchema = z.object({
+  params: z.object({ id: z.string().min(1) }),
+  body: z.object({ reason: z.string().trim().min(1).max(500) }),
+});
+
+export const createReplySchema = z.object({
+  params: z.object({ id: z.string().min(1) }),
+  body: z.object({ message: z.string().trim().min(1).max(2000) }),
+});
+
+export const updateReplySchema = z.object({
+  params: z.object({ id: z.string().min(1) }),
+  body: z.object({ message: z.string().trim().min(1).max(2000) }),
 });
 
 export const myReviewSchema = z.object({

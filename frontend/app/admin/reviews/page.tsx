@@ -6,10 +6,12 @@ import { adminApi } from "@/services/adminApi";
 import type { Review } from "@/types";
 
 export default function AdminReviewsPage() {
-  const [status, setStatus] = useState<"PENDING" | "APPROVED" | "REJECTED">("PENDING");
+  const [status, setStatus] = useState<"PENDING" | "APPROVED" | "REJECTED" | "REMOVED">("PENDING");
   const [items, setItems] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [replyState, setReplyState] = useState<{ reviewId: string; message: string; editing: boolean } | null>(null);
+  const [submittingReply, setSubmittingReply] = useState(false);
 
   const title = useMemo(() => (status === "PENDING" ? "Pending reviews" : `${status.toLowerCase()} reviews`), [status]);
 
@@ -47,6 +49,42 @@ export default function AdminReviewsPage() {
     }
   }
 
+  async function remove(id: string) {
+    setSavingId(id);
+    try {
+      await adminApi.removeReview(id);
+      await refresh();
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  async function submitReply() {
+    if (!replyState) return;
+    setSubmittingReply(true);
+    try {
+      if (replyState.editing) {
+        await adminApi.updateReviewReply(replyState.reviewId, replyState.message);
+      } else {
+        await adminApi.createReviewReply(replyState.reviewId, replyState.message);
+      }
+      setReplyState(null);
+      await refresh();
+    } finally {
+      setSubmittingReply(false);
+    }
+  }
+
+  async function deleteReply(reviewId: string) {
+    try {
+      await adminApi.deleteReviewReply(reviewId);
+      setReplyState(null);
+      await refresh();
+    } catch {
+      // ignore
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
@@ -62,6 +100,7 @@ export default function AdminReviewsPage() {
           <option value="PENDING">Pending</option>
           <option value="APPROVED">Approved</option>
           <option value="REJECTED">Rejected</option>
+          <option value="REMOVED">Removed</option>
         </select>
       </div>
 
@@ -72,7 +111,7 @@ export default function AdminReviewsPage() {
         {items.map((r) => (
           <div key={r.id} className="rounded border border-zinc-200 bg-white p-4">
             <div className="flex items-start justify-between gap-4">
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-zinc-900">{r.product?.name ?? r.productId}</p>
                 <p className="mt-1 text-xs text-zinc-500">
                   by {r.user?.name ?? r.userId} {r.user?.email ? `(${r.user.email})` : ""}
@@ -84,25 +123,90 @@ export default function AdminReviewsPage() {
                 <p className="mt-2 text-xs text-zinc-500">
                   {new Date(r.createdAt).toLocaleString()} · {r.isVerifiedPurchase ? "Verified purchase" : "Unverified"}
                 </p>
+                {r.reply ? (
+                  <div className="mt-4 rounded border border-zinc-100 bg-zinc-50 p-3">
+                    <p className="text-xs font-medium text-zinc-600">Admin reply</p>
+                    <p className="mt-1 text-sm text-zinc-800">{r.reply.message}</p>
+                    <div className="mt-2 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setReplyState({ reviewId: r.id, message: r.reply!.message, editing: true })}
+                        className="text-xs text-blue-600 hover:underline"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void deleteReply(r.id)}
+                        className="text-xs text-red-600 hover:underline"
+                      >
+                        Delete reply
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+                {replyState?.reviewId === r.id ? (
+                  <div className="mt-4">
+                    <textarea
+                      value={replyState.message}
+                      onChange={(e) => setReplyState((prev) => prev ? { ...prev, message: e.target.value } : null)}
+                      rows={3}
+                      className="w-full rounded border border-zinc-200 px-3 py-2 text-sm"
+                      placeholder="Reply message..."
+                    />
+                    <div className="mt-2 flex gap-2">
+                      <Button
+                        disabled={submittingReply || !replyState.message.trim()}
+                        onClick={() => void submitReply()}
+                      >
+                        {submittingReply ? "Saving…" : replyState.editing ? "Update reply" : "Post reply"}
+                      </Button>
+                      <Button variant="ghost" onClick={() => setReplyState(null)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : !r.reply && status !== "REMOVED" ? (
+                  <button
+                    type="button"
+                    onClick={() => setReplyState({ reviewId: r.id, message: "", editing: false })}
+                    className="mt-3 text-sm text-blue-600 hover:underline"
+                  >
+                    Add reply
+                  </button>
+                ) : null}
               </div>
-
-              {status === "PENDING" ? (
-                <div className="flex gap-2">
-                  <Button
-                    className="h-9"
-                    disabled={savingId === r.id}
-                    onClick={() => void approve(r.id)}
-                  >
-                    Approve
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="h-9"
-                    disabled={savingId === r.id}
-                    onClick={() => void reject(r.id)}
-                  >
-                    Reject
-                  </Button>
+              {(status === "PENDING" || status === "APPROVED" || status === "REJECTED") ? (
+                <div className="flex shrink-0 flex-col gap-2">
+                  {status === "PENDING" ? (
+                    <>
+                      <Button
+                        className="h-9"
+                        disabled={savingId === r.id}
+                        onClick={() => void approve(r.id)}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="h-9"
+                        disabled={savingId === r.id}
+                        onClick={() => void reject(r.id)}
+                      >
+                        Reject
+                      </Button>
+                    </>
+                  ) : null}
+                  {(status === "APPROVED" || status === "REJECTED") ? (
+                    <Button
+                      variant="ghost"
+                      className="h-9 text-red-600 hover:text-red-700"
+                      disabled={savingId === r.id}
+                      onClick={() => void remove(r.id)}
+                    >
+                      Remove
+                    </Button>
+                  ) : null}
                 </div>
               ) : null}
             </div>

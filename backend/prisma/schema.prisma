@@ -27,6 +27,19 @@ enum ReviewStatus {
   PENDING
   APPROVED
   REJECTED
+  REMOVED
+}
+
+enum QuestionStatus {
+  VISIBLE
+  HIDDEN
+  REMOVED
+}
+
+enum AnswerStatus {
+  VISIBLE
+  HIDDEN
+  REMOVED
 }
 
 enum ProductType {
@@ -83,6 +96,14 @@ model User {
   addresses         Address[]
   couponRedemptions CouponRedemption[]
   reviews           Review[]
+  reviewReplies     ReviewReply[]
+  reviewHelpful     ReviewHelpful[]
+  reviewReports     ReviewReport[]
+  questions         Question[]
+  questionReports   QuestionReport[]
+  answerHelpful     AnswerHelpful[]
+  answerReports     AnswerReport[]
+  answers           Answer[]
 
   @@index([role])
 }
@@ -131,6 +152,7 @@ model Product {
   cartItems        CartItem[]
   discountProducts DiscountProducts[]
   reviews          Review[]
+  questions        Question[]
 
   @@index([categoryId])
   @@index([type])
@@ -145,19 +167,68 @@ model Review {
   status             ReviewStatus @default(PENDING)
   isVerifiedPurchase Boolean      @default(false)
   helpfulCount       Int          @default(0)
+  reportCount        Int          @default(0)
   approvedAt         DateTime?
   approvedBy         String?
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
-  product            Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product            Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reply              ReviewReply?
+  helpful            ReviewHelpful[]
+  reports            ReviewReport[]
 
   @@unique([productId, userId])
   @@index([productId])
   @@index([status])
   @@index([rating])
   @@index([createdAt])
+}
+
+model ReviewReply {
+  id        String   @id @default(cuid())
+  reviewId  String   @unique
+  adminId   String
+  message   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  admin  User   @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+  @@index([adminId])
+}
+
+model ReviewHelpful {
+  id        String   @id @default(cuid())
+  reviewId  String
+  userId    String
+  isHelpful Boolean
+  createdAt DateTime @default(now())
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+  @@index([reviewId])
+  @@index([userId])
+}
+
+model ReviewReport {
+  id        String   @id @default(cuid())
+  reviewId  String
+  userId    String
+  reason    String
+  createdAt DateTime @default(now())
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+  @@index([reviewId])
+  @@index([userId])
 }
 
 model ProductVariant {
@@ -512,6 +583,94 @@ model CouponRedemption {
   @@index([userId])
   @@index([orderId])
   @@index([redeemedAt])
+}
+
+model Question {
+  id           String         @id @default(cuid())
+  productId    String
+  userId       String
+  question     String
+  status       QuestionStatus @default(VISIBLE)
+  helpfulCount Int           @default(0)
+  reportCount  Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  product Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers Answer[]
+  reports QuestionReport[]
+
+  @@index([productId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Answer {
+  id           String       @id @default(cuid())
+  questionId   String
+  adminId      String
+  answer       String
+  status       AnswerStatus @default(VISIBLE)
+  helpfulCount Int          @default(0)
+  reportCount  Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  question Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  admin    User            @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  helpful  AnswerHelpful[]
+  reports  AnswerReport[]
+
+  @@index([questionId])
+  @@index([adminId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model QuestionReport {
+  id         String   @id @default(cuid())
+  questionId String
+  userId     String
+  reason     String
+  createdAt  DateTime @default(now())
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, userId])
+  @@index([questionId])
+  @@index([userId])
+}
+
+model AnswerReport {
+  id        String   @id @default(cuid())
+  answerId  String
+  userId    String
+  reason    String
+  createdAt DateTime @default(now())
+
+  answer Answer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([answerId, userId])
+  @@index([answerId])
+  @@index([userId])
+}
+
+model AnswerHelpful {
+  id        String   @id @default(cuid())
+  answerId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  answer Answer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([answerId, userId])
+  @@index([answerId])
+  @@index([userId])
 }
 
 

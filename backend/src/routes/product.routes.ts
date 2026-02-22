@@ -8,6 +8,8 @@ import * as productAdminController from "../controllers/productAdmin.controller.
 import { createProductSchema, idParamSchema, listProductsSchema, updateProductSchema } from "../validations/product.validation.js";
 import * as reviewPublicController from "../controllers/review.public.controller.js";
 import { listProductReviewsSchema, topProductReviewsSchema } from "../validations/review.validation.js";
+import * as qaPublicController from "../controllers/qa.public.controller.js";
+import { listQuestionsSchema, createQuestionSchema } from "../validations/qa.validation.js";
 
 export const productRoutes = Router();
 
@@ -21,6 +23,10 @@ productRoutes.get("/:id", validate(idParamSchema), productController.get);
 // reviews (public - approved only)
 productRoutes.get("/:productId/reviews", validate(listProductReviewsSchema), reviewPublicController.listApprovedForProduct);
 productRoutes.get("/:productId/reviews/top", validate(topProductReviewsSchema), reviewPublicController.topApprovedForProduct);
+
+// Q&A (public)
+productRoutes.get("/:productId/questions", validate(listQuestionsSchema), qaPublicController.listQuestions);
+productRoutes.post("/:productId/questions", requireAuth, requireCsrf, validate(createQuestionSchema), qaPublicController.createQuestion);
 
 // admin
 productRoutes.get(
