@@ -23,16 +23,21 @@ import { ProductQASection } from "@/components/user/qa/ProductQASection";
 
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>();
-  const id = useMemo(() => (Array.isArray(params.id) ? params.id[0] : params.id), [params.id]);
+  const id = useMemo(
+    () => (Array.isArray(params.id) ? params.id[0] : params.id),
+    [params.id],
+  );
   const cart = useAppSelector((s) => s.cart.cart);
   const user = useAppSelector((s) => s.auth.user);
-  
+
   const dispatch = useAppDispatch();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
+    null,
+  );
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [showAddedNotice, setShowAddedNotice] = useState(false);
@@ -68,10 +73,12 @@ export default function ProductDetailPage() {
       return product.variants.find((v) => v.id === selectedVariantId) || null;
     }
     // Default to first in-stock variant or first variant
-    return product.variants.find((v) => v.isDefault && v.stock > 0) ||
+    return (
+      product.variants.find((v) => v.isDefault && v.stock > 0) ||
       product.variants.find((v) => v.stock > 0) ||
       product.variants[0] ||
-      null;
+      null
+    );
   }, [product, selectedVariantId]);
 
   // Group attributes by name for variation selection UI
@@ -92,9 +99,10 @@ export default function ProductDetailPage() {
     return groups;
   }, [product]);
 
-
   // Track selected attribute values
-  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
+  const [selectedAttributes, setSelectedAttributes] = useState<
+    Record<string, string>
+  >({});
 
   // Initialize selected attributes when product loads
   useEffect(() => {
@@ -125,7 +133,9 @@ export default function ProductDetailPage() {
 
     const matchingVariant = product.variants.find((variant) => {
       if (!variant.attributes) return false;
-      return variant.attributes.every((attr) => selectedAttributes[attr.name] === attr.value);
+      return variant.attributes.every(
+        (attr) => selectedAttributes[attr.name] === attr.value,
+      );
     });
 
     if (matchingVariant) {
@@ -224,7 +234,9 @@ export default function ProductDetailPage() {
     }
 
     try {
-      await dispatch(addToCart({ product, variant: selectedVariant, quantity })).unwrap();
+      await dispatch(
+        addToCart({ product, variant: selectedVariant, quantity }),
+      ).unwrap();
       setShowAddedNotice(true);
     } catch {
       // handled by cart state
@@ -245,13 +257,13 @@ export default function ProductDetailPage() {
 
       // Must have the candidate attribute value
       const hasTargetAttribute = variant.attributes?.some(
-        (attr) => attr.name === attrName && attr.value === attrValue
+        (attr) => attr.name === attrName && attr.value === attrValue,
       );
       if (!hasTargetAttribute) return false;
 
       // Must match ALL other selected attributes (excluding the one we're checking)
       const otherSelectedAttributes = Object.entries(selectedAttributes).filter(
-        ([name]) => name !== attrName
+        ([name]) => name !== attrName,
       );
 
       // If there are no other selected attributes, this variant is valid
@@ -259,12 +271,12 @@ export default function ProductDetailPage() {
 
       // Check if this variant has ALL the other selected attributes
       return otherSelectedAttributes.every(([name, value]) =>
-        variant.attributes?.some((attr) => attr.name === name && attr.value === value)
+        variant.attributes?.some(
+          (attr) => attr.name === name && attr.value === value,
+        ),
       );
     });
   };
-
-
 
   return (
     <div className='min-h-screen bg-white'>
@@ -294,17 +306,18 @@ export default function ProductDetailPage() {
           <div className='text-sm text-zinc-600'>Product not found.</div>
         ) : null}
         {product && selectedVariant ? (
-          <div className='grid gap-8 lg:grid-cols-2 items-start'>
-            {/* Product Image Gallery */}
-            <div className='flex flex-col-reverse md:flex-row gap-4 md:sticky md:top-40 md:self-start'>
-              {/* Thumbnails Column */}
-              {productImages.length > 1 && (
-                <div className='flex md:flex-col gap-2'>
-                  {productImages.map((imgUrl, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedImageIndex(idx)}
-                      className={`
+          <>
+            <div className='grid gap-8 lg:grid-cols-2 items-start'>
+              {/* Product Image Gallery */}
+              <div className='flex flex-col-reverse md:flex-row gap-4 md:sticky md:top-40 md:self-start'>
+                {/* Thumbnails Column */}
+                {productImages.length > 1 && (
+                  <div className='flex md:flex-col gap-2'>
+                    {productImages.map((imgUrl, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedImageIndex(idx)}
+                        className={`
                         relative w-16 h-16 rounded overflow-hidden border-2 transition
                         ${
                           selectedImageIndex === idx
@@ -312,148 +325,151 @@ export default function ProductDetailPage() {
                             : "border-zinc-200 hover:border-zinc-300"
                         }
                       `}>
-                      <Image
-                        src={imgUrl}
-                        alt={`${product.name} thumbnail ${idx + 1}`}
-                        fill
-                        className='object-cover'
-                        priority
-                        unoptimized
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Main Image */}
-              <div
-                className='relative flex-1 aspect-square overflow-hidden rounded border border-zinc-200 bg-zinc-100 cursor-pointer'
-                onClick={() => setIsLightboxOpen(true)}>
-                <Image
-                  src={productImages[selectedImageIndex] || productImages[0]}
-                  alt={product.name}
-                  fill
-                  className='object-contain'
-                  priority
-                  unoptimized
-                />
-              </div>
-            </div>
-
-            {/* Product Info */}
-            <div>
-              {/* Category Badge */}
-              <div className='mb-2'>
-                {product.category ? (
-                  <Link
-                    href={`/products?categoryId=${product.categoryId}`}
-                    className='text-xs font-medium text-zinc-500 uppercase tracking-wider hover:text-black transition'>
-                    {product.category.name}
-                  </Link>
-                ) : null}
-              </div>
-
-              {/* Product Name */}
-              <h1 className='text-3xl font-semibold tracking-tight text-zinc-800'>
-                {product.name}
-              </h1>
-
-              {/* Rating */}
-              <div className="mt-2 flex items-center gap-2">
-                <StarRating value={product.ratingAverage ?? 0} />
-                <span className="text-sm text-zinc-700">
-                  {(product.ratingAverage ?? 0).toFixed(1)}
-                </span>
-                <Link
-                  href={`/products/${product.id}/reviews`}
-                  className="text-sm text-zinc-500 underline underline-offset-4 hover:text-zinc-800"
-                >
-                  ({product.ratingCount ?? 0} ratings)
-                </Link>
-              </div>
-
-              {/* Price */}
-              <div className='mt-2'>
-                {pricing && pricing.totalSavings > 0 ? (
-                  <div className='space-y-1'>
-                    <div className='flex items-center gap-2'>
-                      <p className='text-xl text-zinc-400 line-through'>
-                        {formatPrice(pricing.originalPrice)}
-                      </p>
-                      <p className='text-2xl font-semibold text-red-600'>
-                        {formatPrice(pricing.discountedPrice)}
-                      </p>
-                    </div>
-                    <div className='flex items-center gap-2 text-sm text-emerald-700'>
-                      <Tag size={14} />
-                      <span className='font-medium'>
-                        You save {pricing.totalPercentageSavings}%
-                      </span>
-                    </div>
-                    {pricing.appliedDiscounts.length > 0 && (
-                      <p className='text-xs text-zinc-500'>
-                        {pricing.appliedDiscounts.map((d) => d.name).join(", ")}
-                      </p>
-                    )}
+                        <Image
+                          src={imgUrl}
+                          alt={`${product.name} thumbnail ${idx + 1}`}
+                          fill
+                          className='object-cover'
+                          priority
+                          unoptimized
+                        />
+                      </button>
+                    ))}
                   </div>
-                ) : (
-                  <p className='text-2xl font-semibold text-zinc-900'>
-                    {formatPrice(selectedVariant.price)}
-                  </p>
                 )}
-              </div>
 
-              {/* SKU & Stock Status */}
-              <div className='mt-3 flex items-center gap-4 text-sm'>
-                <div className='flex items-center gap-1.5 text-zinc-600'>
-                  <Package className='h-4 w-4' />
-                  <span>SKU: {selectedVariant.sku}</span>
+                {/* Main Image */}
+                <div
+                  className='relative flex-1 aspect-square overflow-hidden rounded border border-zinc-200 bg-zinc-100 cursor-pointer'
+                  onClick={() => setIsLightboxOpen(true)}>
+                  <Image
+                    src={productImages[selectedImageIndex] || productImages[0]}
+                    alt={product.name}
+                    fill
+                    className='object-contain'
+                    priority
+                    unoptimized
+                  />
                 </div>
-                {selectedVariant.stock > 0 ? (
-                  <span className='text-green-600 font-medium'>
-                    {selectedVariant.stock} in stock
-                  </span>
-                ) : (
-                  <span className='text-red-600 font-medium'>Out of stock</span>
-                )}
               </div>
 
-              {/* Description */}
-              {product.description ? (
-                <p className='mt-4 text-zinc-600'>{product.description}</p>
-              ) : null}
+              {/* Product Info */}
+              <div>
+                {/* Category Badge */}
+                <div className='mb-2'>
+                  {product.category ? (
+                    <Link
+                      href={`/products?categoryId=${product.categoryId}`}
+                      className='text-xs font-medium text-zinc-500 uppercase tracking-wider hover:text-black transition'>
+                      {product.category.name}
+                    </Link>
+                  ) : null}
+                </div>
 
-              <div className='mt-6 space-y-6'>
-                {/* Variation Selectors (for VARIABLE products) */}
-                {product.type === "VARIABLE" &&
-                Object.keys(attributeGroups).length > 0 ? (
-                  <div className='space-y-4'>
-                    {Object.entries(attributeGroups).map(
-                      ([attrName, group]) => (
-                        <div key={attrName}>
-                          <label className='text-sm font-medium text-zinc-800'>
-                            {group.name}
-                          </label>
-                          <div className='mt-2 flex flex-wrap gap-2'>
-                            {Array.from(group.values).map((value) => {
-                              const isSelected =
-                                selectedAttributes[attrName] === value;
-                              const isAvailable = isVariantAvailable(
-                                attrName,
-                                value,
-                              );
+                {/* Product Name */}
+                <h1 className='text-3xl font-semibold tracking-tight text-zinc-800'>
+                  {product.name}
+                </h1>
 
-                              return (
-                                <button
-                                  key={value}
-                                  onClick={() =>
-                                    setSelectedAttributes({
-                                      ...selectedAttributes,
-                                      [attrName]: value,
-                                    })
-                                  }
-                                  disabled={!isAvailable}
-                                  className={`
+                {/* Rating */}
+                <div className='mt-2 flex items-center gap-2'>
+                  <StarRating value={product.ratingAverage ?? 0} />
+                  <span className='text-sm text-zinc-700'>
+                    {(product.ratingAverage ?? 0).toFixed(1)}
+                  </span>
+                  <Link
+                    href={`/products/${product.id}/reviews`}
+                    className='text-sm text-zinc-500 underline underline-offset-4 hover:text-zinc-800'>
+                    ({product.ratingCount ?? 0} ratings)
+                  </Link>
+                </div>
+
+                {/* Price */}
+                <div className='mt-2'>
+                  {pricing && pricing.totalSavings > 0 ? (
+                    <div className='space-y-1'>
+                      <div className='flex items-center gap-2'>
+                        <p className='text-xl text-zinc-400 line-through'>
+                          {formatPrice(pricing.originalPrice)}
+                        </p>
+                        <p className='text-2xl font-semibold text-red-600'>
+                          {formatPrice(pricing.discountedPrice)}
+                        </p>
+                      </div>
+                      <div className='flex items-center gap-2 text-sm text-emerald-700'>
+                        <Tag size={14} />
+                        <span className='font-medium'>
+                          You save {pricing.totalPercentageSavings}%
+                        </span>
+                      </div>
+                      {pricing.appliedDiscounts.length > 0 && (
+                        <p className='text-xs text-zinc-500'>
+                          {pricing.appliedDiscounts
+                            .map((d) => d.name)
+                            .join(", ")}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className='text-2xl font-semibold text-zinc-900'>
+                      {formatPrice(selectedVariant.price)}
+                    </p>
+                  )}
+                </div>
+
+                {/* SKU & Stock Status */}
+                <div className='mt-3 flex items-center gap-4 text-sm'>
+                  <div className='flex items-center gap-1.5 text-zinc-600'>
+                    <Package className='h-4 w-4' />
+                    <span>SKU: {selectedVariant.sku}</span>
+                  </div>
+                  {selectedVariant.stock > 0 ? (
+                    <span className='text-green-600 font-medium'>
+                      {selectedVariant.stock} in stock
+                    </span>
+                  ) : (
+                    <span className='text-red-600 font-medium'>
+                      Out of stock
+                    </span>
+                  )}
+                </div>
+
+                {/* Description */}
+                {product.description ? (
+                  <p className='mt-4 text-zinc-600'>{product.description}</p>
+                ) : null}
+
+                <div className='mt-6 space-y-6'>
+                  {/* Variation Selectors (for VARIABLE products) */}
+                  {product.type === "VARIABLE" &&
+                  Object.keys(attributeGroups).length > 0 ? (
+                    <div className='space-y-4'>
+                      {Object.entries(attributeGroups).map(
+                        ([attrName, group]) => (
+                          <div key={attrName}>
+                            <label className='text-sm font-medium text-zinc-800'>
+                              {group.name}
+                            </label>
+                            <div className='mt-2 flex flex-wrap gap-2'>
+                              {Array.from(group.values).map((value) => {
+                                const isSelected =
+                                  selectedAttributes[attrName] === value;
+                                const isAvailable = isVariantAvailable(
+                                  attrName,
+                                  value,
+                                );
+
+                                return (
+                                  <button
+                                    key={value}
+                                    onClick={() =>
+                                      setSelectedAttributes({
+                                        ...selectedAttributes,
+                                        [attrName]: value,
+                                      })
+                                    }
+                                    disabled={!isAvailable}
+                                    className={`
                                   px-4 py-2 rounded border text-sm font-medium transition cursor-pointer
                                   ${
                                     isSelected
@@ -463,80 +479,90 @@ export default function ProductDetailPage() {
                                         : "border-zinc-200 bg-zinc-50 text-zinc-400 cursor-not-allowed line-through"
                                   }
                                 `}>
-                                  {value}
-                                </button>
-                              );
-                            })}
+                                    {value}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      ),
+                        ),
+                      )}
+                    </div>
+                  ) : null}
+
+                  {/* Quantity Selector */}
+
+                  <QuantitySelector
+                    value={quantity}
+                    min={1}
+                    max={selectedVariant.stock}
+                    onChange={setQuantity}
+                    gapClassName='gap-1'
+                    buttonSizeClassName='h-10 w-10'
+                    buttonClassName='bg-[#f2f2f2] text-zinc-900 border-none rounded-none'
+                    valueSizeClassName='text-lg text-zinc-900'
+                    containerClassName='mt-0 bg-[#f2f2f2] border border-zinc-300 rounded-none py-0 p-1'
+                  />
+
+                  {quantity >= selectedVariant.stock &&
+                  selectedVariant.stock > 0 ? (
+                    <p className='mt-1 text-xs text-amber-600'>
+                      Maximum available quantity selected
+                    </p>
+                  ) : null}
+
+                  {/* Add to Cart Button */}
+                  <Button
+                    className='w-full'
+                    disabled={
+                      quantity > selectedVariant.stock &&
+                      selectedVariant.stock > 0
+                    }
+                    onClick={handleAddToCart}>
+                    {selectedVariant.stock === 0
+                      ? "Out of Stock"
+                      : "Add to cart"}
+                  </Button>
+
+                  {/* Top reviews */}
+                  <div className='pt-6 border-t border-zinc-200'>
+                    <div className='flex items-center justify-between'>
+                      <h2 className='text-sm font-semibold text-zinc-900'>
+                        Top reviews
+                      </h2>
+                      <Link
+                        href={`/products/${product.id}/reviews`}
+                        className='text-xs text-zinc-600 underline underline-offset-4 hover:text-zinc-900'>
+                        View all
+                      </Link>
+                    </div>
+
+                    {topReviews.length === 0 ? (
+                      <p className='mt-2 text-sm text-zinc-600'>
+                        No reviews yet.
+                      </p>
+                    ) : (
+                      <div className='mt-3 space-y-3'>
+                        {topReviews.map((r) => (
+                          <ReviewCard key={r.id} review={r} />
+                        ))}
+                      </div>
                     )}
                   </div>
-                ) : null}
 
-                {/* Quantity Selector */}
-
-                <QuantitySelector
-                  value={quantity}
-                  min={1}
-                  max={selectedVariant.stock}
-                  onChange={setQuantity}
-                  gapClassName='gap-1'
-                  buttonSizeClassName='h-10 w-10'
-                  buttonClassName='bg-[#f2f2f2] text-zinc-900 border-none rounded-none'
-                  valueSizeClassName='text-lg text-zinc-900'
-                  containerClassName='mt-0 bg-[#f2f2f2] border border-zinc-300 rounded-none py-0 p-1'
-                />
-
-                {quantity >= selectedVariant.stock &&
-                selectedVariant.stock > 0 ? (
-                  <p className='mt-1 text-xs text-amber-600'>
-                    Maximum available quantity selected
-                  </p>
-                ) : null}
-
-                {/* Add to Cart Button */}
-                <Button
-                  className='w-full'
-                  disabled={
-                    quantity > selectedVariant.stock &&
-                    selectedVariant.stock > 0
-                  }
-                  onClick={handleAddToCart}>
-                  {selectedVariant.stock === 0 ? "Out of Stock" : "Add to cart"}
-                </Button>
-
-                {/* Top reviews */}
-                <div className="pt-6 border-t border-zinc-200">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-sm font-semibold text-zinc-900">Top reviews</h2>
-                    <Link
-                      href={`/products/${product.id}/reviews`}
-                      className="text-xs text-zinc-600 underline underline-offset-4 hover:text-zinc-900"
-                    >
-                      View all
-                    </Link>
+                  <div className='pt-6 border-t border-zinc-200'>
+                    <ReviewEditor
+                      productId={product.id}
+                      isAuthenticated={Boolean(user)}
+                    />
                   </div>
-
-                  {topReviews.length === 0 ? (
-                    <p className="mt-2 text-sm text-zinc-600">No reviews yet.</p>
-                  ) : (
-                    <div className="mt-3 space-y-3">
-                      {topReviews.map((r) => (
-                        <ReviewCard key={r.id} review={r} />
-                      ))}
-                    </div>
-                  )}
                 </div>
-
-                <div className="pt-6 border-t border-zinc-200">
-                  <ReviewEditor productId={product.id} isAuthenticated={Boolean(user)} />
-                </div>
-
-                <ProductQASection productId={product.id} />
               </div>
             </div>
-          </div>
+            <div className='mt-12'>
+              <ProductQASection productId={product.id} />
+            </div>
+          </>
         ) : null}
 
         {/* Lightbox */}

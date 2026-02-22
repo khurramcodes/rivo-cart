@@ -73,7 +73,7 @@ export function NavBar() {
           </Link>
 
           {/* Desktop Account */}
-          <div className='hidden md:flex items-center gap-3 text-sm text-white'>
+          <div className='hidden md:flex items-center gap-3 text-sm'>
             {user ? (
               user.role === "ADMIN" ? (
                 <Link href='/admin'>Admin</Link>
@@ -90,7 +90,7 @@ export function NavBar() {
                     <div className='absolute right-0 mt-2 w-40 rounded border bg-white shadow'>
                       <Link
                         href='/account'
-                        className='block px-3 py-2 hover:bg-zinc-100'>
+                        className='block px-3 py-2 hover:bg-zinc-100 text-zinc-900'>
                         Account
                       </Link>
                       <button
@@ -98,7 +98,7 @@ export function NavBar() {
                           setMenuOpen(false);
                           void dispatch(logout());
                         }}
-                        className='block w-full px-3 py-2 text-left hover:bg-zinc-100'>
+                        className='block w-full px-3 py-2 text-left hover:bg-zinc-100 text-zinc-900'>
                         Logout
                       </button>
                     </div>

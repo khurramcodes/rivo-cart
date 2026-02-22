@@ -91,7 +91,7 @@ export default function AdminQAPage() {
           <p className="mt-1 text-sm text-zinc-600">Manage product questions and answers</p>
         </div>
         <select
-          className="h-10 rounded border border-zinc-200 px-3 text-sm"
+          className="h-10 rounded border border-zinc-200 px-3 text-sm text-zinc-900"
           value={status}
           onChange={(e) => setStatus(e.target.value as typeof status)}
         >

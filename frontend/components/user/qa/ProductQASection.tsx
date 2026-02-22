@@ -111,7 +111,7 @@ export function ProductQASection({ productId }: ProductQASectionProps) {
 
   return (
     <div className="pt-8 border-t border-zinc-200">
-      <h2 className="text-lg font-semibold text-zinc-900">Customer questions & answers</h2>
+      <h2 className="text-lg font-semibold text-zinc-900">Questions & Answers</h2>
 
       {user ? (
         <div className="mt-4 rounded border border-zinc-200 bg-white p-4">
@@ -121,7 +121,7 @@ export function ProductQASection({ productId }: ProductQASectionProps) {
             onChange={(e) => setAskQuestion(e.target.value)}
             placeholder="What would you like to know about this product?"
             rows={3}
-            className="mt-2 w-full rounded border border-zinc-200 px-3 py-2 text-sm"
+            className="mt-2 w-full rounded border border-zinc-200 px-3 py-2 text-sm text-zinc-900"
           />
           <button
             type="button"
@@ -233,13 +233,13 @@ export function ProductQASection({ productId }: ProductQASectionProps) {
               onChange={(e) => setReportReason(e.target.value)}
               placeholder="Reason..."
               rows={3}
-              className="mt-3 w-full rounded border border-zinc-200 px-3 py-2 text-sm"
+              className="mt-3 w-full rounded border border-zinc-200 px-3 py-2 text-sm text-zinc-900"
             />
             <div className="mt-4 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => { setReportModal(null); setReportReason(""); }}
-                className="rounded border border-zinc-200 px-3 py-1.5 text-sm"
+                className="rounded border border-zinc-200 px-3 py-1.5 text-sm text-zinc-900 cursor-pointer"
               >
                 Cancel
               </button>
@@ -247,7 +247,7 @@ export function ProductQASection({ productId }: ProductQASectionProps) {
                 type="button"
                 onClick={() => void handleReportSubmit()}
                 disabled={!reportReason.trim() || submittingReport}
-                className="rounded bg-zinc-900 px-3 py-1.5 text-sm text-white disabled:opacity-50"
+                className="rounded bg-zinc-900 px-3 py-1.5 text-sm text-white disabled:opacity-50 cursor-pointer"
               >
                 {submittingReport ? "Sending…" : "Submit"}
               </button>
