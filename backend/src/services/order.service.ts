@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { resolveCartPricing } from "./pricing.service.js";
 import { resolveShippingForOrder } from "./shipping.service.js";
 import { sendOrderStatusEmail } from "./email.service.js";
+import { generateOrderNumber } from "./orderNumber.service.js";
 import { Prisma } from "@prisma/client";
 import type { OrderStatus as PrismaOrderStatus } from "@prisma/client";
 
@@ -103,7 +104,7 @@ export async function placeOrder(
     totalAmount += shippingCost;
   }
 
-  // Create order and deduct stock in a transaction
+  // Create order and deduct stock in a transaction (orderNumber from DB sequence for concurrency safety)
   const order = await prisma.$transaction(async (tx) => {
     // Deduct stock for each variant
     for (const item of normalized) {
@@ -113,9 +114,12 @@ export async function placeOrder(
       });
     }
 
+    const orderNumber = await generateOrderNumber(tx);
+
     // Create the order
     const created = await tx.order.create({
       data: {
+        orderNumber,
         userId,
         totalAmount,
         shippingCost,
@@ -164,6 +168,23 @@ export async function placeOrder(
     return created;
   });
 
+  return order;
+}
+
+export async function getByOrderNumber(orderNumber: string, userId: string) {
+  const order = await prisma.order.findUnique({
+    where: { orderNumber },
+    include: {
+      user: { select: { id: true, name: true, email: true, role: true, createdAt: true } },
+      items: { include: { product: { select: { id: true, name: true, imageUrl: true } } } },
+    },
+  });
+  if (!order) {
+    throw new ApiError(404, "ORDER_NOT_FOUND", "Order not found");
+  }
+  if (order.userId !== userId) {
+    throw new ApiError(404, "ORDER_NOT_FOUND", "Order not found");
+  }
   return order;
 }
 

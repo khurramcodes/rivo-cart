@@ -8,7 +8,7 @@ export const list = asyncHandler(async (req: Request, res: Response) => {
   const { status, page, limit } = req.query as { status?: string; page?: string; limit?: string };
 
   const result = await reviewService.adminListReviews({
-    status: (status as "PENDING" | "APPROVED" | "REJECTED" | "REMOVED") ?? undefined,
+    status: (status as "PENDING" | "APPROVED" | "REJECTED") ?? undefined,
     page: page ? Number(page) : undefined,
     limit: limit ? Number(limit) : undefined,
   });

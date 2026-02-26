@@ -8,7 +8,7 @@ import type { Question } from "@/types";
 export default function AdminQAPage() {
   const [items, setItems] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<"VISIBLE" | "HIDDEN" | "REMOVED">("VISIBLE");
+  const [status, setStatus] = useState<"VISIBLE" | "HIDDEN">("VISIBLE");
   const [answerState, setAnswerState] = useState<{
     questionId: string;
     answerId?: string;
@@ -16,6 +16,9 @@ export default function AdminQAPage() {
     isEdit: boolean;
   } | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<
+    { type: "hideQuestion" | "removeQuestion" | "hideAnswer" | "removeAnswer"; id: string } | null
+  >(null);
 
   async function refresh() {
     setLoading(true);
@@ -32,6 +35,7 @@ export default function AdminQAPage() {
   }, [status]);
 
   async function hideQuestion(id: string) {
+    setConfirmAction(null);
     try {
       await adminApi.hideQuestion(id);
       await refresh();
@@ -41,8 +45,18 @@ export default function AdminQAPage() {
   }
 
   async function removeQuestion(id: string) {
+    setConfirmAction(null);
     try {
       await adminApi.removeQuestion(id);
+      await refresh();
+    } catch {
+      // ignore
+    }
+  }
+
+  async function showQuestion(id: string) {
+    try {
+      await adminApi.showQuestion(id);
       await refresh();
     } catch {
       // ignore
@@ -66,6 +80,7 @@ export default function AdminQAPage() {
   }
 
   async function hideAnswer(id: string) {
+    setConfirmAction(null);
     try {
       await adminApi.hideAnswer(id);
       await refresh();
@@ -75,6 +90,7 @@ export default function AdminQAPage() {
   }
 
   async function removeAnswer(id: string) {
+    setConfirmAction(null);
     try {
       await adminApi.removeAnswer(id);
       await refresh();
@@ -82,6 +98,34 @@ export default function AdminQAPage() {
       // ignore
     }
   }
+
+  async function showAnswer(id: string) {
+    try {
+      await adminApi.showAnswer(id);
+      await refresh();
+    } catch {
+      // ignore
+    }
+  }
+
+  function handleConfirmAction() {
+    if (!confirmAction) return;
+    if (confirmAction.type === "hideQuestion") void hideQuestion(confirmAction.id);
+    else if (confirmAction.type === "removeQuestion") void removeQuestion(confirmAction.id);
+    else if (confirmAction.type === "hideAnswer") void hideAnswer(confirmAction.id);
+    else if (confirmAction.type === "removeAnswer") void removeAnswer(confirmAction.id);
+  }
+
+  const confirmMessage =
+    confirmAction?.type === "removeQuestion"
+      ? "Are you sure you want to permanently remove this question? This action cannot be undone."
+      : confirmAction?.type === "hideQuestion"
+        ? "Are you sure you want to hide this question? You can make it visible again from the Hidden tab."
+        : confirmAction?.type === "removeAnswer"
+          ? "Are you sure you want to permanently remove this answer? This action cannot be undone."
+          : confirmAction?.type === "hideAnswer"
+            ? "Are you sure you want to hide this answer? You can make it visible again."
+            : "";
 
   return (
     <div className="space-y-6">
@@ -97,7 +141,6 @@ export default function AdminQAPage() {
         >
           <option value="VISIBLE">Visible</option>
           <option value="HIDDEN">Hidden</option>
-          <option value="REMOVED">Removed</option>
         </select>
       </div>
 
@@ -113,8 +156,17 @@ export default function AdminQAPage() {
                 <p className="mt-1 text-xs text-zinc-500">
                   {q.product?.name ?? q.productId} · by {q.user?.name ?? q.userId} · {new Date(q.createdAt).toLocaleString()}
                 </p>
-                <div className="mt-2 flex gap-2">
-                  {status !== "REMOVED" ? (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {status === "HIDDEN" ? (
+                    <Button
+                      variant="ghost"
+                      className="h-8 text-sm text-emerald-600"
+                      onClick={() => void showQuestion(q.id)}
+                    >
+                      Make visible
+                    </Button>
+                  ) : null}
+                  {status === "VISIBLE" ? (
                     <>
                       <Button
                         variant="ghost"
@@ -126,14 +178,14 @@ export default function AdminQAPage() {
                       <Button
                         variant="ghost"
                         className="h-8 text-sm text-amber-600"
-                        onClick={() => void hideQuestion(q.id)}
+                        onClick={() => setConfirmAction({ type: "hideQuestion", id: q.id })}
                       >
                         Hide question
                       </Button>
                       <Button
                         variant="ghost"
                         className="h-8 text-sm text-red-600"
-                        onClick={() => void removeQuestion(q.id)}
+                        onClick={() => setConfirmAction({ type: "removeQuestion", id: q.id })}
                       >
                         Remove question
                       </Button>
@@ -148,31 +200,42 @@ export default function AdminQAPage() {
                 <div key={a.id} className="rounded bg-zinc-50 p-3">
                   <p className="text-sm text-zinc-800">{a.answer}</p>
                   <p className="mt-1 text-xs text-zinc-500">— {a.admin?.name ?? "Admin"} · {a.status}</p>
-                  {a.status !== "REMOVED" ? (
-                    <div className="mt-2 flex gap-2">
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {a.status === "HIDDEN" ? (
                       <button
                         type="button"
-                        onClick={() => setAnswerState({ questionId: q.id, answerId: a.id, message: a.answer, isEdit: true })}
-                        className="text-xs text-blue-600 hover:underline"
+                        onClick={() => void showAnswer(a.id)}
+                        className="text-xs text-emerald-600 hover:underline"
                       >
-                        Edit
+                        Make visible
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => void hideAnswer(a.id)}
-                        className="text-xs text-amber-600 hover:underline"
-                      >
-                        Hide
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void removeAnswer(a.id)}
-                        className="text-xs text-red-600 hover:underline"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ) : null}
+                    ) : null}
+                    {a.status === "VISIBLE" ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setAnswerState({ questionId: q.id, answerId: a.id, message: a.answer, isEdit: true })}
+                          className="text-xs text-blue-600 hover:underline"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmAction({ type: "hideAnswer", id: a.id })}
+                          className="text-xs text-amber-600 hover:underline"
+                        >
+                          Hide
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmAction({ type: "removeAnswer", id: a.id })}
+                          className="text-xs text-red-600 hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </>
+                    ) : null}
+                  </div>
                 </div>
               ))}
             </div>
@@ -183,7 +246,7 @@ export default function AdminQAPage() {
                   value={answerState.message}
                   onChange={(e) => setAnswerState((prev) => prev ? { ...prev, message: e.target.value } : null)}
                   rows={3}
-                  className="w-full rounded border border-zinc-200 px-3 py-2 text-sm"
+                  className="w-full rounded border border-zinc-200 px-3 py-2 text-sm text-zinc-900"
                   placeholder="Your answer..."
                 />
                 <div className="mt-2 flex gap-2">
@@ -202,6 +265,30 @@ export default function AdminQAPage() {
           </div>
         ))}
       </div>
+
+      {confirmAction ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm rounded-lg bg-white p-4 shadow-lg">
+            <h3 className="text-sm font-semibold text-zinc-900">Confirm</h3>
+            <p className="mt-2 text-sm text-zinc-600">{confirmMessage}</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setConfirmAction(null)}>
+                Cancel
+              </Button>
+              <Button
+                className={
+                  confirmAction.type === "removeQuestion" || confirmAction.type === "removeAnswer"
+                    ? "bg-red-600 hover:bg-red-700"
+                    : ""
+                }
+                onClick={() => handleConfirmAction()}
+              >
+                Confirm
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

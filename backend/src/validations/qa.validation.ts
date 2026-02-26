@@ -42,7 +42,7 @@ export const adminListQuestionsSchema = z.object({
   query: z
     .object({
       productId: z.string().min(1).optional(),
-      status: z.enum(["VISIBLE", "HIDDEN", "REMOVED"]).optional(),
+      status: z.enum(["VISIBLE", "HIDDEN"]).optional(),
       page: z.string().optional(),
       limit: z.string().optional(),
     })

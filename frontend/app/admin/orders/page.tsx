@@ -68,7 +68,7 @@ export default function AdminOrdersPage() {
       {orders.length > 0 ? (
         <div className='mt-6 overflow-hidden rounded border border-zinc-200'>
           <div className='grid grid-cols-12 gap-3 border-b border-zinc-200 bg-zinc-50 px-4 py-3 text-xs font-medium text-zinc-600'>
-            <div className='col-span-3'>Order</div>
+            <div className='col-span-3'>Order No.</div>
             <div className='col-span-3'>Customer</div>
             <div className='col-span-2'>Total</div>
             <div className='col-span-2'>Status</div>
@@ -82,7 +82,7 @@ export default function AdminOrdersPage() {
                 <p
                   onClick={() => setSelectedOrder(o)}
                   className='font-medium text-blue-800 cursor-pointer'>
-                  {o.id}
+                  {o.orderNumber}
                 </p>
               </div>
               <div className='col-span-3'>
@@ -127,8 +127,8 @@ export default function AdminOrdersPage() {
               {/* Order meta */}
               <div className='grid grid-cols-2 gap-4 text-sm text-zinc-900'>
                 <div>
-                  <p className='font-semibold text-xl'>Order ID</p>
-                  <p className='font-medium'>{selectedOrder.id}</p>
+                  <p className='font-semibold text-xl'>Order No.</p>
+                  <p className='font-medium'>{selectedOrder.orderNumber}</p>
                 </div>
 
                 <div>

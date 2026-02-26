@@ -27,6 +27,13 @@ export const place = asyncHandler(async (req: Request, res: Response) => {
   res.status(201).json({ order });
 });
 
+export const getByOrderNumber = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) throw new ApiError(401, "UNAUTHORIZED", "Missing authentication");
+  const { orderNumber } = req.params as { orderNumber: string };
+  const order = await orderService.getByOrderNumber(orderNumber, req.user.sub);
+  res.json({ order });
+});
+
 export const listAll = asyncHandler(async (_req: Request, res: Response) => {
   const orders = await orderService.listAllOrders();
   res.json({ orders });

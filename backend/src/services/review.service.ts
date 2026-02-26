@@ -1,5 +1,6 @@
 import { prisma } from "../prisma/client.js";
 import { ApiError } from "../utils/ApiError.js";
+import { emitEvent } from "../modules/event/event-bus.js";
 
 type ReviewSort = "rating_desc" | "newest";
 
@@ -48,7 +49,7 @@ export async function createReview(input: {
   }
 
   try {
-    return await prisma.review.create({
+    const review = await prisma.review.create({
       data: {
         productId: input.productId,
         userId: input.userId,
@@ -58,6 +59,13 @@ export async function createReview(input: {
         isVerifiedPurchase: true,
       },
     });
+    await emitEvent("REVIEW_CREATED", {
+      reviewId: review.id,
+      userId: input.userId,
+      productId: input.productId,
+      rating: input.rating,
+    });
+    return review;
   } catch (err: any) {
     // Unique constraint: one review per user per product
     if (err?.code === "P2002") {
@@ -144,7 +152,7 @@ export async function listTopApprovedReviews(input: { productId: string }) {
   });
 }
 
-export async function adminListReviews(input: { status?: "PENDING" | "APPROVED" | "REJECTED" | "REMOVED"; page?: number; limit?: number }) {
+export async function adminListReviews(input: { status?: "PENDING" | "APPROVED" | "REJECTED"; page?: number; limit?: number }) {
   const page = Math.max(1, input.page ?? 1);
   const limit = Math.min(50, Math.max(1, input.limit ?? 20));
   const skip = (page - 1) * limit;
@@ -185,6 +193,11 @@ export async function adminApproveReview(input: { reviewId: string; approvedBy: 
   });
 
   await recalculateProductRatings(existing.productId);
+  await emitEvent("REVIEW_APPROVED", {
+    reviewId: input.reviewId,
+    productId: existing.productId,
+    approvedBy: input.approvedBy,
+  });
 }
 
 export async function adminRejectReview(input: { reviewId: string; approvedBy: string }) {
@@ -208,6 +221,11 @@ export async function adminRejectReview(input: { reviewId: string; approvedBy: s
   if (wasApproved) {
     await recalculateProductRatings(existing.productId);
   }
+  await emitEvent("REVIEW_REJECTED", {
+    reviewId: input.reviewId,
+    productId: existing.productId,
+    rejectedBy: input.approvedBy,
+  });
 }
 
 export async function adminRemoveReview(input: { reviewId: string; approvedBy: string }) {
@@ -219,14 +237,7 @@ export async function adminRemoveReview(input: { reviewId: string; approvedBy: s
 
   const wasApproved = existing.status === "APPROVED";
 
-  await prisma.review.update({
-    where: { id: input.reviewId },
-    data: {
-      status: "REMOVED",
-      approvedAt: null,
-      approvedBy: input.approvedBy,
-    },
-  });
+  await prisma.review.delete({ where: { id: input.reviewId } });
 
   if (wasApproved) {
     await recalculateProductRatings(existing.productId);

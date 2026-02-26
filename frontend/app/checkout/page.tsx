@@ -253,7 +253,7 @@ export default function CheckoutPage() {
         })),
       });
       await dispatch(clearCartServer());
-      router.push(`/checkout/success?orderId=${order.id}`);
+      router.push(`/checkout/success?orderNumber=${order.orderNumber}`);
     } catch (error: any) {
       setOrderError(error?.response?.data?.error?.message || "Failed to place order. Please try again.");
     }

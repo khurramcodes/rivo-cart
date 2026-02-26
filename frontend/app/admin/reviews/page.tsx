@@ -6,12 +6,13 @@ import { adminApi } from "@/services/adminApi";
 import type { Review } from "@/types";
 
 export default function AdminReviewsPage() {
-  const [status, setStatus] = useState<"PENDING" | "APPROVED" | "REJECTED" | "REMOVED">("PENDING");
+  const [status, setStatus] = useState<"PENDING" | "APPROVED" | "REJECTED">("PENDING");
   const [items, setItems] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [replyState, setReplyState] = useState<{ reviewId: string; message: string; editing: boolean } | null>(null);
   const [submittingReply, setSubmittingReply] = useState(false);
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
 
   const title = useMemo(() => (status === "PENDING" ? "Pending reviews" : `${status.toLowerCase()} reviews`), [status]);
 
@@ -50,6 +51,7 @@ export default function AdminReviewsPage() {
   }
 
   async function remove(id: string) {
+    setConfirmRemoveId(null);
     setSavingId(id);
     try {
       await adminApi.removeReview(id);
@@ -100,7 +102,6 @@ export default function AdminReviewsPage() {
           <option value="PENDING">Pending</option>
           <option value="APPROVED">Approved</option>
           <option value="REJECTED">Rejected</option>
-          <option value="REMOVED">Removed</option>
         </select>
       </div>
 
@@ -166,7 +167,7 @@ export default function AdminReviewsPage() {
                       </Button>
                     </div>
                   </div>
-                ) : !r.reply && status !== "REMOVED" ? (
+                ) : !r.reply ? (
                   <button
                     type="button"
                     onClick={() => setReplyState({ reviewId: r.id, message: "", editing: false })}
@@ -202,7 +203,7 @@ export default function AdminReviewsPage() {
                       variant="ghost"
                       className="h-9 text-red-600 hover:text-red-700"
                       disabled={savingId === r.id}
-                      onClick={() => void remove(r.id)}
+                      onClick={() => setConfirmRemoveId(r.id)}
                     >
                       Remove
                     </Button>
@@ -213,6 +214,29 @@ export default function AdminReviewsPage() {
           </div>
         ))}
       </div>
+
+      {confirmRemoveId ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm rounded-lg bg-white p-4 shadow-lg">
+            <h3 className="text-sm font-semibold text-zinc-900">Remove review</h3>
+            <p className="mt-2 text-sm text-zinc-600">
+              Are you sure you want to permanently remove this review? This action cannot be undone.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setConfirmRemoveId(null)}>
+                Cancel
+              </Button>
+              <Button
+                className="bg-red-600 hover:bg-red-700"
+                disabled={savingId === confirmRemoveId}
+                onClick={() => void remove(confirmRemoveId)}
+              >
+                {savingId === confirmRemoveId ? "Removing…" : "Remove"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

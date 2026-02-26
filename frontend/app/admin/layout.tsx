@@ -6,8 +6,10 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { Button } from "@/components/ui/Button";
 import { authApi } from "@/services/authApi";
+import { adminApi } from "@/services/adminApi";
 import { logout, setUser } from "@/store/slices/authSlice";
-import { Menu, X } from "lucide-react";
+import { setNotificationStats } from "@/store/slices/notificationSlice";
+import { Bell, Menu, X } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 
 export default function AdminLayout({
@@ -20,6 +22,7 @@ export default function AdminLayout({
   const dispatch = useAppDispatch();
   const user = useAppSelector((s) => s.auth.user);
   const status = useAppSelector((s) => s.auth.status);
+  const unreadNotifications = useAppSelector((s) => s.notifications.unread);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
@@ -42,8 +45,31 @@ export default function AdminLayout({
     };
   }, [dispatch, pathname, router, status]);
 
+  useEffect(() => {
+    if (status === "loading" || user?.role !== "ADMIN") return;
+    let mounted = true;
+    const loadStats = async () => {
+      try {
+        const stats = await adminApi.getNotificationStats();
+        if (!mounted) return;
+        dispatch(setNotificationStats(stats));
+      } catch {
+        // ignore transient failures
+      }
+    };
+    void loadStats();
+    const timer = setInterval(() => {
+      void loadStats();
+    }, 10000);
+    return () => {
+      mounted = false;
+      clearInterval(timer);
+    };
+  }, [dispatch, pathname, status, user?.role]);
+
   const navItems = [
     { label: "Dashboard", href: "/admin" },
+    { label: "Notifications", href: "/admin/notifications" },
     { label: "Categories", href: "/admin/categories" },
     { label: "Products", href: "/admin/products" },
     { label: "Orders", href: "/admin/orders" },
@@ -82,6 +108,19 @@ export default function AdminLayout({
           </button>
           {user?.role === "ADMIN" ? (
             <div className="flex items-center gap-3">
+              <Link
+                href="/admin/notifications?unreadOnly=true"
+                className="relative inline-flex h-9 w-9 items-center justify-center rounded border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
+                aria-label="Notifications"
+                title="Notifications"
+              >
+                <Bell size={16} />
+                {unreadNotifications > 0 ? (
+                  <span className="absolute -right-1 -top-1 inline-flex min-w-[18px] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold leading-4 text-white">
+                    {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                  </span>
+                ) : null}
+              </Link>
               <span className="hidden sm:inline text-sm text-zinc-600">
                 {user.name || "Admin"}
               </span>

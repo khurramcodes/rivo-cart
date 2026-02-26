@@ -435,9 +435,12 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* Description */}
+                <div className="mt-6 py-6 border-y border-zinc-200">
+                  <p className='font-medium text-zinc-800 mb-2'>About this product</p>
                 {product.description ? (
-                  <p className='mt-4 text-zinc-600'>{product.description}</p>
+                  <p className='text-zinc-600'>{product.description}</p>
                 ) : null}
+                </div>
 
                 <div className='mt-6 space-y-6'>
                   {/* Variation Selectors (for VARIABLE products) */}
@@ -491,7 +494,7 @@ export default function ProductDetailPage() {
                   ) : null}
 
                   {/* Quantity Selector */}
-
+                  <p className='text-sm font-medium text-zinc-800 mb-2'>Quantity</p>
                   <QuantitySelector
                     value={quantity}
                     min={1}
@@ -501,7 +504,7 @@ export default function ProductDetailPage() {
                     buttonSizeClassName='h-10 w-10'
                     buttonClassName='bg-[#f2f2f2] text-zinc-900 border-none rounded-none'
                     valueSizeClassName='text-lg text-zinc-900'
-                    containerClassName='mt-0 bg-[#f2f2f2] border border-zinc-300 rounded-none py-0 p-1'
+                    containerClassName='mt-0 bg-[#f2f2f2] border border-zinc-300 rounded py-0 p-1'
                   />
 
                   {quantity >= selectedVariant.stock &&

@@ -15,6 +15,7 @@ import { reviewRoutes } from "./review.routes.js";
 import { reviewAdminRoutes } from "./review.admin.routes.js";
 import { qaRoutes } from "./qa.routes.js";
 import { qaAdminRoutes } from "./qa.admin.routes.js";
+import { notificationAdminRoutes } from "./notification.admin.routes.js";
 
 export const routes = Router();
 
@@ -34,5 +35,6 @@ routes.use("/reviews", reviewRoutes);
 routes.use("/admin/reviews", reviewAdminRoutes);
 routes.use("/qa", qaRoutes);
 routes.use("/admin/qa", qaAdminRoutes);
+routes.use("/admin/notifications", notificationAdminRoutes);
 
 

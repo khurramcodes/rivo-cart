@@ -15,6 +15,11 @@ export const orderApi = {
     return data.order;
   },
 
+  async getByOrderNumber(orderNumber: string) {
+    const { data } = await apiClient.get<{ order: Order }>(`/orders/${encodeURIComponent(orderNumber)}`);
+    return data.order;
+  },
+
   async listAll() {
     const { data } = await apiClient.get<{ orders: Order[] }>("/orders");
     return data.orders;

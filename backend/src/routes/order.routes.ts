@@ -11,8 +11,11 @@ export const orderRoutes = Router();
 // customer (both USER and ADMIN can place orders)
 orderRoutes.post("/", requireAuth, requireCsrf, validate(placeOrderSchema), orderController.place);
 
-// admin
+// admin (list must be before :orderNumber so GET / is not captured as orderNumber)
 orderRoutes.get("/", requireAuth, requireRole("ADMIN"), orderController.listAll);
+
+// customer: get own order by order number (requires auth, returns 404 if not owner)
+orderRoutes.get("/:orderNumber", requireAuth, orderController.getByOrderNumber);
 orderRoutes.put(
   "/:id/status",
   requireAuth,

@@ -87,3 +87,17 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
       `<p>This link is valid for a short time. If you did not request this, you can ignore this email.</p>`,
   });
 }
+
+export async function sendNotificationEmail(input: {
+  to: string;
+  subject: string;
+  message: string;
+}) {
+  const safeMessage = input.message.trim();
+  await sendEmail({
+    to: input.to,
+    subject: input.subject.trim(),
+    text: safeMessage,
+    html: `<p>${safeMessage.replace(/\n/g, "<br/>")}</p>`,
+  });
+}

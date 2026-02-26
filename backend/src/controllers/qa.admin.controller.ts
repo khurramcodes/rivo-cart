@@ -13,7 +13,7 @@ export const listQuestions = asyncHandler(async (req: Request, res: Response) =>
   };
   const result = await qaService.adminListQuestions({
     productId,
-    status: status as "VISIBLE" | "HIDDEN" | "REMOVED" | undefined,
+    status: status as "VISIBLE" | "HIDDEN" | undefined,
     page: page ? Number(page) : undefined,
     limit: limit ? Number(limit) : undefined,
   });
@@ -31,6 +31,13 @@ export const removeQuestion = asyncHandler(async (req: Request, res: Response) =
   if (!req.user) throw new ApiError(401, "UNAUTHORIZED", "Missing authentication");
   const { id } = req.params as { id: string };
   await qaService.adminRemoveQuestion({ questionId: id });
+  res.status(204).send();
+});
+
+export const showQuestion = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) throw new ApiError(401, "UNAUTHORIZED", "Missing authentication");
+  const { id } = req.params as { id: string };
+  await qaService.adminShowQuestion({ questionId: id });
   res.status(204).send();
 });
 
@@ -69,5 +76,12 @@ export const removeAnswer = asyncHandler(async (req: Request, res: Response) => 
   if (!req.user) throw new ApiError(401, "UNAUTHORIZED", "Missing authentication");
   const { id } = req.params as { id: string };
   await qaService.adminRemoveAnswer({ answerId: id, adminId: req.user.sub });
+  res.status(204).send();
+});
+
+export const showAnswer = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) throw new ApiError(401, "UNAUTHORIZED", "Missing authentication");
+  const { id } = req.params as { id: string };
+  await qaService.adminShowAnswer({ answerId: id, adminId: req.user.sub });
   res.status(204).send();
 });

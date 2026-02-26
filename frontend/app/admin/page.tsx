@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { ArrowUpRightFromSquare } from "lucide-react";
 import Link from "next/link";
 import { adminApi } from "@/services/adminApi";
+import { useAppSelector } from "@/store/hooks";
 
 export default function AdminHomePage() {
+  const unreadQuestionsFromStore = useAppSelector((s) => s.notifications.unreadQuestions);
   const [stats, setStats] = useState({
     productsCount: 0,
     categoriesCount: 0,
@@ -39,7 +41,7 @@ export default function AdminHomePage() {
         Dashboard
       </h1>
       <p className='mt-2 text-sm text-zinc-600'>Manage catalog and orders.</p>
-      <div className='mt-6 grid gap-4 sm:grid-cols-3'>
+      <div className='mt-6 grid gap-4 sm:grid-cols-4'>
         <Link
           className='flex justify-between items-start rounded border border-zinc-200 p-4 hover:border-blue-200 hover:bg-blue-50'
           href='/admin/products'>
@@ -100,6 +102,27 @@ export default function AdminHomePage() {
           <div>
             <span className='ml-1 rounded-full bg-blue-800 px-2 py-0.5 text-xs text-white'>
               {loading ? "..." : stats.ordersCount}
+            </span>
+          </div>
+        </Link>
+        <Link
+          className='flex justify-between items-start rounded border border-zinc-200 p-4 hover:border-blue-200 hover:bg-blue-50'
+          href='/admin/qa?status=VISIBLE'>
+          <div>
+            <p className='text-3xl font-normal text-zinc-900'>Questions</p>
+            <p className='flex items-center gap-2 mt-1 text-lg font-medium text-zinc-600'>
+              New customer questions{" "}
+              <span>
+                <ArrowUpRightFromSquare
+                  className='hover:text-blue-800'
+                  size={18}
+                />
+              </span>
+            </p>
+          </div>
+          <div>
+            <span className='ml-1 rounded-full bg-blue-800 px-2 py-0.5 text-xs text-white'>
+              {loading ? "..." : unreadQuestionsFromStore}
             </span>
           </div>
         </Link>

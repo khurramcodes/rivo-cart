@@ -1,5 +1,14 @@
 import { apiClient } from "./apiClient";
-import type { Category, Order, OrderStatus, Product, Question, Review } from "@/types";
+import type {
+  AdminNotification,
+  AdminNotificationStats,
+  Category,
+  Order,
+  OrderStatus,
+  Product,
+  Question,
+  Review,
+} from "@/types";
 
 export type DiscountScope = "SITE_WIDE" | "PRODUCT" | "VARIANT" | "CATEGORY" | "COLLECTION";
 export type DiscountType = "PERCENTAGE" | "FIXED";
@@ -42,6 +51,33 @@ export type Coupon = {
 };
 
 export const adminApi = {
+  // notifications
+  async listNotifications(params?: { page?: number; limit?: number; unreadOnly?: boolean }) {
+    const { data } = await apiClient.get<{
+      notifications: AdminNotification[];
+      pagination: { page: number; limit: number; total: number; totalPages: number };
+    }>("/admin/notifications", { params });
+    return data;
+  },
+  async getNotificationStats() {
+    const { data } = await apiClient.get<AdminNotificationStats>("/admin/notifications/stats");
+    return data;
+  },
+  async markNotificationRead(id: string) {
+    const { data } = await apiClient.patch<{ notification: AdminNotification }>(
+      `/admin/notifications/${id}/read`,
+      {},
+    );
+    return data.notification;
+  },
+  async retryNotificationEmail(id: string) {
+    const { data } = await apiClient.post<{ notification: AdminNotification }>(
+      `/admin/notifications/${id}/retry-email`,
+      {},
+    );
+    return data.notification;
+  },
+
   // categories
   async listCategories() {
     const { data } = await apiClient.get<{ categories: Category[] }>("/categories");
@@ -60,7 +96,7 @@ export const adminApi = {
   },
 
   // reviews (admin moderation)
-  async listReviews(params?: { status?: "PENDING" | "APPROVED" | "REJECTED" | "REMOVED"; page?: number; limit?: number }) {
+  async listReviews(params?: { status?: "PENDING" | "APPROVED" | "REJECTED"; page?: number; limit?: number }) {
     const { data } = await apiClient.get<{ items: Review[]; total: number; page: number; limit: number }>(
       "/admin/reviews",
       { params },
@@ -89,7 +125,7 @@ export const adminApi = {
   },
 
   // Q&A
-  async listQuestions(params?: { productId?: string; status?: "VISIBLE" | "HIDDEN" | "REMOVED"; page?: number; limit?: number }) {
+  async listQuestions(params?: { productId?: string; status?: "VISIBLE" | "HIDDEN"; page?: number; limit?: number }) {
     const { data } = await apiClient.get<{ items: Question[]; total: number; page: number; limit: number }>(
       "/admin/qa/questions",
       { params },
@@ -101,6 +137,9 @@ export const adminApi = {
   },
   async removeQuestion(questionId: string) {
     await apiClient.patch(`/admin/qa/questions/${questionId}/remove`, {});
+  },
+  async showQuestion(questionId: string) {
+    await apiClient.patch(`/admin/qa/questions/${questionId}/show`, {});
   },
   async createAnswer(questionId: string, answer: string) {
     const { data } = await apiClient.post<{ answer: import("@/types").Answer }>(`/admin/qa/questions/${questionId}/answers`, { answer });
@@ -115,6 +154,9 @@ export const adminApi = {
   },
   async removeAnswer(answerId: string) {
     await apiClient.patch(`/admin/qa/answers/${answerId}/remove`, {});
+  },
+  async showAnswer(answerId: string) {
+    await apiClient.patch(`/admin/qa/answers/${answerId}/show`, {});
   },
 
   // discounts

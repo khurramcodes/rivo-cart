@@ -44,7 +44,7 @@ export const topProductReviewsSchema = z.object({
 export const adminListReviewsSchema = z.object({
   query: z
     .object({
-      status: z.enum(["PENDING", "APPROVED", "REJECTED", "REMOVED"]).optional(),
+      status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
       page: z.string().optional(),
       limit: z.string().optional(),
     })

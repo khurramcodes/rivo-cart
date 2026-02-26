@@ -168,6 +168,7 @@ export type OrderItem = {
 
 export type Order = {
   id: string;
+  orderNumber: string;
   userId: string;
   totalAmount: number; // cents
   shippingCost?: number;
@@ -243,6 +244,37 @@ export type Cart = {
   createdAt: string;
   updatedAt: string;
   items: CartItem[];
+};
+
+export type NotificationType =
+  | "QUESTION_CREATED"
+  | "ANSWER_CREATED"
+  | "REVIEW_CREATED"
+  | "REVIEW_APPROVED"
+  | "REVIEW_REJECTED"
+  | "ANSWER_REPORTED"
+  | "QUESTION_REPORTED";
+
+export type EmailStatus = "PENDING" | "SENT" | "FAILED";
+
+export type AdminNotification = {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  email?: string | null;
+  emailStatus: EmailStatus;
+  emailError?: string | null;
+  isRead: boolean;
+  createdAt: string;
+};
+
+export type AdminNotificationStats = {
+  total: number;
+  unread: number;
+  unreadQuestions: number;
+  pendingEmails: number;
+  failedEmails: number;
 };
 
 

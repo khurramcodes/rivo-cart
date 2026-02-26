@@ -42,6 +42,27 @@ enum AnswerStatus {
   REMOVED
 }
 
+enum NotificationType {
+  QUESTION_CREATED
+  ANSWER_CREATED
+  REVIEW_CREATED
+  REVIEW_APPROVED
+  REVIEW_REJECTED
+  ANSWER_REPORTED
+  QUESTION_REPORTED
+}
+
+enum NotificationRecipientRole {
+  ADMIN
+  USER
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
 enum ProductType {
   SIMPLE
   VARIABLE
@@ -281,6 +302,7 @@ model ProductGalleryImage {
 
 model Order {
   id              String        @id @default(cuid())
+  orderNumber     String        @unique
   userId          String
   // stored in cents
   totalAmount     Int
@@ -300,6 +322,7 @@ model Order {
   shippingMethod    ShippingMethod?    @relation(fields: [shippingMethodId], references: [id], onDelete: SetNull)
 
   @@index([userId])
+  @@index([orderNumber])
   @@index([status])
   @@index([createdAt])
 }
@@ -673,4 +696,25 @@ model AnswerHelpful {
   @@index([userId])
 }
 
+model Notification {
+  id             String                      @id @default(uuid())
+  type           NotificationType
+  title          String
+  message        String
+  recipientId    String?
+  recipientRole  NotificationRecipientRole
+  email          String?
+  emailStatus    EmailStatus                 @default(PENDING)
+  emailSentAt    DateTime?
+  emailFailedAt  DateTime?
+  emailError     String?
+  isRead         Boolean                     @default(false)
+  readAt         DateTime?
+  metadata       Json?
+  createdAt      DateTime                    @default(now())
+  updatedAt      DateTime                    @updatedAt
 
+  @@index([recipientRole, isRead])
+  @@index([emailStatus])
+  @@index([createdAt])
+}
