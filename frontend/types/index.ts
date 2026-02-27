@@ -56,6 +56,15 @@ export type ProductVariant = {
   attributes?: ProductVariantAttribute[];
 };
 
+export type ProductHighlight = {
+  id: string;
+  productId: string;
+  text: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -69,6 +78,7 @@ export type Product = {
   thumbFileId?: string | null;
   thumbFilePath?: string | null;
   galleryImages?: ProductGalleryImage[];
+  highlights?: ProductHighlight[];
   variants?: ProductVariant[];
   categoryId: string;
   ratingAverage?: number;

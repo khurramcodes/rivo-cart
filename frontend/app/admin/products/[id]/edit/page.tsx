@@ -52,6 +52,7 @@ export default function AdminEditProductPage() {
       return {
         name: "",
         description: "",
+        highlights: [""],
         type: "SIMPLE",
         categoryId: "",
         mainImage: null,
@@ -68,6 +69,11 @@ export default function AdminEditProductPage() {
     return {
       name: product.name,
       description: product.description ?? "",
+      highlights:
+        product.highlights
+          ?.slice()
+          .sort((a, b) => a.sortOrder - b.sortOrder)
+          .map((h) => h.text) ?? [""],
       type: product.type,
       categoryId: product.categoryId,
       mainImage: product.imageUrl,
@@ -105,6 +111,10 @@ export default function AdminEditProductPage() {
       const payload: any = {
         name: values.name,
         description: values.description,
+        highlights: values.highlights
+          .map((h) => h.trim())
+          .filter((h) => h.length > 0)
+          .map((text, sortOrder) => ({ text, sortOrder })),
         type: values.type,
         categoryId: values.categoryId,
       };

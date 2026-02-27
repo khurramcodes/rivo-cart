@@ -34,6 +34,7 @@ export default function AdminCreateProductPage() {
     () => ({
       name: "",
       description: "",
+      highlights: [""],
       type: "SIMPLE",
       categoryId: "",
       mainImage: null,
@@ -115,6 +116,10 @@ export default function AdminCreateProductPage() {
         isDefault: v.isDefault,
         attributes: v.attributes.filter((a) => a.name && a.value),
       }));
+      const highlights = values.highlights
+        .map((h) => h.trim())
+        .filter((h) => h.length > 0)
+        .map((text, sortOrder) => ({ text, sortOrder }));
 
       await adminApi.createProduct({
         id: init.id,
@@ -130,6 +135,7 @@ export default function AdminCreateProductPage() {
         thumbFileId: mainUploaded.fileId,
         thumbFilePath: mainUploaded.filePath,
         gallery: galleryData,
+        highlights,
         variants,
       });
 

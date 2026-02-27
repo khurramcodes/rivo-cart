@@ -87,6 +87,7 @@ export async function listProducts(input: {
       include: {
         category: true,
         galleryImages: { orderBy: { index: "asc" } },
+        highlights: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] },
         variants: {
           include: { attributes: true },
           orderBy: { isDefault: "desc" },
@@ -136,6 +137,7 @@ export async function getProduct(id: string) {
     include: {
       category: true,
       galleryImages: { orderBy: { index: "asc" } },
+      highlights: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] },
       variants: {
         include: { attributes: true },
         orderBy: { isDefault: "desc" },
@@ -160,6 +162,7 @@ export async function createProduct(input: {
   thumbFilePath?: string;
   gallery?: { index: number; url: string; fileId: string; filePath: string }[];
   categoryId: string;
+  highlights?: { text: string; sortOrder?: number }[];
   variants: {
     sku: string;
     price: number; // cents
@@ -221,6 +224,14 @@ export async function createProduct(input: {
     }
 
     const slug = await generateProductSlug(input.name);
+    const cleanedHighlights =
+      input.highlights
+        ?.map((h, idx) => ({
+          text: h.text.trim(),
+          sortOrder: h.sortOrder ?? idx,
+        }))
+        .filter((h) => h.text.length > 0) ?? [];
+
     return await prisma.product.create({
       data: {
         id: input.id,
@@ -246,6 +257,14 @@ export async function createProduct(input: {
               })),
             }
           : undefined,
+        highlights: cleanedHighlights.length
+          ? {
+              create: cleanedHighlights.map((h) => ({
+                text: h.text,
+                sortOrder: h.sortOrder,
+              })),
+            }
+          : undefined,
         variants: {
           create: input.variants.map((v, idx) => ({
             sku: v.sku,
@@ -265,6 +284,7 @@ export async function createProduct(input: {
       },
       include: {
         galleryImages: { orderBy: { index: "asc" } },
+        highlights: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] },
         variants: {
           include: { attributes: true },
           orderBy: { isDefault: "desc" },
@@ -293,6 +313,7 @@ export async function updateProduct(
     gallery?: { index: number; url: string; fileId: string; filePath: string }[];
     deleteGalleryIndexes?: number[];
     categoryId?: string;
+    highlights?: { text: string; sortOrder?: number }[];
     variants?: {
       id?: string; // if updating existing variant
       sku: string;
@@ -308,6 +329,7 @@ export async function updateProduct(
     where: { id },
     include: {
       galleryImages: true,
+      highlights: true,
       variants: {
         include: { attributes: true },
       },
@@ -440,6 +462,26 @@ export async function updateProduct(
         });
       }
 
+      if (input.highlights !== undefined) {
+        const cleanedHighlights = input.highlights
+          .map((h, idx) => ({
+            text: h.text.trim(),
+            sortOrder: h.sortOrder ?? idx,
+          }))
+          .filter((h) => h.text.length > 0);
+
+        await tx.productHighlight.deleteMany({ where: { productId: id } });
+        if (cleanedHighlights.length > 0) {
+          await tx.productHighlight.createMany({
+            data: cleanedHighlights.map((h) => ({
+              productId: id,
+              text: h.text,
+              sortOrder: h.sortOrder,
+            })),
+          });
+        }
+      }
+
       return p;
     });
 
@@ -447,6 +489,7 @@ export async function updateProduct(
       where: { id: updated.id },
       include: {
         galleryImages: { orderBy: { index: "asc" } },
+        highlights: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] },
         variants: {
           include: { attributes: true },
           orderBy: { isDefault: "desc" },

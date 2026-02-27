@@ -440,6 +440,19 @@ export default function ProductDetailPage() {
                 {product.description ? (
                   <p className='text-zinc-600'>{product.description}</p>
                 ) : null}
+                {product.highlights && product.highlights.length > 0 ? (
+                  <div className="mt-4">
+                    <p className="font-medium text-zinc-800 mb-2">Highlights</p>
+                    <ul className="list-disc space-y-1 pl-5 text-zinc-600">
+                      {product.highlights
+                        .slice()
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map((highlight) => (
+                          <li key={highlight.id}>{highlight.text}</li>
+                        ))}
+                    </ul>
+                  </div>
+                ) : null}
                 </div>
 
                 <div className='mt-6 space-y-6'>

@@ -18,6 +18,7 @@ export type VariantFormData = {
 export type ProductFormValues = {
   name: string;
   description: string;
+  highlights: string[];
   type: ProductType;
   categoryId: string;
   mainImage: File | string | null;
@@ -85,6 +86,25 @@ export function ProductForm({
 
   const setField = <K extends keyof ProductFormValues>(key: K, value: ProductFormValues[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const addHighlight = () => {
+    setForm((prev) => ({ ...prev, highlights: [...prev.highlights, ""] }));
+  };
+
+  const updateHighlight = (index: number, value: string) => {
+    setForm((prev) => {
+      const next = [...prev.highlights];
+      next[index] = value;
+      return { ...prev, highlights: next };
+    });
+  };
+
+  const removeHighlight = (index: number) => {
+    setForm((prev) => {
+      const next = prev.highlights.filter((_, i) => i !== index);
+      return { ...prev, highlights: next.length > 0 ? next : [""] };
+    });
   };
 
   const handleTypeChange = (value: ProductType) => {
@@ -218,6 +238,38 @@ export function ProductForm({
                 className="w-full px-3 py-2 border border-zinc-300 rounded focus:outline-none focus:ring-2 focus:ring-black text-zinc-900"
                 disabled={loading}
               />
+            </div>
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <label className="block text-sm font-medium text-zinc-700">Product Highlights</label>
+                <Button type="button" variant="ghost" onClick={addHighlight} disabled={loading} className="h-8 px-2 text-xs">
+                  Add More
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {form.highlights.map((highlight, index) => (
+                  <div key={`highlight-${index}`} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={highlight}
+                      onChange={(e) => updateHighlight(index, e.target.value)}
+                      className="w-full px-3 py-2 border border-zinc-300 rounded focus:outline-none focus:ring-2 focus:ring-black text-zinc-900"
+                      placeholder={`Highlight ${index + 1}`}
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeHighlight(index)}
+                      disabled={loading}
+                      className="h-9 w-9 rounded border border-zinc-300 text-zinc-600 hover:bg-zinc-100 disabled:opacity-50"
+                      aria-label="Remove highlight"
+                      title="Remove highlight"
+                    >
+                      x
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>

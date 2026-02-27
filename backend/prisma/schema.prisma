@@ -201,9 +201,24 @@ model Product {
   discountProducts DiscountProducts[]
   reviews          Review[]
   questions        Question[]
+  highlights       ProductHighlight[]
 
   @@index([categoryId])
   @@index([type])
+}
+
+model ProductHighlight {
+  id        String   @id @default(cuid())
+  productId String
+  text      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([productId, sortOrder])
 }
 
 model Review {

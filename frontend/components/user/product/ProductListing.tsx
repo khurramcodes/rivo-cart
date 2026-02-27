@@ -17,9 +17,11 @@ function getDefaultVariant(product: Product) {
 export default function ProductsListing({
   initialCategoryIdProp,
   categorySlug,
+  mode = "catalog",
 }: {
   initialCategoryIdProp?: string;
   categorySlug?: string;
+  mode?: "catalog" | "search";
 }) {
   
   const searchParams = useSearchParams();
@@ -42,52 +44,7 @@ export default function ProductsListing({
   );
 
   const hasMore = useMemo(() => items.length < total, [items.length, total]);
-
-  // useEffect(() => {
-  //   let mounted = true;
-  //   (async () => {
-  //     try {
-  //       const [cats, data] = await Promise.all([
-  //         catalogApi.listCategories(),
-  //         catalogApi.listProducts({
-  //           q: initialQ || undefined,
-  //           categoryId: initialCategoryId || undefined,
-  //           page: 1,
-  //           limit,
-  //         }),
-  //       ]);
-
-  //       if (!mounted) return;
-  //       setCategories(cats);
-  //       setItems(data.items);
-  //       setTotal(data.total);
-  //       setPage(1);
-
-  //       // Fetch pricing for all default variants
-  //       const variantIds = data.items
-  //         .map((p) => getDefaultVariant(p)?.id)
-  //         .filter((id): id is string => !!id);
-
-  //       if (variantIds.length > 0) {
-  //         const pricingResults =
-  //           await pricingApi.getBulkVariantPricing(variantIds);
-  //         if (!mounted) return;
-  //         const newMap = new Map<string, VariantPricing>();
-  //         pricingResults.forEach((r) => {
-  //           if (r.pricing) newMap.set(r.variantId, r.pricing);
-  //         });
-  //         setPricingMap(newMap);
-  //       }
-  //     } finally {
-  //       if (mounted) setLoading(false);
-  //     }
-  //   })();
-  //   return () => {
-  //     mounted = false;
-  //   };
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [initialQ, initialCategoryId]);
-
+  const pageTitle = mode === "search" ? "Search Results" : "Products";
 
 useEffect(() => {
   let mounted = true;
@@ -235,9 +192,12 @@ useEffect(() => {
   return (
     <div className='min-h-screen bg-white'>
       <main className='mx-auto max-w-6xl lg:max-w-7xl px-4 py-10'>
-        <h1 className='text-2xl font-semibold tracking-tight text-zinc-900'>
-          Products
-        </h1>
+        <h1 className='text-2xl font-semibold tracking-tight text-zinc-900'>{pageTitle}</h1>
+        {mode === "search" ? (
+          <p className="mt-2 text-sm text-zinc-600">
+            {initialQ ? `Showing results for "${initialQ}"` : "Type a product name in the search bar to start searching."}
+          </p>
+        ) : null}
 
         <div className='mt-6 flex flex-col md:flex-row gap-6'>
           {/* Left Sidebar - Filters */}
@@ -385,7 +345,11 @@ useEffect(() => {
             </div>
 
             {items.length === 0 && !loading ? (
-              <p className='text-sm text-zinc-600'>No products found.</p>
+              <p className='text-sm text-zinc-600'>
+                {mode === "search" && initialQ
+                  ? `No products found for "${initialQ}".`
+                  : "No products found."}
+              </p>
             ) : null}
 
             <div className='mt-8 flex items-center justify-center'>

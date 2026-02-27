@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ShoppingCart, Search, Heart } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
@@ -12,6 +12,8 @@ import Logo from "../ui/Logo";
 
 export function NavBar() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
 
   const cartCount = useAppSelector((s) =>
@@ -21,7 +23,21 @@ export function NavBar() {
   const { user, hydrated } = useAppSelector((s) => s.auth);
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (pathname === "/search") {
+      setSearchQuery(searchParams.get("q") ?? "");
+      return;
+    }
+    setSearchQuery("");
+  }, [pathname, searchParams]);
+
+  const submitSearch = () => {
+    const q = searchQuery.trim();
+    router.push(q ? `/search?q=${encodeURIComponent(q)}` : "/search");
+  };
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -44,18 +60,27 @@ export function NavBar() {
 
         {/* Search */}
         <div className='relative hidden flex-1 md:block'>
-          <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400' />
-          <Input
-            className='w-full max-w-sm pl-9'
-            placeholder='Search products…'
-            onKeyDown={(e) => {
-              if (e.key !== "Enter") return;
-              const q = (e.currentTarget.value ?? "").trim();
-              router.push(
-                q ? `/products?q=${encodeURIComponent(q)}` : "/products",
-              );
+          <form
+            className="relative max-w-sm"
+            onSubmit={(e) => {
+              e.preventDefault();
+              submitSearch();
             }}
-          />
+          >
+            <Input
+              className='w-full pl-4'
+              placeholder='Search products ...'
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <button
+              type="submit"
+              className="absolute right-1 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-zinc-600 hover:bg-white cursor-pointer"
+              aria-label="Search products"
+            >
+              <Search className="h-4 w-4" />
+            </button>
+          </form>
         </div>
 
         <nav className='ml-auto flex items-center gap-4'>

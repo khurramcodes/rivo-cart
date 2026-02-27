@@ -55,6 +55,7 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
     thumbFilePath,
     gallery,
     categoryId,
+    highlights,
     variants,
   } = req.body as {
     id: string;
@@ -70,6 +71,7 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
     thumbFilePath?: string;
     gallery?: { index: number; url: string; fileId: string; filePath: string }[];
     categoryId: string;
+    highlights?: { text: string; sortOrder?: number }[];
     variants: {
       sku: string;
       price: number;
@@ -92,6 +94,7 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
     thumbFilePath,
     gallery,
     categoryId,
+    highlights,
     variants,
   });
   res.status(201).json({ product });
@@ -112,6 +115,7 @@ export const update = asyncHandler(async (req: Request, res: Response) => {
     gallery,
     deleteGalleryIndexes,
     categoryId,
+    highlights,
     variants,
     deleteVariantIds,
   } = req.body as {
@@ -127,6 +131,7 @@ export const update = asyncHandler(async (req: Request, res: Response) => {
     gallery?: { index: number; url: string; fileId: string; filePath: string }[];
     deleteGalleryIndexes?: number[];
     categoryId?: string;
+    highlights?: { text: string; sortOrder?: number }[];
     variants?: {
       id?: string;
       sku: string;
@@ -150,6 +155,7 @@ export const update = asyncHandler(async (req: Request, res: Response) => {
     gallery,
     deleteGalleryIndexes,
     categoryId,
+    highlights,
     variants,
     deleteVariantIds,
   });

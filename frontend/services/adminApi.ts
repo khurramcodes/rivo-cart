@@ -358,6 +358,7 @@ export const adminApi = {
     thumbFileId?: string;
     thumbFilePath?: string;
     gallery?: { index: number; url: string; fileId: string; filePath: string }[];
+    highlights?: { text: string; sortOrder?: number }[];
     categoryId: string;
     variants: {
       sku: string;
@@ -384,6 +385,7 @@ export const adminApi = {
       thumbFilePath: string;
       gallery: { index: number; url: string; fileId: string; filePath: string }[];
       deleteGalleryIndexes: number[];
+      highlights: { text: string; sortOrder?: number }[];
       categoryId: string;
       variants: {
         id?: string;

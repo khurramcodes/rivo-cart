@@ -13,6 +13,11 @@ const variantSchema = z.object({
   attributes: z.array(variantAttributeSchema).optional(),
 });
 
+const productHighlightSchema = z.object({
+  text: z.string().trim().min(1).max(500),
+  sortOrder: z.number().int().min(0).optional(),
+});
+
 export const createProductSchema = z.object({
   body: z.object({
     id: z.string().min(1),
@@ -37,6 +42,7 @@ export const createProductSchema = z.object({
       )
       .optional(),
     categoryId: z.string().min(1),
+    highlights: z.array(productHighlightSchema).optional(),
     variants: z.array(variantSchema).min(1),
   }),
 });
@@ -76,6 +82,7 @@ export const updateProductSchema = z.object({
       .optional(),
     deleteGalleryIndexes: z.array(z.number().int().min(1).max(20)).optional(),
     categoryId: z.string().min(1).optional(),
+    highlights: z.array(productHighlightSchema).optional(),
     variants: z.array(variantUpdateSchema).optional(),
     deleteVariantIds: z.array(z.string()).optional(),
   }),
