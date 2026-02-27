@@ -19,11 +19,6 @@ export const questionIdParamSchema = z.object({
   params: z.object({ id: z.string().min(1) }),
 });
 
-export const reportQuestionSchema = z.object({
-  params: z.object({ id: z.string().min(1) }),
-  body: z.object({ reason: z.string().trim().min(1).max(500) }),
-});
-
 export const answerIdParamSchema = z.object({
   params: z.object({ id: z.string().min(1) }),
 });
@@ -31,11 +26,6 @@ export const answerIdParamSchema = z.object({
 export const setAnswerHelpfulSchema = z.object({
   params: z.object({ id: z.string().min(1) }),
   body: z.object({ helpful: z.boolean() }),
-});
-
-export const reportAnswerSchema = z.object({
-  params: z.object({ id: z.string().min(1) }),
-  body: z.object({ reason: z.string().trim().min(1).max(500) }),
 });
 
 export const adminListQuestionsSchema = z.object({

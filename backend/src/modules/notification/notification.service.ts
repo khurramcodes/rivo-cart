@@ -162,20 +162,11 @@ export function registerNotificationEventHandlers() {
     });
   });
 
-  registerHandler("ANSWER_REPORTED", async (payload) => {
+  registerHandler("REPORT_CREATED", async (payload) => {
     await createAdminNotification({
-      type: "ANSWER_REPORTED",
-      title: "Answer reported",
-      message: `An answer was reported by user ${payload.userId}.`,
-      metadata: payload,
-    });
-  });
-
-  registerHandler("QUESTION_REPORTED", async (payload) => {
-    await createAdminNotification({
-      type: "QUESTION_REPORTED",
-      title: "Question reported",
-      message: `A question was reported by user ${payload.userId}.`,
+      type: "REPORT_CREATED",
+      title: "New content report submitted",
+      message: `Report created: ${payload.targetType} ${payload.targetId}, reason ${payload.reason}, reporter ${payload.reporterId}.`,
       metadata: payload,
     });
   });

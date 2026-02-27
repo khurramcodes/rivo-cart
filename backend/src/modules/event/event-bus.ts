@@ -4,8 +4,7 @@ export type AppEventName =
   | "REVIEW_CREATED"
   | "REVIEW_APPROVED"
   | "REVIEW_REJECTED"
-  | "ANSWER_REPORTED"
-  | "QUESTION_REPORTED";
+  | "REPORT_CREATED";
 
 export type EventPayloadMap = {
   QUESTION_CREATED: {
@@ -26,8 +25,13 @@ export type EventPayloadMap = {
   REVIEW_CREATED: { reviewId: string; userId: string; productId: string; rating: number };
   REVIEW_APPROVED: { reviewId: string; productId: string; approvedBy: string };
   REVIEW_REJECTED: { reviewId: string; productId: string; rejectedBy: string };
-  ANSWER_REPORTED: { answerId: string; userId: string; reason: string };
-  QUESTION_REPORTED: { questionId: string; userId: string; reason: string };
+  REPORT_CREATED: {
+    reportId: string;
+    targetType: "QUESTION" | "ANSWER" | "REVIEW";
+    targetId: string;
+    reason: "OFF_TOPIC" | "INAPPROPRIATE" | "FAKE" | "MISLEADING";
+    reporterId: string;
+  };
 };
 
 type EventHandler<K extends AppEventName> = (payload: EventPayloadMap[K]) => Promise<void> | void;
@@ -38,8 +42,7 @@ const handlers: { [K in AppEventName]: EventHandler<K>[] } = {
   REVIEW_CREATED: [],
   REVIEW_APPROVED: [],
   REVIEW_REJECTED: [],
-  ANSWER_REPORTED: [],
-  QUESTION_REPORTED: [],
+  REPORT_CREATED: [],
 };
 
 export function registerHandler<K extends AppEventName>(eventName: K, handler: EventHandler<K>) {

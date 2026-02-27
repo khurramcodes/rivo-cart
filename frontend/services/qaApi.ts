@@ -1,5 +1,5 @@
 import { apiClient } from "./apiClient";
-import type { Question, Answer } from "@/types";
+import type { Question, Answer, ReportReason } from "@/types";
 
 export const qaApi = {
   async listQuestions(productId: string, params?: { page?: number; limit?: number }) {
@@ -15,8 +15,12 @@ export const qaApi = {
     return data.question;
   },
 
-  async reportQuestion(questionId: string, reason: string) {
-    await apiClient.post(`/qa/questions/${questionId}/report`, { reason });
+  async reportQuestion(questionId: string, reason: ReportReason) {
+    await apiClient.post("/reports", {
+      targetType: "QUESTION",
+      targetId: questionId,
+      reason,
+    });
   },
 
   async setAnswerHelpful(answerId: string, helpful: boolean) {
@@ -28,7 +32,25 @@ export const qaApi = {
     return data.helpful;
   },
 
-  async reportAnswer(answerId: string, reason: string) {
-    await apiClient.post(`/qa/answers/${answerId}/report`, { reason });
+  async myQuestionReported(questionId: string) {
+    const { data } = await apiClient.get<{ reported: boolean }>("/reports/my-status", {
+      params: { targetType: "QUESTION", targetId: questionId },
+    });
+    return data.reported;
+  },
+
+  async myAnswerReported(answerId: string) {
+    const { data } = await apiClient.get<{ reported: boolean }>("/reports/my-status", {
+      params: { targetType: "ANSWER", targetId: answerId },
+    });
+    return data.reported;
+  },
+
+  async reportAnswer(answerId: string, reason: ReportReason) {
+    await apiClient.post("/reports", {
+      targetType: "ANSWER",
+      targetId: answerId,
+      reason,
+    });
   },
 };

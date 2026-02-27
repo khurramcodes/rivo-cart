@@ -3,13 +3,20 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { qaApi } from "@/services/qaApi";
-import type { Question } from "@/types";
+import type { Question, ReportReason } from "@/types";
 import { useAppSelector } from "@/store/hooks";
 import { ThumbsUp, Flag } from "lucide-react";
 
 type ProductQASectionProps = {
   productId: string;
 };
+
+const REPORT_REASON_OPTIONS: { value: ReportReason; label: string }[] = [
+  { value: "OFF_TOPIC", label: "Off topic" },
+  { value: "INAPPROPRIATE", label: "Inappropriate" },
+  { value: "FAKE", label: "Fake" },
+  { value: "MISLEADING", label: "Misleading" },
+];
 
 export function ProductQASection({ productId }: ProductQASectionProps) {
   const user = useAppSelector((s) => s.auth.user);
@@ -22,8 +29,10 @@ export function ProductQASection({ productId }: ProductQASectionProps) {
   const [submittingQuestion, setSubmittingQuestion] = useState(false);
   const [questionSuccess, setQuestionSuccess] = useState(false);
   const [helpfulIds, setHelpfulIds] = useState<Set<string>>(new Set());
+  const [reportedQuestionIds, setReportedQuestionIds] = useState<Set<string>>(new Set());
+  const [reportedAnswerIds, setReportedAnswerIds] = useState<Set<string>>(new Set());
   const [reportModal, setReportModal] = useState<{ type: "question" | "answer"; id: string } | null>(null);
-  const [reportReason, setReportReason] = useState("");
+  const [reportReason, setReportReason] = useState<ReportReason | "">("");
   const [submittingReport, setSubmittingReport] = useState(false);
 
   useEffect(() => {
@@ -51,6 +60,32 @@ export function ProductQASection({ productId }: ProductQASectionProps) {
       qaApi.myAnswerHelpful(answerId).then((helpful) => {
         if (helpful) setHelpfulIds((prev) => new Set(prev).add(answerId));
       }).catch(() => {});
+    });
+  }, [user, items]);
+
+  useEffect(() => {
+    if (!user || items.length === 0) return;
+    const questionIds = items.map((q) => q.id);
+    const answerIds = items.flatMap((q) => q.answers ?? []).map((a) => a.id);
+
+    questionIds.forEach((questionId) => {
+      qaApi
+        .myQuestionReported(questionId)
+        .then((reported) => {
+          if (!reported) return;
+          setReportedQuestionIds((prev) => new Set(prev).add(questionId));
+        })
+        .catch(() => {});
+    });
+
+    answerIds.forEach((answerId) => {
+      qaApi
+        .myAnswerReported(answerId)
+        .then((reported) => {
+          if (!reported) return;
+          setReportedAnswerIds((prev) => new Set(prev).add(answerId));
+        })
+        .catch(() => {});
     });
   }, [user, items]);
 
@@ -101,13 +136,15 @@ export function ProductQASection({ productId }: ProductQASectionProps) {
   };
 
   const handleReportSubmit = async () => {
-    if (!reportModal || !reportReason.trim()) return;
+    if (!reportModal || !reportReason) return;
     setSubmittingReport(true);
     try {
       if (reportModal.type === "question") {
-        await qaApi.reportQuestion(reportModal.id, reportReason.trim());
+        await qaApi.reportQuestion(reportModal.id, reportReason);
+        setReportedQuestionIds((prev) => new Set(prev).add(reportModal.id));
       } else {
-        await qaApi.reportAnswer(reportModal.id, reportReason.trim());
+        await qaApi.reportAnswer(reportModal.id, reportReason);
+        setReportedAnswerIds((prev) => new Set(prev).add(reportModal.id));
       }
       setReportModal(null);
       setReportReason("");
@@ -166,9 +203,10 @@ export function ProductQASection({ productId }: ProductQASectionProps) {
                 <button
                   type="button"
                   onClick={() => setReportModal({ type: "question", id: q.id })}
-                  className="mt-2 flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
+                  disabled={reportedQuestionIds.has(q.id)}
+                  className="mt-2 flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <Flag className="h-3.5 w-3.5" /> Report
+                  <Flag className="h-3.5 w-3.5" /> {reportedQuestionIds.has(q.id) ? "Reported" : "Report"}
                 </button>
               ) : null}
 
@@ -191,9 +229,10 @@ export function ProductQASection({ productId }: ProductQASectionProps) {
                           <button
                             type="button"
                             onClick={() => setReportModal({ type: "answer", id: a.id })}
-                            className="cursor-pointer flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
+                            disabled={reportedAnswerIds.has(a.id)}
+                            className="cursor-pointer flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-60"
                           >
-                            <Flag className="h-3.5 w-3.5" /> Report
+                            <Flag className="h-3.5 w-3.5" /> {reportedAnswerIds.has(a.id) ? "Reported" : "Report"}
                           </button>
                         </>
                       ) : (
@@ -237,13 +276,25 @@ export function ProductQASection({ productId }: ProductQASectionProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-sm rounded-lg bg-white p-4 shadow-lg">
             <h3 className="text-sm font-semibold text-zinc-900">Report this {reportModal.type}</h3>
-            <textarea
-              value={reportReason}
-              onChange={(e) => setReportReason(e.target.value)}
-              placeholder="Reason..."
-              rows={3}
-              className="mt-3 w-full rounded border border-zinc-200 px-3 py-2 text-sm text-zinc-900"
-            />
+            <p className="mt-1 text-xs text-zinc-600">Select one reason.</p>
+            <div className="mt-3 space-y-2">
+              {REPORT_REASON_OPTIONS.map((option) => (
+                <label
+                  key={option.value}
+                  className="flex cursor-pointer items-center gap-2 rounded border border-zinc-200 px-3 py-2 text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    checked={reportReason === option.value}
+                    onChange={() =>
+                      setReportReason((prev) => (prev === option.value ? "" : option.value))
+                    }
+                    className="h-4 w-4 rounded border-zinc-300"
+                  />
+                  <span className="text-zinc-800">{option.label}</span>
+                </label>
+              ))}
+            </div>
             <div className="mt-4 flex justify-end gap-2">
               <button
                 type="button"
@@ -255,7 +306,7 @@ export function ProductQASection({ productId }: ProductQASectionProps) {
               <button
                 type="button"
                 onClick={() => void handleReportSubmit()}
-                disabled={!reportReason.trim() || submittingReport}
+                disabled={!reportReason || submittingReport}
                 className="rounded bg-zinc-900 px-3 py-1.5 text-sm text-white disabled:opacity-50 cursor-pointer"
               >
                 {submittingReport ? "Sending…" : "Submit"}

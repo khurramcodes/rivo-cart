@@ -1,6 +1,7 @@
 import { prisma } from "../prisma/client.js";
 import { ApiError } from "../utils/ApiError.js";
 import { emitEvent } from "../modules/event/event-bus.js";
+import * as reportService from "../modules/report/report.service.js";
 
 type ReviewSort = "rating_desc" | "newest";
 
@@ -18,7 +19,7 @@ async function hasDeliveredOrderForProduct(userId: string, productId: string) {
 
 export async function recalculateProductRatings(productId: string) {
   const agg = await prisma.review.aggregate({
-    where: { productId, status: "APPROVED" },
+    where: { productId, status: "APPROVED", isHidden: false },
     _avg: { rating: true },
     _count: { _all: true },
   });
@@ -125,7 +126,7 @@ export async function listApprovedReviewsForProduct(input: {
 
   const [items, total] = await prisma.$transaction([
     prisma.review.findMany({
-      where: { productId: input.productId, status: "APPROVED" },
+      where: { productId: input.productId, status: "APPROVED", isHidden: false },
       include: {
         user: { select: { id: true, name: true } },
         reply: true,
@@ -134,7 +135,7 @@ export async function listApprovedReviewsForProduct(input: {
       take: limit,
       skip,
     }),
-    prisma.review.count({ where: { productId: input.productId, status: "APPROVED" } }),
+    prisma.review.count({ where: { productId: input.productId, status: "APPROVED", isHidden: false } }),
   ]);
 
   return { items, total, page, limit };
@@ -142,7 +143,7 @@ export async function listApprovedReviewsForProduct(input: {
 
 export async function listTopApprovedReviews(input: { productId: string }) {
   return prisma.review.findMany({
-    where: { productId: input.productId, status: "APPROVED" },
+    where: { productId: input.productId, status: "APPROVED", isHidden: false },
     include: {
       user: { select: { id: true, name: true } },
       reply: true,
@@ -329,35 +330,6 @@ export async function markReviewHelpful(input: { reviewId: string; userId: strin
   await updateReviewHelpfulCount(input.reviewId);
 }
 
-export async function reportReview(input: { reviewId: string; userId: string; reason: string }) {
-  const review = await prisma.review.findUnique({
-    where: { id: input.reviewId },
-    select: { id: true },
-  });
-  if (!review) throw new ApiError(404, "REVIEW_NOT_FOUND", "Review not found");
-
-  try {
-    await prisma.reviewReport.create({
-      data: {
-        reviewId: input.reviewId,
-        userId: input.userId,
-        reason: input.reason.trim(),
-      },
-    });
-  } catch (err: any) {
-    if (err?.code === "P2002") {
-      throw new ApiError(409, "ALREADY_REPORTED", "You have already reported this review");
-    }
-    throw err;
-  }
-
-  const count = await prisma.reviewReport.count({ where: { reviewId: input.reviewId } });
-  await prisma.review.update({
-    where: { id: input.reviewId },
-    data: { reportCount: count },
-  });
-}
-
 export async function getMyReviewHelpful(input: { userId: string; reviewId: string }) {
   const h = await prisma.reviewHelpful.findUnique({
     where: { reviewId_userId: { reviewId: input.reviewId, userId: input.userId } },
@@ -366,10 +338,12 @@ export async function getMyReviewHelpful(input: { userId: string; reviewId: stri
 }
 
 export async function getMyReviewReported(input: { userId: string; reviewId: string }) {
-  const r = await prisma.reviewReport.findUnique({
-    where: { reviewId_userId: { reviewId: input.reviewId, userId: input.userId } },
+  const r = await reportService.userHasReported({
+    userId: input.userId,
+    targetType: "REVIEW",
+    targetId: input.reviewId,
   });
-  return Boolean(r);
+  return r;
 }
 
 export async function getMyReviewForProduct(input: { userId: string; productId: string }) {

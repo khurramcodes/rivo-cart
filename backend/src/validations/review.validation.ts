@@ -62,11 +62,6 @@ export const markHelpfulSchema = z.object({
   body: z.object({ isHelpful: z.boolean() }),
 });
 
-export const reportReviewSchema = z.object({
-  params: z.object({ id: z.string().min(1) }),
-  body: z.object({ reason: z.string().trim().min(1).max(500) }),
-});
-
 export const createReplySchema = z.object({
   params: z.object({ id: z.string().min(1) }),
   body: z.object({ message: z.string().trim().min(1).max(2000) }),

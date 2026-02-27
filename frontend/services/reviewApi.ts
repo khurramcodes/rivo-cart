@@ -1,5 +1,5 @@
 import { apiClient } from "./apiClient";
-import type { Review } from "@/types";
+import type { Review, ReportReason } from "@/types";
 
 export type ReviewSort = "rating_desc" | "newest";
 
@@ -38,8 +38,12 @@ export const reviewApi = {
     await apiClient.put(`/reviews/${reviewId}/helpful`, { isHelpful });
   },
 
-  async report(reviewId: string, reason: string) {
-    await apiClient.post(`/reviews/${reviewId}/report`, { reason });
+  async report(reviewId: string, reason: ReportReason) {
+    await apiClient.post("/reports", {
+      targetType: "REVIEW",
+      targetId: reviewId,
+      reason,
+    });
   },
 
   async myHelpful(reviewId: string) {

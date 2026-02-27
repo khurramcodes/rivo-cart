@@ -26,27 +26,11 @@ export const createQuestion = asyncHandler(async (req: Request, res: Response) =
   res.status(201).json({ question: q });
 });
 
-export const reportQuestion = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user) throw new ApiError(401, "UNAUTHORIZED", "Missing authentication");
-  const { id } = req.params as { id: string };
-  const { reason } = req.body as { reason: string };
-  await qaService.reportQuestion({ questionId: id, userId: req.user.sub, reason });
-  res.status(204).send();
-});
-
 export const setAnswerHelpful = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) throw new ApiError(401, "UNAUTHORIZED", "Missing authentication");
   const { id } = req.params as { id: string };
   const { helpful } = req.body as { helpful: boolean };
   await qaService.setAnswerHelpful({ answerId: id, userId: req.user.sub, helpful });
-  res.status(204).send();
-});
-
-export const reportAnswer = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user) throw new ApiError(401, "UNAUTHORIZED", "Missing authentication");
-  const { id } = req.params as { id: string };
-  const { reason } = req.body as { reason: string };
-  await qaService.reportAnswer({ answerId: id, userId: req.user.sub, reason });
   res.status(204).send();
 });
 

@@ -54,14 +54,6 @@ export const markHelpful = asyncHandler(async (req: Request, res: Response) => {
   res.status(204).send();
 });
 
-export const report = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user) throw new ApiError(401, "UNAUTHORIZED", "Missing authentication");
-  const { id } = req.params as { id: string };
-  const { reason } = req.body as { reason: string };
-  await reviewService.reportReview({ reviewId: id, userId: req.user.sub, reason });
-  res.status(204).send();
-});
-
 export const myHelpful = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) throw new ApiError(401, "UNAUTHORIZED", "Missing authentication");
   const { id } = req.params as { id: string };

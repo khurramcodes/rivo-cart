@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { StarRating } from "@/components/ui/StarRating";
-import type { Review } from "@/types";
+import type { ReportReason, Review } from "@/types";
 import { reviewApi } from "@/services/reviewApi";
 import { useAppSelector } from "@/store/hooks";
 import { ThumbsUp, Flag } from "lucide-react";
@@ -13,6 +13,13 @@ type ReviewCardProps = {
   onReported?: () => void;
 };
 
+const REPORT_REASON_OPTIONS: { value: ReportReason; label: string }[] = [
+  { value: "OFF_TOPIC", label: "Off topic" },
+  { value: "INAPPROPRIATE", label: "Inappropriate" },
+  { value: "FAKE", label: "Fake" },
+  { value: "MISLEADING", label: "Misleading" },
+];
+
 export function ReviewCard({ review, onHelpfulChange, onReported }: ReviewCardProps) {
   const user = useAppSelector((s) => s.auth.user);
   const [helpful, setHelpful] = useState<boolean | null>(null);
@@ -20,7 +27,7 @@ export function ReviewCard({ review, onHelpfulChange, onReported }: ReviewCardPr
   const [loadingHelpful, setLoadingHelpful] = useState(false);
   const [reported, setReported] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
-  const [reportReason, setReportReason] = useState("");
+  const [reportReason, setReportReason] = useState<ReportReason | "">("");
   const [submittingReport, setSubmittingReport] = useState(false);
 
   useEffect(() => {
@@ -58,10 +65,10 @@ export function ReviewCard({ review, onHelpfulChange, onReported }: ReviewCardPr
   };
 
   const handleReportSubmit = async () => {
-    if (!user || !reportReason.trim()) return;
+    if (!user || !reportReason) return;
     setSubmittingReport(true);
     try {
-      await reviewApi.report(review.id, reportReason.trim());
+      await reviewApi.report(review.id, reportReason);
       setReported(true);
       setShowReportModal(false);
       setReportReason("");
@@ -135,14 +142,25 @@ export function ReviewCard({ review, onHelpfulChange, onReported }: ReviewCardPr
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-sm rounded-lg bg-white p-4 shadow-lg">
             <h3 className="text-sm font-semibold text-zinc-900">Report this review</h3>
-            <p className="mt-1 text-xs text-zinc-600">Please provide a reason (required).</p>
-            <textarea
-              value={reportReason}
-              onChange={(e) => setReportReason(e.target.value)}
-              placeholder="Reason..."
-              rows={3}
-              className="mt-3 w-full rounded border border-zinc-200 px-3 py-2 text-sm"
-            />
+            <p className="mt-1 text-xs text-zinc-600">Select one reason.</p>
+            <div className="mt-3 space-y-2">
+              {REPORT_REASON_OPTIONS.map((option) => (
+                <label
+                  key={option.value}
+                  className="flex cursor-pointer items-center gap-2 rounded border border-zinc-200 px-3 py-2 text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    checked={reportReason === option.value}
+                    onChange={() =>
+                      setReportReason((prev) => (prev === option.value ? "" : option.value))
+                    }
+                    className="h-4 w-4 rounded border-zinc-300"
+                  />
+                  <span className="text-zinc-800">{option.label}</span>
+                </label>
+              ))}
+            </div>
             <div className="mt-4 flex justify-end gap-2">
               <button
                 type="button"
@@ -154,7 +172,7 @@ export function ReviewCard({ review, onHelpfulChange, onReported }: ReviewCardPr
               <button
                 type="button"
                 onClick={() => void handleReportSubmit()}
-                disabled={!reportReason.trim() || submittingReport}
+                disabled={!reportReason || submittingReport}
                 className="rounded bg-zinc-900 px-3 py-1.5 text-sm text-white disabled:opacity-50"
               >
                 {submittingReport ? "Sending…" : "Submit"}

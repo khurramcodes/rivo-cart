@@ -13,6 +13,7 @@ const typeLabel: Record<AdminNotification["type"], string> = {
   REVIEW_CREATED: "Review Created",
   REVIEW_APPROVED: "Review Approved",
   REVIEW_REJECTED: "Review Rejected",
+  REPORT_CREATED: "Report Created",
   ANSWER_REPORTED: "Answer Reported",
   QUESTION_REPORTED: "Question Reported",
 };

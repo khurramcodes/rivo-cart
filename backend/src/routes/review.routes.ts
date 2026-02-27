@@ -8,7 +8,6 @@ import {
   myReviewSchema,
   updateReviewSchema,
   markHelpfulSchema,
-  reportReviewSchema,
   reviewIdParamSchema,
 } from "../validations/review.validation.js";
 
@@ -18,7 +17,6 @@ reviewRoutes.get("/me", requireAuth, validate(myReviewSchema), reviewController.
 reviewRoutes.post("/", requireAuth, requireCsrf, validate(createReviewSchema), reviewController.create);
 reviewRoutes.put("/:id", requireAuth, requireCsrf, validate(updateReviewSchema), reviewController.update);
 reviewRoutes.put("/:id/helpful", requireAuth, requireCsrf, validate(markHelpfulSchema), reviewController.markHelpful);
-reviewRoutes.post("/:id/report", requireAuth, requireCsrf, validate(reportReviewSchema), reviewController.report);
 reviewRoutes.get("/:id/helpful", requireAuth, validate(reviewIdParamSchema), reviewController.myHelpful);
 reviewRoutes.get("/:id/reported", requireAuth, validate(reviewIdParamSchema), reviewController.myReported);
 

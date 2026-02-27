@@ -9,11 +9,11 @@ export async function listVisibleQuestions(input: { productId: string; page?: nu
 
   const [items, total] = await prisma.$transaction([
     prisma.question.findMany({
-      where: { productId: input.productId, status: "VISIBLE" },
+      where: { productId: input.productId, status: "VISIBLE", isHidden: false },
       include: {
         user: { select: { id: true, name: true } },
         answers: {
-          where: { status: "VISIBLE" },
+          where: { status: "VISIBLE", isHidden: false },
           include: { admin: { select: { id: true, name: true } } },
           orderBy: { createdAt: "asc" },
         },
@@ -22,7 +22,7 @@ export async function listVisibleQuestions(input: { productId: string; page?: nu
       take: limit,
       skip,
     }),
-    prisma.question.count({ where: { productId: input.productId, status: "VISIBLE" } }),
+    prisma.question.count({ where: { productId: input.productId, status: "VISIBLE", isHidden: false } }),
   ]);
 
   return { items, total, page, limit };
@@ -95,76 +95,6 @@ export async function setAnswerHelpful(input: { answerId: string; userId: string
   await updateAnswerHelpfulCount(input.answerId);
 }
 
-export async function reportQuestion(input: { questionId: string; userId: string; reason: string }) {
-  const question = await prisma.question.findUnique({
-    where: { id: input.questionId },
-    select: { id: true },
-  });
-  if (!question) throw new ApiError(404, "QUESTION_NOT_FOUND", "Question not found");
-
-  try {
-    await prisma.questionReport.create({
-      data: {
-        questionId: input.questionId,
-        userId: input.userId,
-        reason: input.reason.trim(),
-      },
-    });
-  } catch (err: unknown) {
-    const e = err as { code?: string };
-    if (e?.code === "P2002") {
-      throw new ApiError(409, "ALREADY_REPORTED", "You have already reported this question");
-    }
-    throw err;
-  }
-
-  const count = await prisma.questionReport.count({ where: { questionId: input.questionId } });
-  await prisma.question.update({
-    where: { id: input.questionId },
-    data: { reportCount: count },
-  });
-  await emitEvent("QUESTION_REPORTED", {
-    questionId: input.questionId,
-    userId: input.userId,
-    reason: input.reason,
-  });
-}
-
-export async function reportAnswer(input: { answerId: string; userId: string; reason: string }) {
-  const answer = await prisma.answer.findUnique({
-    where: { id: input.answerId },
-    select: { id: true },
-  });
-  if (!answer) throw new ApiError(404, "ANSWER_NOT_FOUND", "Answer not found");
-
-  try {
-    await prisma.answerReport.create({
-      data: {
-        answerId: input.answerId,
-        userId: input.userId,
-        reason: input.reason.trim(),
-      },
-    });
-  } catch (err: unknown) {
-    const e = err as { code?: string };
-    if (e?.code === "P2002") {
-      throw new ApiError(409, "ALREADY_REPORTED", "You have already reported this answer");
-    }
-    throw err;
-  }
-
-  const count = await prisma.answerReport.count({ where: { answerId: input.answerId } });
-  await prisma.answer.update({
-    where: { id: input.answerId },
-    data: { reportCount: count },
-  });
-  await emitEvent("ANSWER_REPORTED", {
-    answerId: input.answerId,
-    userId: input.userId,
-    reason: input.reason,
-  });
-}
-
 export async function userHasMarkedAnswerHelpful(input: { userId: string; answerId: string }) {
   const h = await prisma.answerHelpful.findUnique({
     where: { answerId_userId: { answerId: input.answerId, userId: input.userId } },
@@ -214,7 +144,7 @@ export async function adminHideQuestion(input: { questionId: string }) {
   if (!q) throw new ApiError(404, "QUESTION_NOT_FOUND", "Question not found");
   await prisma.question.update({
     where: { id: input.questionId },
-    data: { status: "HIDDEN" },
+    data: { status: "HIDDEN", isHidden: true, hiddenAt: new Date() },
   });
 }
 
@@ -240,7 +170,7 @@ export async function adminShowQuestion(input: { questionId: string }) {
   }
   await prisma.question.update({
     where: { id: input.questionId },
-    data: { status: "VISIBLE" },
+    data: { status: "VISIBLE", isHidden: false, hiddenAt: null, hiddenReason: null },
   });
 }
 
@@ -300,7 +230,7 @@ export async function adminHideAnswer(input: { answerId: string; adminId: string
   if (existing.adminId !== input.adminId) throw new ApiError(403, "FORBIDDEN", "Not your answer");
   await prisma.answer.update({
     where: { id: input.answerId },
-    data: { status: "HIDDEN" },
+    data: { status: "HIDDEN", isHidden: true, hiddenAt: new Date() },
   });
 }
 
@@ -326,6 +256,6 @@ export async function adminShowAnswer(input: { answerId: string; adminId: string
   }
   await prisma.answer.update({
     where: { id: input.answerId },
-    data: { status: "VISIBLE" },
+    data: { status: "VISIBLE", isHidden: false, hiddenAt: null, hiddenReason: null },
   });
 }

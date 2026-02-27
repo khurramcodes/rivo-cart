@@ -252,6 +252,7 @@ export type NotificationType =
   | "REVIEW_CREATED"
   | "REVIEW_APPROVED"
   | "REVIEW_REJECTED"
+  | "REPORT_CREATED"
   | "ANSWER_REPORTED"
   | "QUESTION_REPORTED";
 
@@ -275,6 +276,46 @@ export type AdminNotificationStats = {
   unreadQuestions: number;
   pendingEmails: number;
   failedEmails: number;
+};
+
+export type ReportTargetType = "QUESTION" | "ANSWER" | "REVIEW";
+export type ReportReason = "OFF_TOPIC" | "INAPPROPRIATE" | "FAKE" | "MISLEADING";
+export type ReportStatus = "PENDING" | "UNDER_REVIEW" | "RESOLVED" | "REJECTED";
+export type ReportResolution =
+  | "CONTENT_REMOVED"
+  | "CONTENT_APPROVED"
+  | "USER_WARNED"
+  | "USER_BANNED"
+  | "NO_ACTION";
+
+export type AdminReportListItem = {
+  reportId: string;
+  targetType: ReportTargetType;
+  targetId: string;
+  reason: ReportReason;
+  status: ReportStatus;
+  createdAt: string;
+  reviewedAt?: string | null;
+};
+
+export type AdminReportDetail = {
+  report: {
+    id: string;
+    targetType: ReportTargetType;
+    targetId: string;
+    reason: ReportReason;
+    optionalNote?: string | null;
+    status: ReportStatus;
+    resolution?: ReportResolution | null;
+    adminNote?: string | null;
+    reviewedAt?: string | null;
+    reviewedBy?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    userId: string;
+  };
+  reporter: Pick<User, "id" | "name" | "email">;
+  content: unknown;
 };
 
 

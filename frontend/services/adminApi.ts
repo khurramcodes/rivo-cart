@@ -1,5 +1,9 @@
 import { apiClient } from "./apiClient";
 import type {
+  AdminReportDetail,
+  AdminReportListItem,
+  ReportStatus,
+  ReportTargetType,
   AdminNotification,
   AdminNotificationStats,
   Category,
@@ -51,6 +55,51 @@ export type Coupon = {
 };
 
 export const adminApi = {
+  // unified reports (admin moderation)
+  async listReports(params?: {
+    page?: number;
+    limit?: number;
+    targetType?: ReportTargetType;
+    status?: ReportStatus;
+    startDate?: string;
+    endDate?: string;
+  }) {
+    const { data } = await apiClient.get<{
+      reports: AdminReportListItem[];
+      pagination: { page: number; limit: number; total: number; totalPages: number };
+    }>("/admin/reports", { params });
+    return data;
+  },
+  async getReportDetail(reportId: string) {
+    const { data } = await apiClient.get<AdminReportDetail>(`/admin/reports/${reportId}`);
+    return data;
+  },
+  async markReportUnderReview(reportId: string, adminNote?: string) {
+    const { data } = await apiClient.patch<{ report: unknown }>(`/admin/reports/${reportId}/under-review`, {
+      adminNote,
+    });
+    return data.report;
+  },
+  async resolveReportRemove(reportId: string, payload?: { adminNote?: string; hiddenReason?: string }) {
+    const { data } = await apiClient.patch<{ report: unknown }>(`/admin/reports/${reportId}/resolve-remove`, {
+      adminNote: payload?.adminNote,
+      hiddenReason: payload?.hiddenReason,
+    });
+    return data.report;
+  },
+  async resolveReportApprove(reportId: string, adminNote?: string) {
+    const { data } = await apiClient.patch<{ report: unknown }>(`/admin/reports/${reportId}/resolve-approve`, {
+      adminNote,
+    });
+    return data.report;
+  },
+  async rejectReport(reportId: string, adminNote?: string) {
+    const { data } = await apiClient.patch<{ report: unknown }>(`/admin/reports/${reportId}/reject`, {
+      adminNote,
+    });
+    return data.report;
+  },
+
   // notifications
   async listNotifications(params?: { page?: number; limit?: number; unreadOnly?: boolean }) {
     const { data } = await apiClient.get<{
