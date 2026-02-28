@@ -1,5 +1,5 @@
 import { apiClient } from "./apiClient";
-import type { Category, Product } from "@/types";
+import type { BestSellingCategory, BestSellingProduct, Category, Product } from "@/types";
 
 export const catalogApi = {
   async listCategories() {
@@ -48,6 +48,22 @@ export const catalogApi = {
       },
     );
 
+    return data;
+  },
+
+  async listBestSellingProducts(limit?: number) {
+    const { data } = await apiClient.get<{ items: BestSellingProduct[] }>("/products/best-selling", {
+      params: { limit },
+      skipLoading: true,
+    });
+    return data;
+  },
+
+  async listBestSellingCategories(limit?: number) {
+    const { data } = await apiClient.get<{ items: BestSellingCategory[] }>("/categories/best-selling", {
+      params: { limit },
+      skipLoading: true,
+    });
     return data;
   },
 

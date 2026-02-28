@@ -157,13 +157,17 @@ model User {
 }
 
 model Category {
-  id          String    @id @default(cuid())
-  name        String    @unique
-  slug        String    @unique
-  description String?
-  parentId    String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id               String    @id @default(cuid())
+  name             String    @unique
+  slug             String    @unique
+  description      String?
+  parentId         String?
+  imageUrl         String?
+  imageFileId      String?
+  imageFilePath    String?
+  imageFolderPath  String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   parent             Category? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
   children           Category[] @relation("CategoryHierarchy")

@@ -5,7 +5,13 @@ import { requireRole } from "../middlewares/requireRole.js";
 import { requireCsrf } from "../middlewares/csrf.js";
 import * as productController from "../controllers/product.controller.js";
 import * as productAdminController from "../controllers/productAdmin.controller.js";
-import { createProductSchema, idParamSchema, listProductsSchema, updateProductSchema } from "../validations/product.validation.js";
+import {
+  bestSellingProductsSchema,
+  createProductSchema,
+  idParamSchema,
+  listProductsSchema,
+  updateProductSchema,
+} from "../validations/product.validation.js";
 import * as reviewPublicController from "../controllers/review.public.controller.js";
 import { listProductReviewsSchema, topProductReviewsSchema } from "../validations/review.validation.js";
 import * as qaPublicController from "../controllers/qa.public.controller.js";
@@ -17,6 +23,7 @@ export const productRoutes = Router();
 productRoutes.get("/", validate(listProductsSchema), productController.list);
 
 productRoutes.get("/latest", validate(listProductsSchema), productController.latest);
+productRoutes.get("/best-selling", validate(bestSellingProductsSchema), productController.bestSelling);
 
 productRoutes.get("/:id", validate(idParamSchema), productController.get);
 

@@ -31,7 +31,15 @@ export type Category = {
   slug: string;
   description?: string | null;
   parentId?: string | null;
+  imageUrl?: string | null;
+  imageFileId?: string | null;
+  imageFilePath?: string | null;
+  imageFolderPath?: string | null;
   createdAt: string;
+};
+
+export type BestSellingCategory = Category & {
+  soldQuantity: number;
 };
 
 export type ProductType = "SIMPLE" | "VARIABLE";
@@ -87,6 +95,10 @@ export type Product = {
   createdAt: string;
   updatedAt?: string;
   category?: Category;
+};
+
+export type BestSellingProduct = Product & {
+  soldQuantity: number;
 };
 
 export type ReviewStatus = "PENDING" | "APPROVED" | "REJECTED" | "REMOVED";

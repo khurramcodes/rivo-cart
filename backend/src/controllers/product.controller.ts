@@ -33,6 +33,12 @@ export const latest = asyncHandler(async (req: Request, res: Response) => {
   res.json({ items });
 });
 
+export const bestSelling = asyncHandler(async (req: Request, res: Response) => {
+  const limit = req.query.limit ? Number(req.query.limit) : 8;
+  const items = await productService.listBestSellingProducts(limit);
+  res.json({ items });
+});
+
 
 export const get = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params as { id: string };

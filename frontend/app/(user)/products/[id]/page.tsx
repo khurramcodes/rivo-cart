@@ -329,7 +329,7 @@ export default function ProductDetailPage() {
                           src={imgUrl}
                           alt={`${product.name} thumbnail ${idx + 1}`}
                           fill
-                          className='object-cover'
+                          className='object-contain bg-white'
                           priority
                           unoptimized
                         />
@@ -346,7 +346,7 @@ export default function ProductDetailPage() {
                     src={productImages[selectedImageIndex] || productImages[0]}
                     alt={product.name}
                     fill
-                    className='object-contain'
+                    className='object-contain bg-white'
                     priority
                     unoptimized
                   />
@@ -602,7 +602,7 @@ export default function ProductDetailPage() {
                 src={productImages[selectedImageIndex]}
                 alt={product?.name || "Product image"}
                 fill
-                className='object-contain'
+                className='object-contain bg-white'
                 priority
                 unoptimized
               />

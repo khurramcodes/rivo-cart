@@ -84,9 +84,9 @@ export function LatestProducts({ limit = 6 }: LatestProductsProps) {
   return (
     <section className='w-full py-12'>
       <h2 className='text-center text-4xl font-normal tracking-tight text-zinc-900 mb-8'>
-        Latest Products
+        New Arrivals
       </h2>
-      <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+      <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
         {products.map((product) => {
           const defaultVariant = getDefaultVariant(product);
           const pricing = defaultVariant
@@ -102,7 +102,7 @@ export function LatestProducts({ limit = 6 }: LatestProductsProps) {
       <div className='text-center mt-8'>
         <Link
           href='/products'
-          className='inline-flex items-center justify-center rounded bg-zinc-900 px-6 py-3 text-base font-medium text-white transition hover:bg-black'>
+          className='inline-flex items-center justify-center rounded bg-secondary px-6 py-3 text-base font-medium text-white transition hover:bg-primary'>
           View All Products
         </Link>
       </div>

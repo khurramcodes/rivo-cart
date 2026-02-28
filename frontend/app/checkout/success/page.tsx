@@ -88,7 +88,7 @@ function CheckoutSuccessContent() {
               </Link>
               <Link
                 href="/products"
-                className="inline-flex items-center justify-center rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-800"
+                className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-secondary"
               >
                 Continue shopping
               </Link>

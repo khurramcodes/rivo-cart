@@ -130,6 +130,56 @@ export async function listLatestProducts(limit: number = 6) {
   });
 }
 
+export async function listBestSellingProducts(limit: number = 8) {
+  const grouped = await prisma.orderItem.groupBy({
+    by: ["productId"],
+    _sum: { quantity: true },
+    where: {
+      order: {
+        status: { not: "CANCELLED" },
+      },
+    },
+    orderBy: { _sum: { quantity: "desc" } },
+    take: limit,
+  });
+
+  if (grouped.length === 0) return [];
+
+  const idsInOrder = grouped.map((row) => row.productId);
+  const productMap = new Map(
+    (
+      await prisma.product.findMany({
+        where: { id: { in: idsInOrder } },
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          imageUrl: true,
+          updatedAt: true,
+          ratingAverage: true,
+          ratingCount: true,
+          reviewCount: true,
+          variants: {
+            select: { id: true, price: true, stock: true, isDefault: true },
+          },
+        },
+      })
+    ).map((p) => [p.id, p]),
+  );
+
+  return idsInOrder
+    .map((id) => {
+      const product = productMap.get(id);
+      const group = grouped.find((g) => g.productId === id);
+      if (!product || !group) return null;
+      return {
+        ...product,
+        soldQuantity: group._sum.quantity ?? 0,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
+}
+
 
 export async function getProduct(id: string) {
   const product = await prisma.product.findUnique({

@@ -101,6 +101,12 @@ export const listProductsSchema = z.object({
   }),
 });
 
+export const bestSellingProductsSchema = z.object({
+  query: z.object({
+    limit: z.coerce.number().int().min(1).max(50).optional(),
+  }),
+});
+
 export const idParamSchema = z.object({
   params: z.object({
     id: z.string().min(1),

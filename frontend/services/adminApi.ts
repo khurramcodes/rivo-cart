@@ -132,11 +132,37 @@ export const adminApi = {
     const { data } = await apiClient.get<{ categories: Category[] }>("/categories");
     return { items: data.categories };
   },
-  async createCategory(payload: { name: string; description?: string; parentId?: string | null }) {
+  async getCategoryImageFolder(slug: string) {
+    const { data } = await apiClient.get<{ imageFolderPath: string; slug: string }>(
+      "/categories/admin/image-folder",
+      { params: { slug } },
+    );
+    return data;
+  },
+  async createCategory(payload: {
+    name: string;
+    description?: string;
+    parentId?: string | null;
+    imageUrl?: string;
+    imageFileId?: string;
+    imageFilePath?: string;
+    imageFolderPath?: string;
+  }) {
     const { data } = await apiClient.post<{ category: Category }>("/categories", payload);
     return data.category;
   },
-  async updateCategory(id: string, payload: { name?: string; description?: string; parentId?: string | null }) {
+  async updateCategory(
+    id: string,
+    payload: {
+      name?: string;
+      description?: string;
+      parentId?: string | null;
+      imageUrl?: string | null;
+      imageFileId?: string | null;
+      imageFilePath?: string | null;
+      imageFolderPath?: string | null;
+    },
+  ) {
     const { data } = await apiClient.put<{ category: Category }>(`/categories/${id}`, payload);
     return data.category;
   },

@@ -1,6 +1,8 @@
 import { NavBar } from "@/components/user/NavBar";
 import { HeroSection } from "@/components/user/HeroSection";
 import { LatestProducts } from "@/components/user/product/LatestProducts";
+import { BestSellingProducts } from "@/components/user/product/BestSellingProducts";
+import { BestSellingCategories } from "@/components/user/category/BestSellingCategories";
 import Footer from "@/components/user/Footer";
 import { SecondaryNav } from "@/components/user/SecondaryNavbar";
 
@@ -22,6 +24,8 @@ export default function Home() {
         />
         <div className='mx-auto max-w-7xl px-6 lg:px-8'>
           <LatestProducts limit={6} />
+          <BestSellingProducts limit={8} />
+          <BestSellingCategories limit={6} />
         </div>
       </main>
       <Footer />

@@ -7,9 +7,11 @@ import { useForm } from "react-hook-form";
 
 import type { Category } from "@/types";
 import { adminApi } from "@/services/adminApi";
+import { uploadToImageKit } from "@/services/imagekitUpload";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 
 const createSchema = z.object({
   name: z.string().min(2).max(100),
@@ -36,6 +38,8 @@ export default function AdminCategoriesPage() {
     open: false,
     categoryId: null,
   });
+  const [createImage, setCreateImage] = useState<File | string | null>(null);
+  const [editImage, setEditImage] = useState<File | string | null>(null);
 
   const createForm = useForm<CreateValues>({
     resolver: zodResolver(createSchema),
@@ -101,6 +105,7 @@ export default function AdminCategoriesPage() {
       description: editingCategory.description ?? "",
       parentId: editingCategory.parentId ?? "",
     });
+    setEditImage(editingCategory.imageUrl ?? null);
   }, [editForm, editingCategory]);
 
   useEffect(() => {
@@ -115,8 +120,24 @@ export default function AdminCategoriesPage() {
         description: values.description,
         parentId: values.parentId ? values.parentId : null,
       });
-      setCategories((prev) => [created, ...prev].sort((a, b) => a.name.localeCompare(b.name)));
+      let finalCategory = created;
+      if (createImage instanceof File) {
+        const { imageFolderPath, slug } = await adminApi.getCategoryImageFolder(created.slug);
+        const uploaded = await uploadToImageKit(createImage, imageFolderPath, `${slug}_main.webp`);
+        finalCategory = await adminApi.updateCategory(created.id, {
+          imageUrl: uploaded.url,
+          imageFileId: uploaded.fileId,
+          imageFilePath: uploaded.filePath,
+          imageFolderPath,
+        });
+      }
+      setCategories((prev) =>
+        [finalCategory, ...prev.filter((c) => c.id !== created.id)].sort((a, b) =>
+          a.name.localeCompare(b.name),
+        ),
+      );
       createForm.reset({ name: "", description: "", parentId: "" });
+      setCreateImage(null);
       setCreateStatus({ type: "success", message: "Category created successfully." });
     } catch (err) {
       setCreateStatus({ type: "error", message: getErrorMessage(err) });
@@ -124,18 +145,38 @@ export default function AdminCategoriesPage() {
   }
 
   async function onUpdate(values: EditValues) {
-    if (!editingId) return;
+    if (!editingId || !editingCategory) return;
     setEditStatus(null);
     try {
-      const updated = await adminApi.updateCategory(editingId, {
+      let payload: Parameters<typeof adminApi.updateCategory>[1] = {
         name: values.name,
         description: values.description,
         parentId: values.parentId ? values.parentId : null,
-      });
+      };
+      if (editImage instanceof File) {
+        const { imageFolderPath, slug } = await adminApi.getCategoryImageFolder(editingCategory.slug);
+        const uploaded = await uploadToImageKit(
+          editImage,
+          imageFolderPath,
+          `${slug}_main.webp`,
+          editingCategory.imageFileId ?? undefined,
+        );
+        payload = {
+          ...payload,
+          imageUrl: uploaded.url,
+          imageFileId: uploaded.fileId,
+          imageFilePath: uploaded.filePath,
+          imageFolderPath,
+        };
+      } else if (editImage === null && editingCategory.imageUrl) {
+        payload = { ...payload, imageUrl: null, imageFileId: null, imageFilePath: null, imageFolderPath: null };
+      }
+      const updated = await adminApi.updateCategory(editingId, payload);
       setCategories((prev) =>
         prev.map((c) => (c.id === updated.id ? updated : c)).sort((a, b) => a.name.localeCompare(b.name)),
       );
       setEditingId(null);
+      setEditImage(null);
       setEditStatus({ type: "success", message: "Category updated successfully." });
     } catch (err) {
       setEditStatus({ type: "error", message: getErrorMessage(err) });
@@ -197,6 +238,14 @@ export default function AdminCategoriesPage() {
               {createForm.formState.errors.description ? (
                 <p className="mt-1 text-sm text-red-600">{createForm.formState.errors.description.message}</p>
               ) : null}
+            </div>
+            <div>
+              <ImageUpload
+                label="Category image (optional)"
+                value={createImage}
+                onChange={(file) => setCreateImage(file)}
+                required={false}
+              />
             </div>
             <Button type="submit" disabled={createForm.formState.isSubmitting}>
               {createForm.formState.isSubmitting ? "Creating..." : "Create"}
@@ -290,6 +339,14 @@ export default function AdminCategoriesPage() {
                                   <label className="text-sm font-medium text-zinc-800">Description</label>
                                   <Input className="mt-2" {...editForm.register("description")} />
                                 </div>
+                              </div>
+                              <div>
+                                <ImageUpload
+                                  label="Category image (optional)"
+                                  value={editImage}
+                                  onChange={(file) => setEditImage(file)}
+                                  required={false}
+                                />
                               </div>
                               <div className="flex gap-2">
                                 <Button type="submit" disabled={editForm.formState.isSubmitting}>

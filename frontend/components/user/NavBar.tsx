@@ -54,19 +54,18 @@ export function NavBar() {
   if (!hydrated) return <GlobalLoader />;
 
   return (
-    <header className='border-b border-b-black bg-black/90'>
+    <header className='border-b border-b-primary bg-primary'>
       <div className='mx-auto flex max-w-7xl items-center gap-4 px-4 py-4'>
-        <Logo variant="white" />
+        <Logo variant='white' />
 
         {/* Search */}
         <div className='relative hidden flex-1 md:block'>
           <form
-            className="relative max-w-sm"
+            className='relative max-w-sm'
             onSubmit={(e) => {
               e.preventDefault();
               submitSearch();
-            }}
-          >
+            }}>
             <Input
               className='w-full pl-4'
               placeholder='Search products ...'
@@ -74,24 +73,20 @@ export function NavBar() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             <button
-              type="submit"
-              className="absolute right-1 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-zinc-600 hover:bg-white cursor-pointer"
-              aria-label="Search products"
-            >
-              <Search className="h-4 w-4" />
+              type='submit'
+              className='absolute right-1 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-zinc-600 hover:bg-white cursor-pointer'
+              aria-label='Search products'>
+              <Search className='h-4 w-4' />
             </button>
           </form>
         </div>
 
         <nav className='ml-auto flex items-center gap-4'>
-
           {/* Cart */}
-          <Link
-            href='/cart'
-            className='relative text-white'>
+          <Link href='/cart' className='relative text-white'>
             <ShoppingCart className='h-5 w-5' />
             {cartCount > 0 && (
-              <span className='absolute -right-2 -top-2 rounded-full bg-black px-1.5 text-xs text-white'>
+              <span className='absolute -right-2 -top-2 rounded-full bg-zinc-900 px-1.5 text-xs text-white'>
                 {cartCount}
               </span>
             )}
@@ -131,7 +126,7 @@ export function NavBar() {
                 </div>
               )
             ) : (
-              <p className="text-white flex items-center gap-4">
+              <p className='text-white flex items-center gap-4'>
                 <Link href='/login'>Login</Link>
               </p>
             )}

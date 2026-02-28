@@ -410,7 +410,7 @@ export default function CheckoutPage() {
                     <img
                       src={item.product?.imageUrl ?? "/images/logo.png"}
                       alt={item.product?.name ?? "Product"}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   </div>
 
