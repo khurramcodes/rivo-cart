@@ -2,28 +2,25 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
   ShoppingCart,
-  Search,
   Heart,
   User2,
   X,
   Menu,
 } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { Input } from "../../ui/Input";
 import { logout } from "@/store/slices/authSlice";
 import { GlobalLoader } from "../../ui/GlobalLoader";
 import Logo from "../../ui/Logo";
 import { catalogApi } from "@/services/catalogApi";
 import { Category } from "@/types";
+import { SearchBar } from "./SearchBar";
 
 export function Navbar() {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
 
   const cartCount = useAppSelector((s) =>
@@ -36,7 +33,6 @@ export function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  const [searchQuery, setSearchQuery] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
 
   // Fetch categories
@@ -60,20 +56,6 @@ export function Navbar() {
     () => categories.filter((c) => !c.parentId),
     [categories],
   );
-
-  // Sync search input with URL
-  useEffect(() => {
-    if (pathname === "/search") {
-      setSearchQuery(searchParams.get("q") ?? "");
-      return;
-    }
-    setSearchQuery("");
-  }, [pathname, searchParams]);
-
-  const submitSearch = () => {
-    const q = searchQuery.trim();
-    router.push(q ? `/search?q=${encodeURIComponent(q)}` : "/search");
-  };
 
   // Close desktop dropdown if clicked outside
   useEffect(() => {
@@ -118,25 +100,14 @@ export function Navbar() {
 
         {/* Search */}
         <div className='hidden flex-1 md:block'>
-          <form
-            className='relative max-w-sm mx-auto'
-            onSubmit={(e) => {
-              e.preventDefault();
-              submitSearch();
-            }}>
-            <Input
-              className='w-full pl-4'
-              placeholder='Search products ...'
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button
-              type='submit'
-              className='absolute right-1 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-zinc-600 hover:bg-white cursor-pointer'
-              aria-label='Search products'>
-              <Search className='h-4 w-4' />
-            </button>
-          </form>
+          <Suspense
+            fallback={
+              <div className='min-h-screen bg-zinc-50 flex items-center justify-center'>
+                <GlobalLoader />
+              </div>
+            }>
+            <SearchBar />
+          </Suspense>
         </div>
 
         {/* Right Nav */}
