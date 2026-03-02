@@ -55,27 +55,29 @@ export function BestSellingProducts({ limit = 8 }: BestSellingProductsProps) {
   if (!loading && items.length === 0) return null;
 
   return (
-    <section className="w-full py-12">
-      <h2 className="mb-8 text-center text-4xl font-normal tracking-tight text-zinc-900">Best Sellers</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <section className='w-full py-28'>
+      <div className='flex justify-between items-center pb-12'>
+        <h2 className='text-4xl text-accent font-medium'>Best Sellers</h2>
+        <div>
+          <Link
+            href='/products'
+            className='text-lg text-accent underline font-medium transition hover:text-primary'>
+            View All
+          </Link>
+        </div>
+      </div>
+      <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
         {items.map((product) => {
           const defaultVariant = getDefaultVariant(product);
-          const pricing = defaultVariant ? pricingMap.get(defaultVariant.id) : null;
+          const pricing = defaultVariant
+            ? pricingMap.get(defaultVariant.id)
+            : null;
           return (
             <div key={product.id}>
               <ProductCard product={product} pricing={pricing} />
-              <p className="mt-2 text-xs text-zinc-500">Sold: {product.soldQuantity}</p>
             </div>
           );
         })}
-      </div>
-      <div className="mt-8 text-center">
-        <Link
-          href="/products"
-          className="inline-flex items-center justify-center rounded bg-secondary px-6 py-3 text-base font-medium text-white transition hover:bg-primary"
-        >
-          Shop Best Sellers
-        </Link>
       </div>
     </section>
   );

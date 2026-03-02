@@ -29,7 +29,7 @@ export function SearchBar() {
   return (
     <form className='relative max-w-sm mx-auto' onSubmit={submitSearch}>
       <Input
-        className='w-full pl-4'
+        className='w-full pl-4 rounded-4xl'
         placeholder='Search products ...'
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
@@ -37,8 +37,8 @@ export function SearchBar() {
 
       <button
         type='submit'
-        className='absolute right-1 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-zinc-600'>
-        <Search className='h-4 w-4' />
+        className='absolute right-1 top-1/2 -translate-y-1/2 px-2 py-1 text-primary'>
+        <Search className='h-5 w-5' />
       </button>
     </form>
   );

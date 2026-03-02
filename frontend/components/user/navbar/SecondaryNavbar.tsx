@@ -39,7 +39,7 @@ const isActive = (path: string, exact = false) => {
   );
 
   return (
-    <div className='border-b border-b-border bg-zinc-50 hidden md:block'>
+    <div className='border-b border-b-border bg-muted hidden md:block'>
       <div className='mx-auto flex max-w-7xl flex-wrap items-center justify-between px-4 py-3 text-base overflow-x-auto whitespace-nowrap'>
         <Link
           href='/products'

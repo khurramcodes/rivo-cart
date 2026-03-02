@@ -6,6 +6,7 @@ import { BestSellingProducts } from "@/components/user/product/BestSellingProduc
 import { BestSellingCategories } from "@/components/user/category/BestSellingCategories";
 import Footer from "@/components/user/Footer";
 import Topbar from "@/components/user/navbar/Topbar";
+import FullWidthCTA from "@/components/user/homePage/FullWidthCTA";
 
 export default function Home() {
   return (
@@ -24,10 +25,23 @@ export default function Home() {
           imageUrl='/images/hero.png'
           imageAlt='Hero image'
         />
-        <div className='mx-auto max-w-7xl px-6 lg:px-8'>
-          <LatestProducts limit={6} />
-          <BestSellingProducts limit={8} />
-          <BestSellingCategories limit={6} />
+        <div className='bg-white'>
+          <div className='mx-auto max-w-7xl px-6 lg:px-8'>
+            <BestSellingCategories limit={6} />
+          </div>
+        </div>
+        <div className='bg-muted'>
+          <div className='mx-auto max-w-7xl px-6 lg:px-8'>
+            <LatestProducts limit={6} />
+          </div>
+        </div>
+        <div>
+          <FullWidthCTA image="/images/home-cta-1.png" />
+        </div>
+        <div className='bg-white'>
+          <div className='mx-auto max-w-7xl px-6 lg:px-8'>
+            <BestSellingProducts limit={8} />
+          </div>
         </div>
       </main>
       <Footer />

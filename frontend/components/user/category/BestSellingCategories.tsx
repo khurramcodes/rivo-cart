@@ -18,6 +18,7 @@ export function BestSellingCategories({ limit = 6 }: BestSellingCategoriesProps)
     (async () => {
       try {
         const data = await catalogApi.listBestSellingCategories(limit);
+        console.log(data)
         if (!mounted) return;
         setItems(data.items);
       } finally {
@@ -33,36 +34,34 @@ export function BestSellingCategories({ limit = 6 }: BestSellingCategoriesProps)
   if (!loading && items.length === 0) return null;
 
   return (
-    <section className="w-full py-12">
-      <h2 className="mb-8 text-center text-4xl font-normal tracking-tight text-zinc-900">Top Categories</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <section className='w-full py-28'>
+      <h2 className='pb-12 text-4xl text-accent font-medium'>Best Selling Categories</h2>
+
+      <div className='grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-4'>
         {items.map((category) => (
           <Link
             key={category.id}
             href={`/category/${category.slug}`}
-            className="group relative min-h-[140px] overflow-hidden rounded border border-zinc-200 transition hover:border-zinc-300"
-          >
-            {category.imageUrl ? (
-              <>
-                <div
-                  className="absolute inset-0 bg-cover bg-center bg-no-repeat transition duration-300 group-hover:scale-105"
-                  style={{ backgroundImage: `url(${category.imageUrl})` }}
+            className='group flex flex-col items-center text-center'>
+            {/* Circular Image */}
+            <div className='relative h-60 w-60 overflow-hidden rounded-full'>
+              {category.imageUrl ? (
+                <img
+                  src={category.imageUrl}
+                  alt={category.name}
+                  className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-110'
                 />
-                <div className="absolute inset-0 bg-black/50" aria-hidden />
-              </>
-            ) : null}
-            <div className="relative flex min-h-[140px] flex-col justify-end p-5">
-              <p
-                className={`text-lg font-medium ${category.imageUrl ? "text-white drop-shadow-md" : "text-zinc-900"}`}
-              >
-                {category.name}
-              </p>
-              <p
-                className={`mt-1 text-sm ${category.imageUrl ? "text-white/90 drop-shadow-sm" : "text-zinc-600"}`}
-              >
-                Sold items: {category.soldQuantity}
-              </p>
+              ) : (
+                <div className='flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-500'>
+                  No Image
+                </div>
+              )}
             </div>
+
+            {/* Category Name + Count */}
+            <p className='mt-4 text-base font-medium text-zinc-800 transition-colors group-hover:text-primary'>
+              {category.name} ({category.soldQuantity})
+            </p>
           </Link>
         ))}
       </div>

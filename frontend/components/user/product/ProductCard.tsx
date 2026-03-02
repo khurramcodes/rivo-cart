@@ -21,7 +21,6 @@ function getDefaultVariant(product: Product) {
   return product.variants.find((v) => v.isDefault) || product.variants[0];
 }
 
-
 function getDisplayPricing(product: Product, pricing?: VariantPricing | null) {
   if (!product.variants?.length) {
     return null;
@@ -73,9 +72,9 @@ export function ProductCard({ product, pricing }: ProductCardProps) {
   const ratingCount = product.ratingCount ?? 0;
 
   return (
-    <div className='group rounded border border-zinc-200 bg-white p-4 transition hover:border-zinc-300'>
+    <div className='group rounded shadow bg-white transition'>
       <Link href={`/products/${product.id}`}>
-        <div className='relative aspect-square overflow-hidden rounded bg-zinc-100'>
+        <div className='relative aspect-square overflow-hidden rounded-t bg-zinc-100'>
           <Image
             src={addCacheBust(product.imageUrl, product.updatedAt)}
             alt={product.name}
@@ -84,12 +83,12 @@ export function ProductCard({ product, pricing }: ProductCardProps) {
           />
         </div>
 
-        <div className='mt-3'>
-          <p className='text-sm font-medium text-zinc-900'>{product.name}</p>
+        <div className='mt-3 p-3'>
+          <p className='text-base font-medium text-zinc-900'>{product.name}</p>
 
-          <div className="mt-1 flex items-center gap-2">
+          <div className='mt-1 flex items-center gap-2'>
             <StarRating value={ratingAverage} />
-            <span className="text-xs text-zinc-600">
+            <span className='text-xs text-zinc-600'>
               {ratingAverage.toFixed(1)} ({ratingCount})
             </span>
           </div>
@@ -127,31 +126,33 @@ export function ProductCard({ product, pricing }: ProductCardProps) {
           </div>
         </div>
       </Link>
-
-      {product.type === "SIMPLE" && defaultVariant ? (
-        <Button
-          variant='primary'
-          className='mt-3 w-full'
-          disabled={defaultVariant.stock === 0}
-          onClick={(e) => {
-            e.preventDefault();
-            dispatch(
-              addToCart({
-                product,
-                variant: defaultVariant,
-                quantity: 1,
-              }),
-            );
-          }}>
-          {defaultVariant.stock === 0 ? "Out of Stock" : "Add to Cart"}
-        </Button>
-      ) : (
-        <Link href={`/products/${product.id}`}>
-          <Button variant='secondary' className='mt-3 w-full'>
-            Select Options
+      <div className='p-3'>
+        {product.type === "SIMPLE" && defaultVariant ? (
+          <Button
+            rounded='full'
+            variant='primary'
+            className='mt-3 w-full'
+            disabled={defaultVariant.stock === 0}
+            onClick={(e) => {
+              e.preventDefault();
+              dispatch(
+                addToCart({
+                  product,
+                  variant: defaultVariant,
+                  quantity: 1,
+                }),
+              );
+            }}>
+            {defaultVariant.stock === 0 ? "Out of Stock" : "Add to Cart"}
           </Button>
-        </Link>
-      )}
+        ) : (
+          <Link href={`/products/${product.id}`}>
+            <Button rounded="full" variant='secondary' className='mt-3 w-full'>
+              Select Options
+            </Button>
+          </Link>
+        )}
+      </div>
     </div>
   );
 }
