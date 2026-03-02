@@ -5,10 +5,17 @@ import { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "@/store/hooks";
 import { catalogApi } from "@/services/catalogApi";
 import type { Category } from "@/types";
+import { usePathname } from "next/navigation";
 
 export function SecondaryNav() {
   const { user } = useAppSelector((s) => s.auth);
   const [categories, setCategories] = useState<Category[]>([]);
+  const pathname = usePathname();
+
+const isActive = (path: string, exact = false) => {
+  if (exact) return pathname === path;
+  return pathname.startsWith(path);
+};
 
   useEffect(() => {
     let mounted = true;
@@ -32,9 +39,15 @@ export function SecondaryNav() {
   );
 
   return (
-    <div className='border-b border-b-border bg-zinc-50'>
-      <div className='mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-6 px-4 py-3 text-sm'>
-        <Link href='/products' className='font-medium text-zinc-600 hover:text-black'>
+    <div className='border-b border-b-border bg-zinc-50 hidden md:block'>
+      <div className='mx-auto flex max-w-7xl flex-wrap items-center justify-between px-4 py-3 text-base overflow-x-auto whitespace-nowrap'>
+        <Link
+          href='/products'
+          className={`block transition-colors ${
+            isActive(`/products`, true)
+              ? "text-primary font-semibold"
+              : "text-zinc-600 hover:text-primary"
+          }`}>
           Products
         </Link>
 
@@ -42,7 +55,11 @@ export function SecondaryNav() {
           <Link
             key={cat.id}
             href={`/category/${cat.slug}`}
-            className='text-zinc-600 hover:text-black'>
+            className={`block transition-colors ${
+              isActive(`/category/${cat.slug}`)
+                ? "text-primary font-semibold"
+                : "text-zinc-600 hover:text-primary"
+            }`}>
             {cat.name}
           </Link>
         ))}

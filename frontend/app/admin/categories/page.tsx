@@ -262,7 +262,7 @@ export default function AdminCategoriesPage() {
 
           {!loading && categories.length > 0 ? (
             <div className="mt-4 overflow-x-auto">
-              <table className="min-w-[720px] w-full text-sm">
+              <table className="min-w-180 w-full text-sm">
                 <thead className="border-b border-zinc-200 bg-zinc-50 text-zinc-600">
                   <tr>
                     <th className="px-3 py-2 text-left font-medium">Name</th>

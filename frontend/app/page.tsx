@@ -1,22 +1,24 @@
-import { NavBar } from "@/components/user/NavBar";
-import { HeroSection } from "@/components/user/HeroSection";
+import { Navbar } from "@/components/user/navbar/Navbar";
+import { SecondaryNav } from "@/components/user/navbar/SecondaryNavbar";
+import { HeroSection } from "@/components/user/homePage/HeroSection";
 import { LatestProducts } from "@/components/user/product/LatestProducts";
 import { BestSellingProducts } from "@/components/user/product/BestSellingProducts";
 import { BestSellingCategories } from "@/components/user/category/BestSellingCategories";
 import Footer from "@/components/user/Footer";
-import { SecondaryNav } from "@/components/user/SecondaryNavbar";
+import Topbar from "@/components/user/navbar/Topbar";
 
 export default function Home() {
   return (
     <div className='min-h-screen bg-white'>
-      <div className="sticky top-0 z-50">
-        <NavBar />
+      <Topbar />
+      <div className='sticky top-0 z-50'>
+        <Navbar />
         <SecondaryNav />
       </div>
       <main>
         <HeroSection
-          headline="Everything you need, nothing you don't."
-          description='Browse our curated collection of products. Add to cart, checkout with Cash on Delivery. Fast, simple, and secure.'
+          headline='Nature’s Goodness, Delivered to Your Door.'
+          description='Fresh, organic, and sustainably sourced products that nourish your body and delight your senses, shop healthy, live vibrant.'
           ctaText='Shop Now'
           ctaHref='/products'
           imageUrl='/images/hero.png'

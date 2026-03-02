@@ -1,6 +1,7 @@
 import Footer from "@/components/user/Footer";
-import { NavBar } from "@/components/user/NavBar";
-import { SecondaryNav } from "@/components/user/SecondaryNavbar";
+import { Navbar } from "@/components/user/navbar/Navbar";
+import { SecondaryNav } from "@/components/user/navbar/SecondaryNavbar";
+import Topbar from "@/components/user/navbar/Topbar";
 
 export default function RootLayout({
   children,
@@ -9,8 +10,9 @@ export default function RootLayout({
 }>) {
   return (
     <>
+      <Topbar />
       <div className="sticky top-0 z-50">
-        <NavBar />
+        <Navbar />
         <SecondaryNav />
       </div>
       {children}
