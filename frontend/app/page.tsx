@@ -36,9 +36,9 @@ export default function Home() {
           </div>
         </div>
         <div>
-          <FullWidthCTA image="/images/home-cta-1.png" />
+          <FullWidthCTA image="/images/home-cta.png" height="xl" />
         </div>
-        <div className='bg-white'>
+        <div className='bg-muted'>
           <div className='mx-auto max-w-7xl px-6 lg:px-8'>
             <BestSellingProducts limit={8} />
           </div>

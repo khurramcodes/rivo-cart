@@ -12,13 +12,14 @@ interface FullWidthCTAProps {
   buttonLink?: string;
   overlay?: boolean;
   className?: string;
-  height?: "sm" | "md" | "lg";
+  height?: "sm" | "md" | "lg" | "xl";
 }
 
 const heightVariants = {
   sm: "h-[240px]",
   md: "h-[320px]",
   lg: "h-[420px]",
+  xl: "h-[560px]",
 };
 
 const FullWidthCTA = ({
@@ -44,7 +45,7 @@ const FullWidthCTA = ({
         alt={heading || ""}
         fill
         priority={false}
-        className='object-cover'
+        className='object-cover object-bottom'
       />
 
       {/* Overlay */}
