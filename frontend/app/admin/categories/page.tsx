@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 
 import type { Category } from "@/types";
 import { adminApi } from "@/services/adminApi";
-import { uploadToImageKit } from "@/services/imagekitUpload";
+import { uploadFile } from "@/services/uploadApi";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -115,20 +115,21 @@ export default function AdminCategoriesPage() {
   async function onCreate(values: CreateValues) {
     setCreateStatus(null);
     try {
+      const categoryId = crypto.randomUUID();
       const created = await adminApi.createCategory({
+        id: categoryId,
         name: values.name,
         description: values.description,
         parentId: values.parentId ? values.parentId : null,
       });
       let finalCategory = created;
       if (createImage instanceof File) {
-        const { imageFolderPath, slug } = await adminApi.getCategoryImageFolder(created.slug);
-        const uploaded = await uploadToImageKit(createImage, imageFolderPath, `${slug}_main.webp`);
+        const uploaded = await uploadFile(createImage, created.id, "categories", "main", {
+          slug: created.slug,
+        });
         finalCategory = await adminApi.updateCategory(created.id, {
           imageUrl: uploaded.url,
-          imageFileId: uploaded.fileId,
-          imageFilePath: uploaded.filePath,
-          imageFolderPath,
+          imageFileKey: uploaded.fileKey,
         });
       }
       setCategories((prev) =>
@@ -154,22 +155,20 @@ export default function AdminCategoriesPage() {
         parentId: values.parentId ? values.parentId : null,
       };
       if (editImage instanceof File) {
-        const { imageFolderPath, slug } = await adminApi.getCategoryImageFolder(editingCategory.slug);
-        const uploaded = await uploadToImageKit(
+        const uploaded = await uploadFile(
           editImage,
-          imageFolderPath,
-          `${slug}_main.webp`,
-          editingCategory.imageFileId ?? undefined,
+          editingCategory.id,
+          "categories",
+          "main",
+          { slug: editingCategory.slug },
         );
         payload = {
           ...payload,
           imageUrl: uploaded.url,
-          imageFileId: uploaded.fileId,
-          imageFilePath: uploaded.filePath,
-          imageFolderPath,
+          imageFileKey: uploaded.fileKey,
         };
       } else if (editImage === null && editingCategory.imageUrl) {
-        payload = { ...payload, imageUrl: null, imageFileId: null, imageFilePath: null, imageFolderPath: null };
+        payload = { ...payload, imageUrl: null, imageFileKey: null };
       }
       const updated = await adminApi.updateCategory(editingId, payload);
       setCategories((prev) =>

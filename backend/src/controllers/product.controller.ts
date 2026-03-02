@@ -53,12 +53,8 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
     description,
     type,
     imageUrl,
-    imageFileId,
-    imageFilePath,
-    imageFolderPath,
+    imageFileKey,
     thumbUrl,
-    thumbFileId,
-    thumbFilePath,
     gallery,
     categoryId,
     highlights,
@@ -69,13 +65,9 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
     description?: string;
     type: "SIMPLE" | "VARIABLE";
     imageUrl: string;
-    imageFileId: string;
-    imageFilePath: string;
-    imageFolderPath: string;
+    imageFileKey: string;
     thumbUrl?: string;
-    thumbFileId?: string;
-    thumbFilePath?: string;
-    gallery?: { index: number; url: string; fileId: string; filePath: string }[];
+    gallery?: { index: number; url: string; fileKey: string }[];
     categoryId: string;
     highlights?: { text: string; sortOrder?: number }[];
     variants: {
@@ -92,12 +84,8 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
     description,
     type,
     imageUrl,
-    imageFileId,
-    imageFilePath,
-    imageFolderPath,
+    imageFileKey,
     thumbUrl,
-    thumbFileId,
-    thumbFilePath,
     gallery,
     categoryId,
     highlights,
@@ -113,11 +101,8 @@ export const update = asyncHandler(async (req: Request, res: Response) => {
     description,
     type,
     imageUrl,
-    imageFileId,
-    imageFilePath,
+    imageFileKey,
     thumbUrl,
-    thumbFileId,
-    thumbFilePath,
     gallery,
     deleteGalleryIndexes,
     categoryId,
@@ -129,12 +114,9 @@ export const update = asyncHandler(async (req: Request, res: Response) => {
     description?: string;
     type?: "SIMPLE" | "VARIABLE";
     imageUrl?: string;
-    imageFileId?: string;
-    imageFilePath?: string;
+    imageFileKey?: string;
     thumbUrl?: string;
-    thumbFileId?: string;
-    thumbFilePath?: string;
-    gallery?: { index: number; url: string; fileId: string; filePath: string }[];
+    gallery?: { index: number; url: string; fileKey: string }[];
     deleteGalleryIndexes?: number[];
     categoryId?: string;
     highlights?: { text: string; sortOrder?: number }[];
@@ -153,11 +135,8 @@ export const update = asyncHandler(async (req: Request, res: Response) => {
     description,
     type,
     imageUrl,
-    imageFileId,
-    imageFilePath,
+    imageFileKey,
     thumbUrl,
-    thumbFileId,
-    thumbFilePath,
     gallery,
     deleteGalleryIndexes,
     categoryId,

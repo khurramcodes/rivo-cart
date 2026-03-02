@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Category } from "@/types";
 import { adminApi } from "@/services/adminApi";
-import { uploadToImageKit } from "@/services/imagekitUpload";
+import { uploadFile } from "@/services/uploadApi";
 import {
   ProductForm,
   type ProductFormValues,
@@ -77,34 +77,26 @@ export default function AdminCreateProductPage() {
 
     setSaving(true);
     try {
-      const init = await adminApi.newProductId();
+      const productId = crypto.randomUUID();
 
-      const mainUploaded = await uploadToImageKit(
+      const mainUploaded = await uploadFile(
         values.mainImage,
-        init.imageFolderPath,
-        "main.webp",
+        productId,
+        "products",
+        "main",
       );
 
-      const galleryData: {
-        index: number;
-        url: string;
-        fileId: string;
-        filePath: string;
-      }[] = [];
+      const galleryData: { index: number; url: string; fileKey: string }[] = [];
       const galleries = [values.gallery1, values.gallery2, values.gallery3];
       for (let idx = 0; idx < galleries.length; idx += 1) {
         const image = galleries[idx];
         if (image instanceof File) {
-          const uploaded = await uploadToImageKit(
-            image,
-            init.imageFolderPath,
-            `gallery-${idx + 1}.webp`,
-          );
+          const fileTypes: ("gallery-1" | "gallery-2" | "gallery-3")[] = ["gallery-1", "gallery-2", "gallery-3"];
+          const uploaded = await uploadFile(image, productId, "products", fileTypes[idx]!);
           galleryData.push({
             index: idx + 1,
             url: uploaded.url,
-            fileId: uploaded.fileId,
-            filePath: uploaded.filePath,
+            fileKey: uploaded.fileKey,
           });
         }
       }
@@ -122,18 +114,14 @@ export default function AdminCreateProductPage() {
         .map((text, sortOrder) => ({ text, sortOrder }));
 
       await adminApi.createProduct({
-        id: init.id,
+        id: productId,
         name: values.name,
         description: values.description,
         type: values.type,
         categoryId: values.categoryId,
         imageUrl: mainUploaded.url,
-        imageFileId: mainUploaded.fileId,
-        imageFilePath: mainUploaded.filePath,
-        imageFolderPath: init.imageFolderPath,
+        imageFileKey: mainUploaded.fileKey,
         thumbUrl: mainUploaded.url,
-        thumbFileId: mainUploaded.fileId,
-        thumbFilePath: mainUploaded.filePath,
         gallery: galleryData,
         highlights,
         variants,

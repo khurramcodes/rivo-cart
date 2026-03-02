@@ -1,7 +1,7 @@
 import { prisma } from "../prisma/client.js";
 import { ApiError } from "../utils/ApiError.js";
 import { generateProductSlug } from "../utils/slug.js";
-import { deleteFile, listFilesInPath, folderFromFilePath, normalizeFolderPath } from "./imagekit.service.js";
+import { deleteFile } from "./storage.service.js";
 
 
 // Helper function to get all descendant category IDs
@@ -204,13 +204,9 @@ export async function createProduct(input: {
   description?: string;
   type: "SIMPLE" | "VARIABLE";
   imageUrl: string;
-  imageFileId: string;
-  imageFilePath: string;
-  imageFolderPath: string;
+  imageFileKey: string;
   thumbUrl?: string;
-  thumbFileId?: string;
-  thumbFilePath?: string;
-  gallery?: { index: number; url: string; fileId: string; filePath: string }[];
+  gallery?: { index: number; url: string; fileKey: string }[];
   categoryId: string;
   highlights?: { text: string; sortOrder?: number }[];
   variants: {
@@ -222,27 +218,6 @@ export async function createProduct(input: {
   }[];
 }) {
   try {
-    // Validate folder paths
-    const expected = normalizeFolderPath(input.imageFolderPath);
-    const mainActual = normalizeFolderPath(folderFromFilePath(input.imageFilePath));
-    if (expected !== mainActual) {
-      throw new ApiError(400, "IMAGE_FOLDER_MISMATCH", "Main image must be uploaded to the product folder");
-    }
-    if (input.thumbFilePath) {
-      const thumbActual = normalizeFolderPath(folderFromFilePath(input.thumbFilePath));
-      if (expected !== thumbActual) {
-        throw new ApiError(400, "IMAGE_FOLDER_MISMATCH", "Thumb image must be uploaded to the product folder");
-      }
-    }
-    if (input.gallery?.length) {
-      for (const g of input.gallery) {
-        const gActual = normalizeFolderPath(folderFromFilePath(g.filePath));
-        if (expected !== gActual) {
-          throw new ApiError(400, "IMAGE_FOLDER_MISMATCH", "Gallery image must be uploaded to the product folder");
-        }
-      }
-    }
-
     // Validate variants
     if (!input.variants || input.variants.length === 0) {
       throw new ApiError(400, "NO_VARIANTS", "At least one variant is required");
@@ -290,20 +265,15 @@ export async function createProduct(input: {
         description: input.description?.trim() || null,
         type: input.type,
         imageUrl: input.imageUrl,
-        imageFileId: input.imageFileId,
-        imageFilePath: input.imageFilePath,
-        imageFolderPath: input.imageFolderPath,
-        thumbUrl: input.thumbUrl,
-        thumbFileId: input.thumbFileId,
-        thumbFilePath: input.thumbFilePath,
+        imageFileKey: input.imageFileKey,
+        thumbUrl: input.thumbUrl ?? input.imageUrl,
         categoryId: input.categoryId,
         galleryImages: input.gallery
           ? {
               create: input.gallery.map((g) => ({
                 index: g.index,
                 url: g.url,
-                fileId: g.fileId,
-                filePath: g.filePath,
+                fileKey: g.fileKey,
               })),
             }
           : undefined,
@@ -355,12 +325,9 @@ export async function updateProduct(
     description?: string;
     type?: "SIMPLE" | "VARIABLE";
     imageUrl?: string;
-    imageFileId?: string;
-    imageFilePath?: string;
+    imageFileKey?: string;
     thumbUrl?: string;
-    thumbFileId?: string;
-    thumbFilePath?: string;
-    gallery?: { index: number; url: string; fileId: string; filePath: string }[];
+    gallery?: { index: number; url: string; fileKey: string }[];
     deleteGalleryIndexes?: number[];
     categoryId?: string;
     highlights?: { text: string; sortOrder?: number }[];
@@ -387,28 +354,16 @@ export async function updateProduct(
   });
   if (!existing) throw new ApiError(404, "PRODUCT_NOT_FOUND", "Product not found");
 
-  const data: any = {};
+  const data: Record<string, unknown> = {};
   if (input.name !== undefined) data.name = input.name.trim();
   if (input.description !== undefined) data.description = input.description.trim() || null;
   if (input.type !== undefined) data.type = input.type;
   if (input.imageUrl !== undefined) data.imageUrl = input.imageUrl;
-  if (input.imageFileId !== undefined) data.imageFileId = input.imageFileId;
-  if (input.imageFilePath !== undefined) data.imageFilePath = input.imageFilePath;
+  if (input.imageFileKey !== undefined) data.imageFileKey = input.imageFileKey;
   if (input.thumbUrl !== undefined) data.thumbUrl = input.thumbUrl;
-  if (input.thumbFileId !== undefined) data.thumbFileId = input.thumbFileId;
-  if (input.thumbFilePath !== undefined) data.thumbFilePath = input.thumbFilePath;
   if (input.categoryId !== undefined) data.categoryId = input.categoryId;
 
   try {
-    // Folder path validation
-    if (input.imageFilePath && existing.imageFolderPath) {
-      const expected = normalizeFolderPath(existing.imageFolderPath);
-      const actual = normalizeFolderPath(folderFromFilePath(input.imageFilePath));
-      if (expected !== actual) {
-        throw new ApiError(400, "IMAGE_FOLDER_MISMATCH", "Images must stay in the same product folder");
-      }
-    }
-
     const updated = await prisma.$transaction(async (tx) => {
       // Update product base info
       const p = await tx.product.update({ where: { id }, data });
@@ -418,8 +373,8 @@ export async function updateProduct(
         for (const g of input.gallery) {
           await tx.productGalleryImage.upsert({
             where: { productId_index: { productId: id, index: g.index } },
-            update: { url: g.url, fileId: g.fileId, filePath: g.filePath },
-            create: { productId: id, index: g.index, url: g.url, fileId: g.fileId, filePath: g.filePath },
+            update: { url: g.url, fileKey: g.fileKey },
+            create: { productId: id, index: g.index, url: g.url, fileKey: g.fileKey },
           });
         }
       }
@@ -429,7 +384,7 @@ export async function updateProduct(
         for (const index of input.deleteGalleryIndexes) {
           const toDelete = existing.galleryImages?.find((g) => g.index === index);
           if (toDelete) {
-            await deleteFile(toDelete.fileId);
+            await deleteFile(toDelete.fileKey);
             await tx.productGalleryImage.delete({
               where: { productId_index: { productId: id, index } },
             });
@@ -561,12 +516,13 @@ export async function deleteProduct(id: string) {
   if (!product) throw new ApiError(404, "PRODUCT_NOT_FOUND", "Product not found");
 
   try {
-    // Delete all images from ImageKit if folder exists
-    if (product.imageFolderPath) {
-      const files = await listFilesInPath(product.imageFolderPath);
-      for (const file of files) {
-        await deleteFile(file.fileId);
-      }
+    // Delete main image from storage
+    if (product.imageFileKey) {
+      await deleteFile(product.imageFileKey);
+    }
+    // Delete gallery images
+    for (const g of product.galleryImages ?? []) {
+      await deleteFile(g.fileKey);
     }
 
     // Delete all cart items associated with the product

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { Category, Product } from "@/types";
 import { adminApi } from "@/services/adminApi";
-import { uploadToImageKit } from "@/services/imagekitUpload";
+import { uploadFile } from "@/services/uploadApi";
 import {
   ProductForm,
   type ProductFormValues,
@@ -107,8 +107,7 @@ export default function AdminEditProductPage() {
 
     setSaving(true);
     try {
-      const folder = product.imageFolderPath!;
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         name: values.name,
         description: values.description,
         highlights: values.highlights
@@ -120,28 +119,21 @@ export default function AdminEditProductPage() {
       };
 
       if (values.mainImage instanceof File) {
-        const mainUploaded = await uploadToImageKit(
+        const mainUploaded = await uploadFile(
           values.mainImage,
-          folder,
-          "main.webp",
-          product.imageFileId,
+          product.id,
+          "products",
+          "main",
         );
         payload.imageUrl = mainUploaded.url;
-        payload.imageFileId = mainUploaded.fileId;
-        payload.imageFilePath = mainUploaded.filePath;
+        payload.imageFileKey = mainUploaded.fileKey;
         payload.thumbUrl = mainUploaded.url;
-        payload.thumbFileId = mainUploaded.fileId;
-        payload.thumbFilePath = mainUploaded.filePath;
       }
 
-      const galleryData: {
-        index: number;
-        url: string;
-        fileId: string;
-        filePath: string;
-      }[] = [];
+      const galleryData: { index: number; url: string; fileKey: string }[] = [];
       const galleryToDelete: number[] = [];
       const galleries = [values.gallery1, values.gallery2, values.gallery3];
+      const fileTypes: ("gallery-1" | "gallery-2" | "gallery-3")[] = ["gallery-1", "gallery-2", "gallery-3"];
 
       for (let idx = 0; idx < galleries.length; idx += 1) {
         const image = galleries[idx];
@@ -149,17 +141,16 @@ export default function AdminEditProductPage() {
           (g) => g.index === idx + 1,
         );
         if (image instanceof File) {
-          const uploaded = await uploadToImageKit(
+          const uploaded = await uploadFile(
             image,
-            folder,
-            `gallery-${idx + 1}.webp`,
-            existing?.fileId,
+            product.id,
+            "products",
+            fileTypes[idx]!,
           );
           galleryData.push({
             index: idx + 1,
             url: uploaded.url,
-            fileId: uploaded.fileId,
-            filePath: uploaded.filePath,
+            fileKey: uploaded.fileKey,
           });
         } else if (image === null && existing) {
           galleryToDelete.push(idx + 1);
@@ -167,8 +158,7 @@ export default function AdminEditProductPage() {
           galleryData.push({
             index: idx + 1,
             url: existing.url,
-            fileId: existing.fileId,
-            filePath: existing.filePath,
+            fileKey: existing.fileKey,
           });
         }
       }

@@ -132,21 +132,13 @@ export const adminApi = {
     const { data } = await apiClient.get<{ categories: Category[] }>("/categories");
     return { items: data.categories };
   },
-  async getCategoryImageFolder(slug: string) {
-    const { data } = await apiClient.get<{ imageFolderPath: string; slug: string }>(
-      "/categories/admin/image-folder",
-      { params: { slug } },
-    );
-    return data;
-  },
   async createCategory(payload: {
+    id: string;
     name: string;
     description?: string;
     parentId?: string | null;
     imageUrl?: string;
-    imageFileId?: string;
-    imageFilePath?: string;
-    imageFolderPath?: string;
+    imageFileKey?: string;
   }) {
     const { data } = await apiClient.post<{ category: Category }>("/categories", payload);
     return data.category;
@@ -158,9 +150,7 @@ export const adminApi = {
       description?: string;
       parentId?: string | null;
       imageUrl?: string | null;
-      imageFileId?: string | null;
-      imageFilePath?: string | null;
-      imageFolderPath?: string | null;
+      imageFileKey?: string | null;
     },
   ) {
     const { data } = await apiClient.put<{ category: Category }>(`/categories/${id}`, payload);
@@ -367,23 +357,15 @@ export const adminApi = {
     const { data } = await apiClient.get<{ product: Product }>(`/products/${id}`);
     return data.product;
   },
-  async newProductId() {
-    const { data } = await apiClient.get<{ id: string; imageFolderPath: string }>("/products/admin/new-id");
-    return data;
-  },
   async createProduct(payload: {
     id: string;
     name: string;
     description?: string;
     type: "SIMPLE" | "VARIABLE";
     imageUrl: string;
-    imageFileId: string;
-    imageFilePath: string;
-    imageFolderPath: string;
+    imageFileKey: string;
     thumbUrl?: string;
-    thumbFileId?: string;
-    thumbFilePath?: string;
-    gallery?: { index: number; url: string; fileId: string; filePath: string }[];
+    gallery?: { index: number; url: string; fileKey: string }[];
     highlights?: { text: string; sortOrder?: number }[];
     categoryId: string;
     variants: {
@@ -404,12 +386,9 @@ export const adminApi = {
       description: string;
       type: "SIMPLE" | "VARIABLE";
       imageUrl: string;
-      imageFileId: string;
-      imageFilePath: string;
+      imageFileKey: string;
       thumbUrl: string;
-      thumbFileId: string;
-      thumbFilePath: string;
-      gallery: { index: number; url: string; fileId: string; filePath: string }[];
+      gallery: { index: number; url: string; fileKey: string }[];
       deleteGalleryIndexes: number[];
       highlights: { text: string; sortOrder?: number }[];
       categoryId: string;
@@ -439,12 +418,6 @@ export const adminApi = {
   async updateOrderStatus(id: string, status: OrderStatus) {
     const { data } = await apiClient.put<{ order: Order }>(`/orders/${id}/status`, { status });
     return data.order;
-  },
-
-  // imagekit
-  async imagekitAuth() {
-    const { data } = await apiClient.get<{ token: string; expire: number; signature: string }>("/imagekit/auth");
-    return data;
   },
 
   // dashboard

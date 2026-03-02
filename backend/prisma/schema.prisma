@@ -157,17 +157,15 @@ model User {
 }
 
 model Category {
-  id               String    @id @default(cuid())
-  name             String    @unique
-  slug             String    @unique
-  description      String?
-  parentId         String?
-  imageUrl         String?
-  imageFileId      String?
-  imageFilePath    String?
-  imageFolderPath  String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  parentId    String?
+  imageUrl    String?
+  imageFileKey String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   parent             Category? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
   children           Category[] @relation("CategoryHierarchy")
@@ -178,19 +176,15 @@ model Category {
 }
 
 model Product {
-  id              String      @id @default(cuid())
-  name            String
-  slug            String      @unique
-  description     String?
-  type            ProductType @default(SIMPLE)
-  imageUrl        String
-  imageFileId     String?
-  imageFilePath   String?
-  imageFolderPath String?
-  thumbUrl        String?
-  thumbFileId     String?
-  thumbFilePath   String?
-  categoryId      String
+  id           String      @id @default(cuid())
+  name         String
+  slug         String      @unique
+  description  String?
+  type         ProductType @default(SIMPLE)
+  imageUrl     String
+  imageFileKey String?
+  thumbUrl     String?
+  categoryId   String
   ratingAverage   Float       @default(0)
   ratingCount     Int         @default(0)
   reviewCount     Int         @default(0)
@@ -318,14 +312,13 @@ model ProductVariantAttribute {
 }
 
 model ProductGalleryImage {
-  id          String   @id @default(cuid())
-  productId   String
-  index       Int
-  url         String
-  fileId      String
-  filePath    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  productId  String
+  index      Int
+  url        String
+  fileKey    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 

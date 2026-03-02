@@ -32,9 +32,7 @@ export type Category = {
   description?: string | null;
   parentId?: string | null;
   imageUrl?: string | null;
-  imageFileId?: string | null;
-  imageFilePath?: string | null;
-  imageFolderPath?: string | null;
+  imageFileKey?: string | null;
   createdAt: string;
 };
 
@@ -79,12 +77,8 @@ export type Product = {
   description?: string | null;
   type: ProductType;
   imageUrl: string;
-  imageFileId?: string | null;
-  imageFilePath?: string | null;
-  imageFolderPath?: string | null;
+  imageFileKey?: string | null;
   thumbUrl?: string | null;
-  thumbFileId?: string | null;
-  thumbFilePath?: string | null;
   galleryImages?: ProductGalleryImage[];
   highlights?: ProductHighlight[];
   variants?: ProductVariant[];
@@ -168,8 +162,7 @@ export type ProductGalleryImage = {
   productId: string;
   index: number;
   url: string;
-  fileId: string;
-  filePath: string;
+  fileKey: string;
   createdAt: string;
   updatedAt: string;
 };

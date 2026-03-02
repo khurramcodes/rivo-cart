@@ -1,6 +1,7 @@
 import { prisma } from "../prisma/client.js";
 import { ApiError } from "../utils/ApiError.js";
 import { generateCategorySlug } from "../utils/slug.js";
+import { deleteFile } from "./storage.service.js";
 
 export async function listCategories() {
   return prisma.category.findMany({ orderBy: { name: "asc" } });
@@ -47,9 +48,7 @@ export async function listBestSellingCategories(limit: number = 8) {
       description: true,
       parentId: true,
       imageUrl: true,
-      imageFileId: true,
-      imageFilePath: true,
-      imageFolderPath: true,
+      imageFileKey: true,
       createdAt: true,
     },
   });
@@ -73,27 +72,25 @@ export async function getCategoryBySlug(slug: string) {
 }
 
 export async function createCategory(input: {
+  id: string;
   name: string;
   description?: string;
   parentId?: string | null;
   imageUrl?: string;
-  imageFileId?: string;
-  imageFilePath?: string;
-  imageFolderPath?: string;
+  imageFileKey?: string;
 }) {
   const name = input.name.trim();
   const slug = await generateCategorySlug(name);
   try {
     return await prisma.category.create({
       data: {
+        id: input.id,
         name,
         slug,
         description: input.description?.trim() || null,
         parentId: input.parentId ?? null,
         imageUrl: input.imageUrl ?? null,
-        imageFileId: input.imageFileId ?? null,
-        imageFilePath: input.imageFilePath ?? null,
-        imageFolderPath: input.imageFolderPath ?? null,
+        imageFileKey: input.imageFileKey ?? null,
       },
     });
   } catch {
@@ -108,19 +105,35 @@ export async function updateCategory(
     description?: string;
     parentId?: string | null;
     imageUrl?: string | null;
-    imageFileId?: string | null;
-    imageFilePath?: string | null;
-    imageFolderPath?: string | null;
+    imageFileKey?: string | null;
   },
 ) {
+  const existing = await prisma.category.findUnique({
+    where: { id },
+    select: { imageFileKey: true },
+  });
+  if (!existing) throw new ApiError(404, "CATEGORY_NOT_FOUND", "Category not found");
+
+  // When clearing image, delete from ImageKit first
+  if (
+    input.imageUrl === null &&
+    input.imageFileKey === null &&
+    existing.imageFileKey
+  ) {
+    try {
+      await deleteFile(existing.imageFileKey);
+    } catch (e) {
+      console.warn("Failed to delete category image from storage:", e);
+      // Continue with DB update even if storage delete fails
+    }
+  }
+
   const data: Record<string, unknown> = {};
   if (input.name !== undefined) data.name = input.name.trim();
   if (input.description !== undefined) data.description = input.description.trim() || null;
   if (input.parentId !== undefined) data.parentId = input.parentId;
   if (input.imageUrl !== undefined) data.imageUrl = input.imageUrl;
-  if (input.imageFileId !== undefined) data.imageFileId = input.imageFileId;
-  if (input.imageFilePath !== undefined) data.imageFilePath = input.imageFilePath;
-  if (input.imageFolderPath !== undefined) data.imageFolderPath = input.imageFolderPath;
+  if (input.imageFileKey !== undefined) data.imageFileKey = input.imageFileKey;
 
   try {
     return await prisma.category.update({ where: { id }, data });
@@ -130,9 +143,15 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(id: string) {
+  const category = await prisma.category.findUnique({ where: { id }, select: { imageFileKey: true } });
+  if (!category) throw new ApiError(404, "CATEGORY_NOT_FOUND", "Category not found");
   try {
+    if (category.imageFileKey) {
+      await deleteFile(category.imageFileKey);
+    }
     await prisma.category.delete({ where: { id } });
-  } catch {
+  } catch (e) {
+    if (e instanceof ApiError) throw e;
     throw new ApiError(404, "CATEGORY_NOT_FOUND", "Category not found");
   }
 }

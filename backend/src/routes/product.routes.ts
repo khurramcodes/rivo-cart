@@ -4,7 +4,6 @@ import { requireAuth } from "../middlewares/requireAuth.js";
 import { requireRole } from "../middlewares/requireRole.js";
 import { requireCsrf } from "../middlewares/csrf.js";
 import * as productController from "../controllers/product.controller.js";
-import * as productAdminController from "../controllers/productAdmin.controller.js";
 import {
   bestSellingProductsSchema,
   createProductSchema,
@@ -36,13 +35,6 @@ productRoutes.get("/:productId/questions", validate(listQuestionsSchema), qaPubl
 productRoutes.post("/:productId/questions", requireAuth, requireCsrf, validate(createQuestionSchema), qaPublicController.createQuestion);
 
 // admin
-productRoutes.get(
-  "/admin/new-id",
-  requireAuth,
-  requireRole("ADMIN"),
-  requireCsrf,
-  productAdminController.newProductId,
-);
 productRoutes.post("/", requireAuth, requireRole("ADMIN"), requireCsrf, validate(createProductSchema), productController.create);
 productRoutes.put("/:id", requireAuth, requireRole("ADMIN"), requireCsrf, validate(updateProductSchema), productController.update);
 productRoutes.delete("/:id", requireAuth, requireRole("ADMIN"), requireCsrf, validate(idParamSchema), productController.remove);

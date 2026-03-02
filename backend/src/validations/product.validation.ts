@@ -25,19 +25,14 @@ export const createProductSchema = z.object({
     description: z.string().max(2000).optional(),
     type: z.enum(["SIMPLE", "VARIABLE"]),
     imageUrl: z.string().url(),
-    imageFileId: z.string().min(1),
-    imageFilePath: z.string().min(1),
-    imageFolderPath: z.string().min(1),
+    imageFileKey: z.string().min(1),
     thumbUrl: z.string().url().optional(),
-    thumbFileId: z.string().min(1).optional(),
-    thumbFilePath: z.string().min(1).optional(),
     gallery: z
       .array(
         z.object({
           index: z.number().int().min(1).max(20),
           url: z.string().url(),
-          fileId: z.string().min(1),
-          filePath: z.string().min(1),
+          fileKey: z.string().min(1),
         }),
       )
       .optional(),
@@ -65,18 +60,14 @@ export const updateProductSchema = z.object({
     description: z.string().max(2000).optional(),
     type: z.enum(["SIMPLE", "VARIABLE"]).optional(),
     imageUrl: z.string().url().optional(),
-    imageFileId: z.string().min(1).optional(),
-    imageFilePath: z.string().min(1).optional(),
+    imageFileKey: z.string().min(1).optional(),
     thumbUrl: z.string().url().optional(),
-    thumbFileId: z.string().min(1).optional(),
-    thumbFilePath: z.string().min(1).optional(),
     gallery: z
       .array(
         z.object({
           index: z.number().int().min(1).max(20),
           url: z.string().url(),
-          fileId: z.string().min(1),
-          filePath: z.string().min(1),
+          fileKey: z.string().min(1),
         }),
       )
       .optional(),
