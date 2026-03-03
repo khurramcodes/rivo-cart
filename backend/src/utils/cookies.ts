@@ -43,7 +43,7 @@ export function cartSessionCookieOptions(maxAgeMs: number): CookieOptions {
   return {
     httpOnly: true,
     secure: isProd(),
-    sameSite: "lax",
+    sameSite: isProd() ? "none" : "lax",
     path: "/",
     maxAge: maxAgeMs,
     ...(domain ? { domain } : {}),

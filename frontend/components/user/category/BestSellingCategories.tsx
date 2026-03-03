@@ -18,7 +18,6 @@ export function BestSellingCategories({ limit = 6 }: BestSellingCategoriesProps)
     (async () => {
       try {
         const data = await catalogApi.listBestSellingCategories(limit);
-        console.log(data)
         if (!mounted) return;
         setItems(data.items);
       } finally {

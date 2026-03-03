@@ -59,8 +59,8 @@ export function Navbar() {
         setDropdownOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
   }, [dropdownOpen]);
 
   // Disable page scrolling when menu opens
@@ -114,7 +114,7 @@ export function Navbar() {
           <Link href='/cart' className='relative text-accent-foreground'>
             <ShoppingCart className='h-5 w-5' />
             {cartCount > 0 && (
-              <span className='absolute -right-2 -top-2 rounded-full bg-zinc-900 px-1.5 text-xs text-accent-foreground'>
+              <span className='absolute -right-2 -top-2 rounded-full bg-primary px-1.5 py-0.5 md:py-0 text-xs text-white'>
                 {cartCount}
               </span>
             )}

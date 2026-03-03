@@ -26,7 +26,11 @@ export function useHydrateAuth() {
         dispatch(setUser(me.user));
         await dispatch(fetchCart());
       } catch {
-        if (mounted) dispatch(setUser(null));
+        if (mounted) {
+          dispatch(setUser(null));
+          // Guest users: still fetch cart so session_id cookie restores their cart
+          await dispatch(fetchCart());
+        }
       }
     })();
 

@@ -154,14 +154,15 @@ export default function CartPage() {
             </Link>
           </div>
         ) : (
-          <div className='mt-6 grid gap-6 lg:grid-cols-3'>
+          <div className='mt-6 grid gap-6 lg:grid-cols-3 overflow-x-hidden'>
             <div className='lg:col-span-2 space-y-3'>
               {items.map((i) => (
                 <div
                   key={i.id}
-                  className='flex justify-between items-center gap-4 rounded border border-zinc-200 p-4'>
-                  <div className='flex flex-1 items-start gap-4'>
-                    <div className='relative h-20 w-20 overflow-hidden rounded bg-zinc-100'>
+                  className='flex flex-col gap-4 rounded border border-zinc-200 p-4 lg:flex-row lg:items-center lg:justify-between'>
+                  {/* Left Section */}
+                  <div className='flex gap-4'>
+                    <div className='relative h-20 w-20 shrink-0 overflow-hidden rounded bg-zinc-100'>
                       <Image
                         src={i.product?.imageUrl ?? "/images/logo.png"}
                         alt={i.product?.name ?? "Product image"}
@@ -170,66 +171,83 @@ export default function CartPage() {
                         unoptimized
                       />
                     </div>
-                    <div className=''>
-                      <p className='text-sm font-medium text-zinc-900'>
+
+                    <div className='min-w-0'>
+                      <p className='text-sm font-medium text-zinc-900 truncate'>
                         {i.product?.name ?? "Product"}
                       </p>
+
                       {formatVariantDetails(i.variant?.attributes) ? (
                         <p className='mt-0.5 text-xs text-zinc-500'>
                           {formatVariantDetails(i.variant?.attributes)}
                         </p>
                       ) : null}
+
                       <div className='mt-1 text-sm text-zinc-600'>
                         {(() => {
                           const line = getLinePricing(i.id);
-                          const hasDiscount = line && line.discountedUnitPrice < line.originalUnitPrice;
+                          const hasDiscount =
+                            line &&
+                            line.discountedUnitPrice < line.originalUnitPrice;
+
                           return hasDiscount ? (
                             <>
-                              <span className='line-through text-zinc-400'>{formatPrice(line.originalUnitPrice)}</span>
-                              <span className='ml-2'>{formatPrice(line.discountedUnitPrice)}</span>
+                              <span className='line-through text-zinc-400'>
+                                {formatPrice(line.originalUnitPrice)}
+                              </span>
+                              <span className='ml-2'>
+                                {formatPrice(line.discountedUnitPrice)}
+                              </span>
                             </>
                           ) : (
                             formatPrice(i.priceSnapshot)
                           );
                         })()}
                       </div>
-                      <p className='mt-0.5 text-xs text-zinc-400'>SKU: {i.variant?.sku}</p>
 
+                      <p className='mt-0.5 text-xs text-zinc-400'>
+                        SKU: {i.variant?.sku}
+                      </p>
                     </div>
                   </div>
-                  <div className='flex flex-col items-start'>
+
+                  {/* Right Section */}
+                  <div className='flex flex-col items-start gap-3 lg:flex-row lg:items-center lg:gap-6'>
+                    {/* Quantity */}
                     <QuantitySelector
                       value={i.quantity}
                       min={1}
                       max={i.variant?.stock ?? 1}
-                      onChange={(quantity) => dispatch(updateQuantity({ itemId: i.id, quantity }))}
+                      onChange={(quantity) =>
+                        dispatch(updateQuantity({ itemId: i.id, quantity }))
+                      }
+                      gapClassName='gap-1'
+                      buttonSizeClassName='h-6 w-6'
+                      buttonClassName='bg-[#f2f2f2] text-zinc-900 border-none rounded-none'
+                      valueSizeClassName='text-sm text-zinc-900'
+                      containerClassName='bg-[#f2f2f2] border border-zinc-300 rounded-none px-1 py-1'
+                    />
 
-                      gapClassName="gap-1"
-                      buttonSizeClassName="h-6 w-6"
-                      buttonClassName="bg-[#f2f2f2] text-zinc-900 border-none rounded-none"
-                      valueSizeClassName="text-sm text-zinc-900"
-                      containerClassName="mt-0 bg-[#f2f2f2] border border-zinc-300 rounded-none px-0 py-1 md:px-1"
-                      />
-                  </div>
-                  <div className='text-base font-medium text-zinc-900'>
-                    {(() => {
-                      const line = getLinePricing(i.id);
-                      const rowTotal = line ? line.lineTotal : i.priceSnapshot * i.quantity;
-                      return formatPrice(rowTotal);
-                    })()}
-                  </div>
-                  <div>
-                    <p
-                      className='cursor-pointer'
-                      onClick={() =>
-                        dispatch(
-                          removeItem({ itemId: i.id })
-                        )
-                      }>
-                      <Trash2 size={16} className='text-red-800' />
-                    </p>
-                  </div>
+                    {/* Total + Remove */}
+                    <div className='flex items-center justify-between lg:gap-6'>
+                      <div className='text-base font-medium text-zinc-900'>
+                        {(() => {
+                          const line = getLinePricing(i.id);
+                          const rowTotal = line
+                            ? line.lineTotal
+                            : i.priceSnapshot * i.quantity;
 
+                          return formatPrice(rowTotal);
+                        })()}
+                      </div>
+
+                      <button
+                        onClick={() => dispatch(removeItem({ itemId: i.id }))}
+                        className='ml-4'>
+                        <Trash2 size={16} className='text-red-800' />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -240,14 +258,19 @@ export default function CartPage() {
                 {formatPrice(discountedTotal)}
               </p>
               {pricingLoading ? (
-                <p className='mt-1 text-xs text-zinc-500'>Calculating discounts...</p>
+                <p className='mt-1 text-xs text-zinc-500'>
+                  Calculating discounts...
+                </p>
               ) : null}
               <div className='mt-4 rounded border border-zinc-200 p-3'>
                 <p className='text-sm font-medium text-zinc-900'>Coupon</p>
                 {appliedCouponCode ? (
                   <div className='mt-2 flex items-center justify-between text-sm'>
                     <span className='text-zinc-700'>{appliedCouponCode}</span>
-                    <Button variant='ghost' className='h-8 px-2' onClick={handleRemoveCoupon}>
+                    <Button
+                      variant='ghost'
+                      className='h-8 px-2'
+                      onClick={handleRemoveCoupon}>
                       Remove
                     </Button>
                   </div>
@@ -259,13 +282,22 @@ export default function CartPage() {
                       onChange={(e) => setCouponCode(e.target.value)}
                       disabled={hasAppliedCoupon}
                     />
-                    <Button type='button' onClick={handleApplyCoupon} disabled={hasAppliedCoupon || !couponCode.trim()}>
+                    <Button
+                      type='button'
+                      onClick={handleApplyCoupon}
+                      disabled={hasAppliedCoupon || !couponCode.trim()}>
                       Apply
                     </Button>
                   </div>
                 )}
-                {couponMessage ? <p className='mt-2 text-xs text-emerald-600'>{couponMessage}</p> : null}
-                {couponError ? <p className='mt-2 text-xs text-red-600'>{couponError}</p> : null}
+                {couponMessage ? (
+                  <p className='mt-2 text-xs text-emerald-600'>
+                    {couponMessage}
+                  </p>
+                ) : null}
+                {couponError ? (
+                  <p className='mt-2 text-xs text-red-600'>{couponError}</p>
+                ) : null}
               </div>
               <div
                 onClick={handleCheckout}

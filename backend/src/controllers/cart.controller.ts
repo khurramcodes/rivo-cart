@@ -40,6 +40,7 @@ function applySessionCookie(
 export const getCart = asyncHandler(async (req: Request, res: Response) => {
   const userId = getOptionalUserId(req);
   const sessionId = req.cookies?.[CART_SESSION_COOKIE] as string | undefined;
+
   const result = await cartService.resolveCart(userId, sessionId);
   applySessionCookie(res, result);
   res.json({ cart: result.cart });
