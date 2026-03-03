@@ -1,14 +1,21 @@
 "use client";
 
-import { Facebook, Linkedin, Twitter, Youtube } from "lucide-react";
+import {
+  Facebook,
+  Linkedin,
+  Twitter,
+  Youtube,
+  MapPin,
+  Phone,
+  Mail,
+  MessageCircle,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { catalogApi } from "@/services/catalogApi";
 import type { Category } from "@/types";
 
 const footerLinks = [
-  { label: "New Arrivals", href: "/new-arrivals" },
-  { label: "Best Sellers", href: "/bset-sellers" },
   { label: "FAQs", href: "/faqs" },
   { label: "Shipping Policy", href: "/shipping-policy" },
   { label: "Terms & Conditions", href: "/terms-and-conditions" },
@@ -45,14 +52,14 @@ const Footer = () => {
   }, []);
 
   const parentCategories = useMemo(
-    () => categories.filter((c) => !c.parentId),
+    () => categories.filter((c) => !c.parentId).slice(0, 5),
     [categories],
   );
 
   return (
     <footer className='border-t border-border bg-primary text-white'>
       <div className='max-w-7xl mx-auto px-4 py-12'>
-        <div className='grid gap-10 sm:grid-cols-2 md:grid-cols-4'>
+        <div className='grid gap-10 md:grid-cols-4'>
           {/* Column 1 - Brand */}
           <div>
             <h2 className='text-2xl font-bold font-serif mb-3'>
@@ -76,55 +83,71 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Column 2 - Categories (Dynamic) */}
-          <div>
-            <h3 className='mb-4 text-base font-semibold'>Categories</h3>
-            <ul className='space-y-2'>
-              {parentCategories.map((cat) => (
-                <li key={cat.id}>
-                  <Link
-                    href={`/category/${cat.slug}`}
-                    className='text-sm text-white/80 hover:text-white transition'>
-                    {cat.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <div className='grid grid-cols-2 gap-8 md:contents'>
+            {/* Column 2 - Categories (Dynamic) */}
+            <div>
+              <h3 className='mb-4 text-base font-semibold'>Categories</h3>
+              <ul className='space-y-2'>
+                {parentCategories.map((cat) => (
+                  <li key={cat.id}>
+                    <Link
+                      href={`/category/${cat.slug}`}
+                      className='text-sm text-white/80 hover:text-white transition'>
+                      {cat.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-          {/* Column 3 - Useful Links */}
-          <div>
-            <h3 className='mb-4 text-base font-semibold'>Useful Links</h3>
-            <ul className='space-y-2'>
-              {footerLinks.map((item) => (
-                <li key={item.label}>
-                  <Link
-                    href={item.href}
-                    className='text-sm text-white/80 hover:text-white transition'>
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {/* Column 3 - Useful Links */}
+            <div>
+              <h3 className='mb-4 text-base font-semibold'>Useful Links</h3>
+              <ul className='space-y-2'>
+                {footerLinks.map((item) => (
+                  <li key={item.label}>
+                    <Link
+                      href={item.href}
+                      className='text-sm text-white/80 hover:text-white transition'>
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-
+          {/* Column 4 - Contact Details */}
           {/* Column 4 - Contact Details */}
           <div>
             <h3 className='mb-4 text-base font-semibold'>Contact Us</h3>
-            <ul className='space-y-2 text-sm text-white/80'>
-              <li>📍 Lahore, Pakistan</li>
-              <li>
-                📞 <a href='tel:+923001234567'>+92 300 1234567</a>
+            <ul className='space-y-3 text-sm text-white/80'>
+              <li className='flex items-center gap-2'>
+                <MapPin className='h-4 w-4 text-white' />
+                Lahore, Pakistan
               </li>
-              <li>
-                💬{" "}
-                <a href='https://wa.me/923001234567' target='_blank'>
+
+              <li className='flex items-center gap-2'>
+                <Phone className='h-4 w-4 text-white' />
+                <a href='tel:+923001234567' className='hover:text-white'>
+                  +92 300 1234567
+                </a>
+              </li>
+
+              <li className='flex items-center gap-2'>
+                <MessageCircle className='h-4 w-4 text-white' />
+                <a
+                  href='https://wa.me/923001234567'
+                  target='_blank'
+                  className='hover:text-white'>
                   WhatsApp
                 </a>
               </li>
-              <li>
-                ✉️{" "}
-                <a href='mailto:info@mishalorganics.com'>
+
+              <li className='flex items-center gap-2'>
+                <Mail className='h-4 w-4 text-white' />
+                <a
+                  href='mailto:info@mishalorganics.com'
+                  className='hover:text-white'>
                   info@mishalorganics.com
                 </a>
               </li>
