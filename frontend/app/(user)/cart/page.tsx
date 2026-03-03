@@ -162,7 +162,7 @@ export default function CartPage() {
                   className='flex flex-col gap-4 rounded border border-zinc-200 p-4 lg:flex-row lg:items-center lg:justify-between'>
                   {/* Left Section */}
                   <div className='flex gap-4'>
-                    <div className='relative h-20 w-20 shrink-0 overflow-hidden rounded bg-zinc-100'>
+                    <div className='relative h-20 w-20 shrink-0 overflow-hidden rounded bg-muted'>
                       <Image
                         src={i.product?.imageUrl ?? "/images/logo.png"}
                         alt={i.product?.name ?? "Product image"}
@@ -252,7 +252,7 @@ export default function CartPage() {
               ))}
             </div>
 
-            <aside className='rounded border border-zinc-200 p-4 h-fit'>
+            <aside className='rounded border border-zinc-200 p-4 h-fit bg-muted'>
               <p className='text-sm text-zinc-600'>Total</p>
               <p className='mt-1 text-2xl font-semibold tracking-tight text-zinc-900'>
                 {formatPrice(discountedTotal)}
