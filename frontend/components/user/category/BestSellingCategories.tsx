@@ -35,16 +35,16 @@ export function BestSellingCategories({ limit = 6 }: BestSellingCategoriesProps)
 
   return (
     <section className='w-full py-28'>
-      <h2 className='pb-12 text-4xl text-accent font-medium'>Best Selling Categories</h2>
+      <h2 className='pb-12 text-4xl text-accent font-medium'>Top Categories</h2>
 
-      <div className='grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-4'>
+      <div className='grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-4'>
         {items.map((category) => (
           <Link
             key={category.id}
             href={`/category/${category.slug}`}
             className='group flex flex-col items-center text-center'>
             {/* Circular Image */}
-            <div className='relative h-60 w-60 overflow-hidden rounded-full'>
+            <div className='relative h-32 w-32 md:h-60 md:w-60 overflow-hidden rounded-full'>
               {category.imageUrl ? (
                 <img
                   src={category.imageUrl}

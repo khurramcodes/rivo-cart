@@ -3,14 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import {
-  ChevronDown,
-  ShoppingCart,
-  Heart,
-  User2,
-  X,
-  Menu,
-} from "lucide-react";
+import { ChevronDown, ShoppingCart, Heart, User2, X, Menu } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { logout } from "@/store/slices/authSlice";
 import { GlobalLoader } from "../../ui/GlobalLoader";
@@ -189,7 +182,7 @@ export function Navbar() {
       />
 
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 ${
+        className={`fixed top-0 left-0 h-full w-4/5 bg-white z-50 transform transition-transform duration-300 ${
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}>
         <div className='flex justify-between items-center p-4 border-b border-border'>
@@ -206,7 +199,7 @@ export function Navbar() {
               <button
                 key={cat.id}
                 onClick={() => handleMobileNav(`/category/${cat.slug}`)}
-                className='text-zinc-600 hover:text-black text-left'>
+                className='text-zinc-600 hover:text-black text-left border-b border-border pb-4'>
                 {cat.name}
               </button>
             ))}
@@ -246,12 +239,13 @@ export function Navbar() {
                 )}
               </div>
             ) : (
-              <div className='flex flex-col gap-2 mt-2'>
+              <div className='flex gap-2 mt-2'>
                 <button
                   onClick={() => handleMobileNav("/login")}
                   className='text-left'>
                   Login
-                </button>
+                </button>{" "}
+                /
                 <button
                   onClick={() => handleMobileNav("/register")}
                   className='text-left'>

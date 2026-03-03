@@ -4,9 +4,10 @@ import { HeroSection } from "@/components/user/homePage/HeroSection";
 import { LatestProducts } from "@/components/user/product/LatestProducts";
 import { BestSellingProducts } from "@/components/user/product/BestSellingProducts";
 import { BestSellingCategories } from "@/components/user/category/BestSellingCategories";
-import Footer from "@/components/user/Footer";
 import Topbar from "@/components/user/navbar/Topbar";
 import FullWidthCTA from "@/components/user/homePage/FullWidthCTA";
+import Copyright from './../components/user/layout/Copyright';
+import Footer from "@/components/user/layout/Footer";
 
 export default function Home() {
   return (
@@ -45,6 +46,7 @@ export default function Home() {
         </div>
       </main>
       <Footer />
+      <Copyright />
     </div>
   );
 }

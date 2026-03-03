@@ -1,4 +1,4 @@
-import Footer from "@/components/user/Footer";
+import Footer from "@/components/user/layout/Copyright";
 import { Navbar } from "@/components/user/navbar/Navbar";
 import { SecondaryNav } from "@/components/user/navbar/SecondaryNavbar";
 import Topbar from "@/components/user/navbar/Topbar";
