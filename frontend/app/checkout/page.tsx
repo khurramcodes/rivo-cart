@@ -292,8 +292,8 @@ export default function CheckoutPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Checkout</h1>
         <p className="mt-1 text-sm text-zinc-600">Complete your order details below</p>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-3">
-          <form className="lg:col-span-2 space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <form className="order-2 lg:order-1 lg:col-span-2 space-y-6 min-w-0" onSubmit={form.handleSubmit(onSubmit)}>
             {/* Customer Information Section */}
             <div className="rounded border border-zinc-200 p-6">
               <h2 className="text-lg font-semibold text-zinc-900">Customer Information</h2>
@@ -397,16 +397,16 @@ export default function CheckoutPage() {
             </div>
           </form>
 
-          <aside className="rounded border border-zinc-200 p-6 h-fit">
+          <aside className="order-1 lg:order-2 rounded border border-zinc-200 p-4 sm:p-6 h-fit">
             <h2 className="text-lg font-semibold text-zinc-900">Order Summary</h2>
             <div className="mt-4 space-y-3">
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex gap-4"
+                  className="flex gap-4 min-w-0"
                 >
                   {/* Product Image */}
-                  <div className="relative shrink-0 w-16 h-16 rounded-lg border border-zinc-200 bg-white overflow-hidden">
+                  <div className="relative shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-lg border border-zinc-200 bg-white overflow-hidden">
                     <img
                       src={item.product?.imageUrl ?? "/images/logo.png"}
                       alt={item.product?.name ?? "Product"}
@@ -416,7 +416,7 @@ export default function CheckoutPage() {
 
                   {/* Product Details */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-zinc-900 truncate">
+                    <h3 className="text-sm font-medium text-zinc-900 wrap-break-words">
                       {item.product?.name ?? "Product"}
                     </h3>
                     {formatVariantDetails(item.variant?.attributes) ? (
