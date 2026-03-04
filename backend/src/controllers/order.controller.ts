@@ -39,6 +39,12 @@ export const listAll = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ orders });
 });
 
+export const listMyOrders = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) throw new ApiError(401, "UNAUTHORIZED", "Missing authentication");
+  const orders = await orderService.listMyOrders(req.user.sub);
+  res.json({ orders });
+});
+
 export const updateStatus = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params as { id: string };
   const { status } = req.body as {

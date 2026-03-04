@@ -173,7 +173,7 @@ export default function CartPage() {
                     </div>
 
                     <div className='min-w-0'>
-                      <p className='text-sm font-medium text-zinc-900 truncate'>
+                      <p className='text-sm font-medium text-zinc-900 line-clamp-2'>
                         {i.product?.name ?? "Product"}
                       </p>
 

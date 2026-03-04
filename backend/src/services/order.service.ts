@@ -2,7 +2,7 @@ import { prisma } from "../prisma/client.js";
 import { ApiError } from "../utils/ApiError.js";
 import { resolveCartPricing } from "./pricing.service.js";
 import { resolveShippingForOrder } from "./shipping.service.js";
-import { sendOrderStatusEmail } from "./email.service.js";
+import { sendOrderPlacedEmail, sendOrderStatusEmail } from "./email.service.js";
 import { generateOrderNumber } from "./orderNumber.service.js";
 import { Prisma } from "@prisma/client";
 import type { OrderStatus as PrismaOrderStatus } from "@prisma/client";
@@ -140,7 +140,9 @@ export async function placeOrder(
           })),
         },
       },
-      include: { items: true },
+      include: {
+        items: { include: { product: { select: { name: true } } } },
+      },
     });
 
     // Record coupon redemption if a coupon was applied
@@ -168,6 +170,15 @@ export async function placeOrder(
     return created;
   });
 
+  // Send order confirmation email to user (fire-and-forget)
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true },
+  });
+  if (user?.email) {
+    void sendOrderPlacedEmail(user.email, order);
+  }
+
   return order;
 }
 
@@ -193,6 +204,16 @@ export async function listAllOrders() {
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { id: true, name: true, email: true, role: true, createdAt: true } },
+      items: { include: { product: { select: { id: true, name: true, imageUrl: true } } } },
+    },
+  });
+}
+
+export async function listMyOrders(userId: string) {
+  return prisma.order.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    include: {
       items: { include: { product: { select: { id: true, name: true, imageUrl: true } } } },
     },
   });

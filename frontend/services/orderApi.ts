@@ -25,6 +25,11 @@ export const orderApi = {
     return data.orders;
   },
 
+  async listMyOrders() {
+    const { data } = await apiClient.get<{ orders: Order[] }>("/orders/my");
+    return data.orders;
+  },
+
   async updateStatus(orderId: string, status: OrderStatus) {
     const { data } = await apiClient.put<{ order: Order }>(`/orders/${orderId}/status`, { status });
     return data.order;

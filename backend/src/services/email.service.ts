@@ -56,6 +56,74 @@ export async function sendOtpEmail(to: string, otp: string) {
   });
 }
 
+type OrderForEmail = {
+  orderNumber: string;
+  totalAmount: number;
+  shippingCost?: number;
+  customerName: string;
+  customerPhone: string;
+  shippingAddress: string;
+  createdAt: Date;
+  items?: Array<{
+    quantity: number;
+    price: number;
+    sku: string;
+    product?: { name: string };
+  }>;
+};
+
+export async function sendOrderPlacedEmail(to: string, order: OrderForEmail) {
+  const itemsList =
+    order.items
+      ?.map(
+        (i) =>
+          `- ${i.product?.name ?? "Product"} (SKU: ${i.sku}) × ${i.quantity} = ${((i.price * i.quantity) / 100).toFixed(2)}`,
+      )
+      .join("\n") ?? "";
+  const subtotal = order.items?.reduce((sum, i) => sum + i.price * i.quantity, 0) ?? order.totalAmount;
+  const shipping = order.shippingCost ?? 0;
+  const dateStr = new Date(order.createdAt).toLocaleDateString(undefined, {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  const subject = `Order ${order.orderNumber} confirmed – Thank you for your purchase`;
+  const text =
+    `Hi ${order.customerName},\n\n` +
+    `Thank you for your order! We've received it and will process it shortly.\n\n` +
+    `Order number: ${order.orderNumber}\n` +
+    `Date: ${dateStr}\n\n` +
+    `Items:\n${itemsList}\n\n` +
+    `Subtotal: $${(subtotal / 100).toFixed(2)}\n` +
+    (shipping > 0 ? `Shipping: $${(shipping / 100).toFixed(2)}\n` : "") +
+    `Total: $${(order.totalAmount / 100).toFixed(2)}\n\n` +
+    `Shipping address:\n${order.shippingAddress}\n${order.customerPhone}\n\n` +
+    `Payment: Cash on Delivery (COD)\n\n` +
+    `We'll notify you when your order ships.`;
+
+  const html =
+    `<p>Hi <strong>${order.customerName}</strong>,</p>` +
+    `<p>Thank you for your order! We've received it and will process it shortly.</p>` +
+    `<p><strong>Order number:</strong> ${order.orderNumber}<br/>` +
+    `<strong>Date:</strong> ${dateStr}</p>` +
+    `<p><strong>Items:</strong></p><ul>${(order.items ?? [])
+      .map(
+        (i) =>
+          `<li>${i.product?.name ?? "Product"} (SKU: ${i.sku}) × ${i.quantity} = $${((i.price * i.quantity) / 100).toFixed(2)}</li>`,
+      )
+      .join("")}</ul>` +
+    `<p>Subtotal: $${(subtotal / 100).toFixed(2)}<br/>` +
+    (shipping > 0 ? `Shipping: $${(shipping / 100).toFixed(2)}<br/>` : "") +
+    `<strong>Total: $${(order.totalAmount / 100).toFixed(2)}</strong></p>` +
+    `<p><strong>Shipping address:</strong><br/>${order.shippingAddress.replace(/\n/g, "<br/>")}<br/>${order.customerPhone}</p>` +
+    `<p>Payment: Cash on Delivery (COD)</p>` +
+    `<p>We'll notify you when your order ships.</p>`;
+
+  await sendEmail({ to, subject, text, html });
+}
+
 export async function sendOrderStatusEmail(to: string, orderId: string, status: "CONFIRMED" | "CANCELLED") {
   const isConfirmed = status === "CONFIRMED";
   const subject = isConfirmed
