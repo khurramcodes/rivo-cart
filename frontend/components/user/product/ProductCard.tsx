@@ -17,6 +17,7 @@ import { Heart } from "lucide-react";
 interface ProductCardProps {
   product: Product;
   pricing?: VariantPricing | null;
+  label?: string;
 }
 
 function getDefaultVariant(product: Product) {
@@ -64,7 +65,7 @@ function getDisplayPricing(product: Product, pricing?: VariantPricing | null) {
   };
 }
 
-export function ProductCard({ product, pricing }: ProductCardProps) {
+export function ProductCard({ product, pricing, label }: ProductCardProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const user = useAppSelector((s) => s.auth.user);
@@ -98,6 +99,11 @@ export function ProductCard({ product, pricing }: ProductCardProps) {
             fill
             className='object-contain bg-white transition group-hover:scale-[1.02]'
           />
+          {label ? (
+            <div className='absolute top-2 left-2 z-10'>
+              <p className='text-xs text-white bg-primary rounded-full px-2 py-1'>{label}</p>
+            </div>
+          ) : null}
 
           <div
             className='absolute top-2 right-2 z-10 cursor-pointer'
@@ -106,14 +112,14 @@ export function ProductCard({ product, pricing }: ProductCardProps) {
               className={`h-7 w-7 transition-colors duration-300 ${
                 isWishlisted
                   ? "fill-primary text-primary"
-                  : "text-white drop-shadow-md hover:fill-primary hover:text-primary"
+                  : "text-primary hover:fill-primary"
               }`}
             />
           </div>
         </div>
 
         <div className='mt-3 p-3'>
-          <p className='text-base font-medium text-zinc-900'>{product.name}</p>
+          <p className='text-base font-medium text-zinc-900 line-clamp-1'>{product.name}</p>
 
           <div className='mt-1 flex items-center gap-2'>
             <StarRating value={ratingAverage} />

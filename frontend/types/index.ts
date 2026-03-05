@@ -38,6 +38,7 @@ export type Category = {
 
 export type BestSellingCategory = Category & {
   soldQuantity: number;
+  productCount: number;
 };
 
 export type ProductType = "SIMPLE" | "VARIABLE";

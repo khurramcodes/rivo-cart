@@ -103,7 +103,7 @@ export function LatestProducts({ limit = 6 }: LatestProductsProps) {
             : null;
 
           return (
-            <ProductCard key={product.id} product={product} pricing={pricing} />
+            <ProductCard key={product.id} product={product} pricing={pricing} label="New" />
           );
         })}
       </div>
