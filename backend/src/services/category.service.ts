@@ -39,26 +39,39 @@ export async function listBestSellingCategories(limit: number = 8) {
     .slice(0, limit);
   if (top.length === 0) return [];
 
-  const categories = await prisma.category.findMany({
-    where: { id: { in: top.map(([categoryId]) => categoryId) } },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      description: true,
-      parentId: true,
-      imageUrl: true,
-      imageFileKey: true,
-      createdAt: true,
-    },
-  });
+  const categoryIds = top.map(([categoryId]) => categoryId);
+  const [categories, productCounts] = await Promise.all([
+    prisma.category.findMany({
+      where: { id: { in: categoryIds } },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        parentId: true,
+        imageUrl: true,
+        imageFileKey: true,
+        createdAt: true,
+      },
+    }),
+    prisma.product.groupBy({
+      by: ["categoryId"],
+      _count: { id: true },
+      where: { categoryId: { in: categoryIds } },
+    }),
+  ]);
   const categoryMap = new Map(categories.map((c) => [c.id, c]));
+  const countMap = new Map(productCounts.map((c) => [c.categoryId, c._count.id]));
 
   return top
     .map(([categoryId, soldQuantity]) => {
       const category = categoryMap.get(categoryId);
       if (!category) return null;
-      return { ...category, soldQuantity };
+      return {
+        ...category,
+        soldQuantity,
+        productCount: countMap.get(categoryId) ?? 0,
+      };
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
 }
