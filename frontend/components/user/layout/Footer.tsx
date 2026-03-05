@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { catalogApi } from "@/services/catalogApi";
 import type { Category } from "@/types";
+import Logo from "@/components/ui/Logo";
 
 const footerLinks = [
   { label: "FAQs", href: "/faqs" },
@@ -58,15 +59,15 @@ const Footer = () => {
 
   return (
     <footer className='border-t border-border bg-primary text-white'>
-      <div className='max-w-7xl mx-auto px-4 py-12'>
+      <div className='max-w-7xl mx-auto px-4 py-14'>
         <div className='grid gap-10 md:grid-cols-4'>
           {/* Column 1 - Brand */}
           <div>
-            <h2 className='text-2xl font-bold font-serif mb-3'>
-              Mishal Organics
-            </h2>
-            <p className='text-sm text-white/80 leading-relaxed'>
-              100% organic supplements crafted from nature's finest ingredients
+            <div className='shrink-0'>
+              <Logo variant='white' />
+            </div>
+            <p className='text-sm text-white/80 pt-4'>
+              100% organic products crafted from nature's finest ingredients
               for a healthier, stronger you.
             </p>
 

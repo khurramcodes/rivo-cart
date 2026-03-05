@@ -9,7 +9,6 @@ import { AuthHydrator } from "@/features/auth/AuthHydrator";
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
-  variable: "--font-poppins",
   display: "swap",
 });
 
@@ -34,7 +33,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${poppins.variable} antialiased`}
+        className={`${poppins.className} antialiased`}
       >
         <Providers initialUser={user}>
           <AuthHydrator />

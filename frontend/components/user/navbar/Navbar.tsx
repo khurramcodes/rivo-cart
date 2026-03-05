@@ -86,10 +86,10 @@ export function Navbar() {
 
   return (
     <header className='bg-white border-b border-border'>
-      <div className='mx-auto flex justify-between max-w-7xl gap-4 px-4 py-4'>
+      <div className='mx-auto flex justify-between items-center max-w-7xl gap-4 px-4 py-4'>
         {/* Logo */}
         <div className='shrink-0'>
-          <Logo variant='white' />
+          <Logo variant='black' />
         </div>
 
         {/* Search */}
@@ -109,11 +109,10 @@ export function Navbar() {
           {/* Wishlist */}
           <Link
             href={user ? "/account/wishlist" : "/login"}
-            className="relative text-accent-foreground hover:text-primary transition-colors"
-          >
-            <Heart className="h-5 w-5" />
+            className='relative text-accent-foreground hover:text-primary transition-colors'>
+            <Heart className='h-5 w-5' />
             {user && wishlistCount > 0 && (
-              <span className="absolute -right-2 -top-2 rounded-full bg-primary px-1.5 py-0.5 text-xs text-white">
+              <span className='absolute -right-2 -top-2 rounded-full bg-primary px-1.5 py-0.5 text-xs text-white'>
                 {wishlistCount}
               </span>
             )}
