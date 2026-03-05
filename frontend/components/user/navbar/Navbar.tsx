@@ -19,6 +19,7 @@ export function Navbar() {
   const cartCount = useAppSelector((s) =>
     (s.cart.cart?.items ?? []).reduce((sum, i) => sum + i.quantity, 0),
   );
+  const wishlistCount = useAppSelector((s) => s.wishlist.productIds.length);
 
   const { user, hydrated } = useAppSelector((s) => s.auth);
 
@@ -106,9 +107,17 @@ export function Navbar() {
         {/* Right Nav */}
         <nav className='ml-auto flex items-center gap-4'>
           {/* Wishlist */}
-          <div>
-            <Heart className='h-5 w-5' />
-          </div>
+          <Link
+            href={user ? "/account/wishlist" : "/login"}
+            className="relative text-accent-foreground hover:text-primary transition-colors"
+          >
+            <Heart className="h-5 w-5" />
+            {user && wishlistCount > 0 && (
+              <span className="absolute -right-2 -top-2 rounded-full bg-primary px-1.5 py-0.5 text-xs text-white">
+                {wishlistCount}
+              </span>
+            )}
+          </Link>
 
           {/* Cart */}
           <Link href='/cart' className='relative text-accent-foreground'>

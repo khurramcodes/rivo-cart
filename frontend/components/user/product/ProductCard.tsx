@@ -2,14 +2,17 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { formatPrice } from "@/config/currency";
 import { addCacheBust } from "@/utils/imageCache";
 import type { Product } from "@/types";
 import type { VariantPricing } from "@/services/pricingApi";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addToCart } from "@/store/cartThunks";
+import { toggleWishlist } from "@/store/slices/wishlistSlice";
 import { StarRating } from "@/components/ui/StarRating";
+import { Heart } from "lucide-react";
 
 interface ProductCardProps {
   product: Product;
@@ -63,6 +66,10 @@ function getDisplayPricing(product: Product, pricing?: VariantPricing | null) {
 
 export function ProductCard({ product, pricing }: ProductCardProps) {
   const dispatch = useAppDispatch();
+  const router = useRouter();
+  const user = useAppSelector((s) => s.auth.user);
+  const wishlistIds = useAppSelector((s) => s.wishlist.productIds);
+  const isWishlisted = wishlistIds.includes(product.id);
   const defaultVariant = getDefaultVariant(product);
 
   const priceData = getDisplayPricing(product, pricing);
@@ -70,6 +77,16 @@ export function ProductCard({ product, pricing }: ProductCardProps) {
 
   const ratingAverage = product.ratingAverage ?? 0;
   const ratingCount = product.ratingCount ?? 0;
+
+  const handleToggleWishlist = (e: React.MouseEvent, productId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    void dispatch(toggleWishlist(productId));
+  };
 
   return (
     <div className='group rounded shadow bg-white transition'>
@@ -81,6 +98,18 @@ export function ProductCard({ product, pricing }: ProductCardProps) {
             fill
             className='object-contain bg-white transition group-hover:scale-[1.02]'
           />
+
+          <div
+            className='absolute top-2 right-2 z-10 cursor-pointer'
+            onClick={(e) => handleToggleWishlist(e, product.id)}>
+            <Heart
+              className={`h-7 w-7 transition-colors duration-300 ${
+                isWishlisted
+                  ? "fill-primary text-primary"
+                  : "text-white drop-shadow-md hover:fill-primary hover:text-primary"
+              }`}
+            />
+          </div>
         </div>
 
         <div className='mt-3 p-3'>
@@ -147,7 +176,7 @@ export function ProductCard({ product, pricing }: ProductCardProps) {
           </Button>
         ) : (
           <Link href={`/products/${product.id}`}>
-            <Button rounded="full" variant='secondary' className='mt-3 w-full'>
+            <Button rounded='full' variant='secondary' className='mt-3 w-full'>
               Select Options
             </Button>
           </Link>

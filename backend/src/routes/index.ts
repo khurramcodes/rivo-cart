@@ -18,6 +18,7 @@ import { qaAdminRoutes } from "./qa.admin.routes.js";
 import { notificationAdminRoutes } from "./notification.admin.routes.js";
 import { reportRoutes } from "./report.routes.js";
 import { reportAdminRoutes } from "./report.admin.routes.js";
+import { wishlistRoutes } from "../modules/wishlist/wishlist.routes.js";
 
 export const routes = Router();
 
@@ -40,5 +41,6 @@ routes.use("/admin/qa", qaAdminRoutes);
 routes.use("/admin/notifications", notificationAdminRoutes);
 routes.use("/reports", reportRoutes);
 routes.use("/admin/reports", reportAdminRoutes);
+routes.use("/wishlist", wishlistRoutes);
 
 

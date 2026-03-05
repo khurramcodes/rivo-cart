@@ -4,6 +4,7 @@ import axios from "axios";
 import type { User } from "@/types";
 import { authApi } from "@/services/authApi";
 import { clearCart } from "./cartSlice";
+import { clearWishlist, fetchWishlistIds } from "./wishlistSlice";
 import { fetchCart } from "../cartThunks";
 
 type AuthState = {
@@ -56,6 +57,7 @@ export const register = createAsyncThunk(
 export const logout = createAsyncThunk("auth/logout", async (_payload, { dispatch }) => {
   await authApi.logout();
   dispatch(clearCart());
+  dispatch(clearWishlist());
 });
 
 const authSlice = createSlice({

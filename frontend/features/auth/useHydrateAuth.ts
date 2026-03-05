@@ -5,6 +5,7 @@ import { useAppDispatch } from "@/store/hooks";
 import { setUser } from "@/store/slices/authSlice";
 import { authApi } from "@/services/authApi";
 import { fetchCart } from "@/store/cartThunks";
+import { fetchWishlistIds } from "@/store/slices/wishlistSlice";
 
 let didHydrate = false;
 
@@ -24,7 +25,10 @@ export function useHydrateAuth() {
         const me = await authApi.me();
         if (!mounted) return;
         dispatch(setUser(me.user));
-        await dispatch(fetchCart());
+        await Promise.all([
+          dispatch(fetchCart()),
+          dispatch(fetchWishlistIds()),
+        ]);
       } catch {
         if (mounted) {
           dispatch(setUser(null));

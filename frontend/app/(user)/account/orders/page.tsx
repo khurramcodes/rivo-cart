@@ -71,7 +71,7 @@ export default function OrdersPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[200px] items-center justify-center">
+      <div className="flex min-h-50 items-center justify-center">
         <GlobalLoader />
       </div>
     );
