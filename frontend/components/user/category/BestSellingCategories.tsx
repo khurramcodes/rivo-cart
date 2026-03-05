@@ -19,6 +19,8 @@ export function BestSellingCategories({ limit = 6 }: BestSellingCategoriesProps)
       try {
         const data = await catalogApi.listBestSellingCategories(limit);
         if (!mounted) return;
+
+        console.log(data);
         setItems(data.items);
       } finally {
         if (mounted) setLoading(false);
@@ -58,10 +60,7 @@ export function BestSellingCategories({ limit = 6 }: BestSellingCategoriesProps)
               )}
             </div>
             <p className="mt-4 w-28 text-sm font-medium text-zinc-800 transition-colors group-hover:text-primary">
-              {category.name}
-            </p>
-            <p className="mt-1 text-xs text-zinc-500">
-              {category.soldQuantity} sold · {category.productCount} products
+              {category.name} ( {category.productCount} )
             </p>
           </Link>
         ))}

@@ -194,7 +194,7 @@ export function Navbar() {
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}>
         <div className='flex justify-between items-center p-4 border-b border-border'>
-          <Logo variant='white' />
+          <Logo variant='black' />
           <button onClick={() => setMobileMenuOpen(false)}>
             <X className='h-6 w-6' />
           </button>
