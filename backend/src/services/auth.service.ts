@@ -46,7 +46,7 @@ export async function registerUser(input: {
 }
 
 const OTP_TTL_SECONDS = 10 * 60;
-const REG_INTENT_TTL_SECONDS = 30 * 60;
+const REG_INTENT_TTL_SECONDS = 20 * 60;
 const MAX_OTP_ATTEMPTS = 5;
 const MAX_RESENDS = 3;
 const RESEND_WINDOW_SECONDS = 10 * 60;
@@ -85,6 +85,14 @@ function generateOtp() {
   return String(n);
 }
 
+function getVerifyEmailUrl(email: string): string {
+  const baseUrl =
+    process.env.FRONTEND_URL?.trim() ||
+    process.env.CORS_ORIGIN?.split(",")[0]?.trim() ||
+    "http://localhost:3000";
+  return `${baseUrl.replace(/\/$/, "")}/verify-email?email=${encodeURIComponent(email)}`;
+}
+
 export async function startRegistration(input: {
   email: string;
   password: string;
@@ -112,7 +120,8 @@ export async function startRegistration(input: {
     createdAt: new Date().toISOString(),
   };
 
-  await sendOtpEmail(email, otp);
+  const verifyUrl = getVerifyEmailUrl(email);
+  await sendOtpEmail(email, otp, verifyUrl);
 
   await redis.set(intentKey(email), JSON.stringify(intent), { ex: REG_INTENT_TTL_SECONDS });
   await redis.set(otpKey(email), otpHash, { ex: OTP_TTL_SECONDS });
@@ -237,7 +246,8 @@ export async function resendRegistrationOtp(input: { email: string }) {
   const otpHash = sha256(otp);
   await redis.set(otpKey(email), otpHash, { ex: OTP_TTL_SECONDS });
 
-  await sendOtpEmail(email, otp);
+  const verifyUrl = getVerifyEmailUrl(email);
+  await sendOtpEmail(email, otp, verifyUrl);
   return { email };
 }
 

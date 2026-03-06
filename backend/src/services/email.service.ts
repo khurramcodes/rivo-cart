@@ -47,12 +47,17 @@ async function sendEmail({ to, subject, html, text }: { to: string; subject: str
   }
 }
 
-export async function sendOtpEmail(to: string, otp: string) {
+export async function sendOtpEmail(to: string, otp: string, verifyUrl: string) {
   await sendEmail({
     to,
     subject: "Verify your email",
-    text: `Your verification code is ${otp}. It expires in 10 minutes.`,
-    html: `<p>Your verification code is <strong>${otp}</strong>.</p><p>It expires in 10 minutes.</p>`,
+    text:
+      `Your verification code is ${otp}. It expires in 10 minutes.\n\n` +
+      `If you accidentally closed the verification page, use this link to return:\n${verifyUrl}`,
+    html:
+      `<p>Your verification code is <strong>${otp}</strong>.</p>` +
+      `<p>It expires in 10 minutes.</p>` +
+      `<p>If you accidentally closed the verification page, <a href="${verifyUrl}">click here to return</a>.</p>`,
   });
 }
 
