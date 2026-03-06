@@ -48,10 +48,10 @@ function LoginForm() {
 
   return (
     <div className='flex flex-col items-center justify-center min-h-screen bg-white'>
-      <div className='mb-4'>
-        <Logo />
-      </div>
-      <main className='w-sm max-w-sm border border-zinc-300 bg-[#f5f3ef] px-10 py-12 rounded'>
+      <main className='w-sm max-w-sm border border-zinc-300 bg-muted px-10 py-12 rounded'>
+        <div className='mb-4 flex justify-center'>
+          <Logo />
+        </div>
         <h1 className='text-2xl font-semibold tracking-tight text-zinc-900'>
           Login
         </h1>

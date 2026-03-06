@@ -14,8 +14,20 @@ import Logo from "@/components/ui/Logo";
 const schema = z.object({
   firstName: z.string().min(2, "First name is required"),
   lastName: z.string().optional(),
-  email: z.string().email(),
-  password: z.string().min(8),
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .pipe(z.email({ message: "Invalid email" })),
+  password: z
+    .string()
+    .min(1, "Password is required")
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number")
+    .regex(
+      /[!@#$%^&]/,
+      "Password must contain at least one special character (!@#$%^&)",
+    ),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -44,10 +56,10 @@ export default function RegisterPage() {
 
   return (
     <div className='flex flex-col items-center justify-center min-h-screen bg-white'>
-      <div className='mb-4'>
-        <Logo />
-      </div>
-      <main className='w-md max-w-md border border-zinc-300 bg-[#f5f3ef] px-10 py-12 rounded'>
+      <main className='w-md max-w-md border border-zinc-300 bg-muted px-10 py-12 rounded'>
+        <div className='mb-4 flex justify-center'>
+          <Logo />
+        </div>
         <h1 className='text-2xl font-semibold tracking-tight text-zinc-900'>
           Create account
         </h1>
@@ -60,7 +72,11 @@ export default function RegisterPage() {
             <label className='text-sm font-medium text-zinc-800'>
               First name
             </label>
-            <Input className='mt-2 border border-zinc-300' placeholder="First name" {...form.register("firstName")} />
+            <Input
+              className='mt-2 border border-zinc-300'
+              placeholder='First name'
+              {...form.register("firstName")}
+            />
             {form.formState.errors.firstName ? (
               <p className='mt-1 text-sm text-red-600'>
                 {form.formState.errors.firstName.message}
@@ -71,7 +87,11 @@ export default function RegisterPage() {
             <label className='text-sm font-medium text-zinc-800'>
               Last name
             </label>
-            <Input className='mt-2 border border-zinc-300' placeholder="Last name" {...form.register("lastName")} />
+            <Input
+              className='mt-2 border border-zinc-300'
+              placeholder='Last name'
+              {...form.register("lastName")}
+            />
             {form.formState.errors.lastName ? (
               <p className='mt-1 text-sm text-red-600'>
                 {form.formState.errors.lastName.message}
@@ -80,7 +100,12 @@ export default function RegisterPage() {
           </div>
           <div>
             <label className='text-sm font-medium text-zinc-800'>Email</label>
-            <Input className='mt-2 border border-zinc-300' type='email' placeholder="Email" {...form.register("email")} />
+            <Input
+              className='mt-2 border border-zinc-300'
+              type='email'
+              placeholder='Email'
+              {...form.register("email")}
+            />
             {form.formState.errors.email ? (
               <p className='mt-1 text-sm text-red-600'>
                 {form.formState.errors.email.message}
@@ -94,7 +119,7 @@ export default function RegisterPage() {
             <Input
               className='mt-2 border border-zinc-300'
               type='password'
-              placeholder="Password"
+              placeholder='Password'
               {...form.register("password")}
             />
             {form.formState.errors.password ? (
