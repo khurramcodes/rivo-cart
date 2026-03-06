@@ -39,7 +39,7 @@ export function BestSellingCategories({ limit = 6 }: BestSellingCategoriesProps)
       <h2 className="pb-12 text-4xl text-accent font-medium">Top Categories</h2>
 
       {/* Mobile: horizontal scroll */}
-      <div className="flex gap-6 overflow-x-auto pb-2 md:hidden [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-zinc-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-300">
+      <div className="flex gap-6 overflow-x-auto pb-2 md:hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {items.map((category) => (
           <Link
             key={category.id}
@@ -60,7 +60,10 @@ export function BestSellingCategories({ limit = 6 }: BestSellingCategoriesProps)
               )}
             </div>
             <p className="mt-4 w-28 text-sm font-medium text-zinc-800 transition-colors group-hover:text-primary">
-              {category.name} ( {category.productCount} )
+              {category.name}
+            </p>
+            <p className="mt-1 text-xs text-zinc-500">
+              ({category.productCount})
             </p>
           </Link>
         ))}
