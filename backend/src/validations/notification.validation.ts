@@ -12,6 +12,6 @@ export const adminListNotificationsSchema = z.object({
 
 export const notificationIdParamSchema = z.object({
   params: z.object({
-    id: z.string().uuid(),
+    id: z.string().cuid(),
   }),
 });

@@ -153,6 +153,41 @@ export async function listTopApprovedReviews(input: { productId: string }) {
   });
 }
 
+/**
+ * For home page carousel: up to 10 reviews, 5-star first, then 4-star to fill.
+ */
+export async function listTopReviewsForHome(limit: number = 10) {
+  const fiveStar = await prisma.review.findMany({
+    where: { rating: 5, status: "APPROVED", isHidden: false },
+    include: {
+      user: { select: { id: true, name: true } },
+      product: { select: { id: true, name: true, slug: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+
+  if (fiveStar.length >= limit) return fiveStar.slice(0, limit);
+
+  const remaining = limit - fiveStar.length;
+  const fourStar = await prisma.review.findMany({
+    where: {
+      rating: 4,
+      status: "APPROVED",
+      isHidden: false,
+      id: { notIn: fiveStar.map((r) => r.id) },
+    },
+    include: {
+      user: { select: { id: true, name: true } },
+      product: { select: { id: true, name: true, slug: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: remaining,
+  });
+
+  return [...fiveStar, ...fourStar];
+}
+
 export async function adminListReviews(input: { status?: "PENDING" | "APPROVED" | "REJECTED"; page?: number; limit?: number }) {
   const page = Math.max(1, input.page ?? 1);
   const limit = Math.min(50, Math.max(1, input.limit ?? 20));

@@ -34,6 +34,13 @@ export const reviewApi = {
     return data.items;
   },
 
+  async topForHome() {
+    const { data } = await apiClient.get<{ items: Review[] }>("/reviews/top-for-home", {
+      skipLoading: true,
+    });
+    return data.items;
+  },
+
   async markHelpful(reviewId: string, isHelpful: boolean) {
     await apiClient.put(`/reviews/${reviewId}/helpful`, { isHelpful });
   },

@@ -4,6 +4,7 @@ import { HeroSection } from "@/components/user/homePage/HeroSection";
 import { LatestProducts } from "@/components/user/product/LatestProducts";
 import { BestSellingProducts } from "@/components/user/product/BestSellingProducts";
 import { BestSellingCategories } from "@/components/user/category/BestSellingCategories";
+import { CustomerReviews } from "@/components/user/homePage/CustomerReviews";
 import Topbar from "@/components/user/navbar/Topbar";
 import FullWidthCTA from "@/components/user/homePage/FullWidthCTA";
 import Copyright from './../components/user/layout/Copyright';
@@ -39,9 +40,14 @@ export default function Home() {
         <div>
           <FullWidthCTA image="/images/home-cta.png" height="xl" />
         </div>
-        <div className='bg-muted'>
-          <div className='mx-auto max-w-7xl px-6 lg:px-8'>
+        <div className="bg-muted">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <BestSellingProducts limit={8} />
+          </div>
+        </div>
+        <div className="bg-white">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <CustomerReviews />
           </div>
         </div>
       </main>

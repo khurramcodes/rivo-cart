@@ -22,3 +22,8 @@ export const topApprovedForProduct = asyncHandler(async (req: Request, res: Resp
   res.json({ items });
 });
 
+export const topForHome = asyncHandler(async (_req: Request, res: Response) => {
+  const items = await reviewService.listTopReviewsForHome(10);
+  res.json({ items });
+});
+

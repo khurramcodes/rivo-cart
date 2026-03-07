@@ -1,4 +1,5 @@
 import { Router } from "express";
+import * as reviewPublicController from "../controllers/review.public.controller.js";
 import { authRoutes } from "./auth.routes.js";
 import { categoryRoutes } from "./category.routes.js";
 import { productRoutes } from "./product.routes.js";
@@ -22,6 +23,7 @@ import { wishlistRoutes } from "../modules/wishlist/wishlist.routes.js";
 
 export const routes = Router();
 
+routes.get("/reviews/top-for-home", reviewPublicController.topForHome);
 routes.use("/auth", authRoutes);
 routes.use("/categories", categoryRoutes);
 routes.use("/products", productRoutes);

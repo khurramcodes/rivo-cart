@@ -4,6 +4,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/Input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Button } from "@/components/ui/Button";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { register } from "@/store/slices/authSlice";
@@ -116,10 +117,9 @@ export default function RegisterPage() {
             <label className='text-sm font-medium text-zinc-800'>
               Password
             </label>
-            <Input
-              className='mt-2 border border-zinc-300'
-              type='password'
-              placeholder='Password'
+            <PasswordInput
+              className="mt-2 border border-zinc-300"
+              placeholder="Password"
               {...form.register("password")}
             />
             {form.formState.errors.password ? (
