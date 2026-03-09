@@ -132,7 +132,7 @@ export function CustomerReviews() {
     arrows: false,
     responsive: [
       {
-        breakpoint: 768,
+        breakpoint: 640,
         settings: {
           slidesToShow: 1,
         },
@@ -143,7 +143,7 @@ export function CustomerReviews() {
   if (loading && items.length === 0) {
     return (
       <section className="w-full py-16">
-        <div className="flex min-h-[200px] items-center justify-center">
+        <div className="flex min-h-50 items-center justify-center">
           <GlobalLoader />
         </div>
       </section>
