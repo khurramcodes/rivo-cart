@@ -127,7 +127,7 @@ export function CustomerReviews() {
     autoplay: true,
     autoplaySpeed: 5000,
     speed: 500,
-    slidesToShow: 3,
+    slidesToShow: 1,
     slidesToScroll: 1,
     arrows: false,
     responsive: [
