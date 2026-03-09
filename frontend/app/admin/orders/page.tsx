@@ -6,6 +6,7 @@ import { adminApi } from "@/services/adminApi";
 import { formatPrice } from "@/config/currency";
 import { Modal } from "@/components/ui/Modal";
 import { parseVariantSnapshot } from "@/utils/variantSnapshot";
+import { toast } from "react-toastify";
 
 const statuses: OrderStatus[] = [
   "PENDING",
@@ -45,9 +46,10 @@ export default function AdminOrdersPage() {
       const updated = await adminApi.updateOrderStatus(orderId, status);
       setOrders((prev) =>
         prev.map((o) =>
-          o.id === updated.id ? { ...o, status: updated.status } : o
-        )
+          o.id === updated.id ? { ...o, status: updated.status } : o,
+        ),
       );
+      toast.success("Order status updated successfully");
     } finally {
       setSavingId(null);
     }
@@ -152,7 +154,7 @@ export default function AdminOrdersPage() {
                 <div className='divide-y border border-gray-300 text-zinc-900'>
                   {selectedOrder.items.map((item) => {
                     const variantAttributes = parseVariantSnapshot(
-                      item.variantSnapshot
+                      item.variantSnapshot,
                     );
 
                     return (
@@ -172,7 +174,7 @@ export default function AdminOrdersPage() {
                                       </span>{" "}
                                       {value}
                                     </div>
-                                  )
+                                  ),
                                 )}
                               </div>
                             )}

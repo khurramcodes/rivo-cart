@@ -18,8 +18,8 @@ function getClient() {
 function getBaseFolder() {
   const isProduction = process.env.NODE_ENV === "production";
   return isProduction
-    ? (process.env.PRODUCT_IMAGE_FOLDER_BASE_PROD ?? "RivoCart")
-    : (process.env.PRODUCT_IMAGE_FOLDER_BASE_DEV ?? "RivoCart-dev");
+    ? (process.env.PRODUCT_IMAGE_FOLDER_BASE_PROD ?? "MishalOrganics")
+    : (process.env.PRODUCT_IMAGE_FOLDER_BASE_DEV ?? "MishalOrganics-dev");
 }
 
 /**
