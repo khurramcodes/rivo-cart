@@ -129,19 +129,32 @@ export async function sendOrderPlacedEmail(to: string, order: OrderForEmail) {
   await sendEmail({ to, subject, text, html });
 }
 
-export async function sendOrderStatusEmail(to: string, orderId: string, status: "CONFIRMED" | "CANCELLED") {
-  const isConfirmed = status === "CONFIRMED";
-  const subject = isConfirmed
-    ? `Your order ${orderId} has been confirmed`
-    : `Your order ${orderId} has been cancelled`;
+export async function sendOrderStatusEmail(
+  to: string,
+  orderNumber: string,
+  status: "CONFIRMED" | "CANCELLED" | "DELIVERED",
+) {
+  let subject = "";
+  let text = "";
+  let html = "";
 
-  const text = isConfirmed
-    ? `Good news! Your order ${orderId} has been confirmed and is being prepared.`
-    : `Your order ${orderId} has been cancelled. If you have any questions, please contact support.`;
+  if (status === "CONFIRMED") {
+    subject = `Your order ${orderNumber} has been confirmed`;
+    text = `Good news! Your order ${orderNumber} has been confirmed and is being prepared.`;
+    html = `<p>Good news!</p><p>Your order <strong>${orderNumber}</strong> has been <strong>confirmed</strong> and is being prepared.</p>`;
+  }
 
-  const html = isConfirmed
-    ? `<p>Good news!</p><p>Your order <strong>${orderId}</strong> has been <strong>confirmed</strong> and is being prepared.</p>`
-    : `<p>Your order <strong>${orderId}</strong> has been <strong>cancelled</strong>.</p><p>If you have any questions, please contact our support team.</p>`;
+  if (status === "CANCELLED") {
+    subject = `Your order ${orderNumber} has been cancelled`;
+    text = `Your order ${orderNumber} has been cancelled. If you have any questions, please contact support.`;
+    html = `<p>Your order <strong>${orderNumber}</strong> has been <strong>cancelled</strong>.</p><p>If you have any questions, please contact our support team.</p>`;
+  }
+
+  if (status === "DELIVERED") {
+    subject = `Your order ${orderNumber} has been delivered`;
+    text = `Your order ${orderNumber} has been successfully delivered. We hope you enjoy your purchase!`;
+    html = `<p>Great news!</p><p>Your order <strong>${orderNumber}</strong> has been <strong>delivered</strong>.</p><p>We hope you enjoy your purchase. Thank you for shopping with us!</p>`;
+  }
 
   await sendEmail({ to, subject, text, html });
 }

@@ -225,7 +225,6 @@ type OrderWithUserEmail = Prisma.OrderGetPayload<{
 
 export async function updateOrderStatus(id: string, status: PrismaOrderStatus) {
   try {
-    console.log("order status", status);
     const order: OrderWithUserEmail = await prisma.order.update({
       where: { id },
       data: { status },
@@ -238,9 +237,23 @@ export async function updateOrderStatus(id: string, status: PrismaOrderStatus) {
     if (order.user?.email) {
       // Fire-and-forget; email errors should not block status update
       if (status === "CONFIRMED") {
-        void sendOrderStatusEmail(order.user.email, order.id, "CONFIRMED");
+        void sendOrderStatusEmail(
+          order.user.email,
+          order.orderNumber,
+          "CONFIRMED",
+        );
       } else if ((status as any) === "CANCELLED") {
-        void sendOrderStatusEmail(order.user.email, order.id, "CANCELLED");
+        void sendOrderStatusEmail(
+          order.user.email,
+          order.orderNumber,
+          "CANCELLED",
+        );
+      } else if ((status as any) === "DELIVERED") {
+        void sendOrderStatusEmail(
+          order.user.email,
+          order.orderNumber,
+          "DELIVERED",
+        );
       }
     }
 
