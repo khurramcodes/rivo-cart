@@ -39,7 +39,7 @@ export function HeroSection({
             <h1 className='text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl'>
               {headline}
             </h1>
-            <p className='mt-4 text-lg text-zinc-200 sm:text-xl'>
+            <p className='hidden md:block mt-4 text-lg text-zinc-200 sm:text-xl'>
               {description}
             </p>
             <Link
