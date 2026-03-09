@@ -128,19 +128,18 @@ export function CustomerReviews() {
     autoplaySpeed: 5000,
     speed: 500,
     slidesToShow: 3,
-    slidesToScroll: 3,
+    slidesToScroll: 1,
     arrows: false,
     responsive: [
       {
-        breakpoint: 600,
+        breakpoint: 1024,
         settings: {
           slidesToShow: 2,
-          slidesToScroll: 2,
-          initialSlide: 2,
+          slidesToScroll: 1,
         },
       },
       {
-        breakpoint: 480,
+        breakpoint: 640,
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
@@ -162,23 +161,23 @@ export function CustomerReviews() {
   if (items.length === 0) return null;
 
   return (
-    <section className="w-full py-28">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="flex items-center gap-2">
-          <Quote className="h-8 w-8 text-primary" />
-          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900">
+    <section className='w-full py-28'>
+      <div className='mx-auto max-w-7xl px-6 lg:px-8'>
+        <div className='flex items-center gap-2'>
+          <Quote className='h-8 w-8 text-primary' />
+          <h2 className='text-3xl font-semibold tracking-tight text-zinc-900'>
             Customer Reviews
           </h2>
         </div>
 
-        <p className="mt-2 text-sm text-zinc-600">
+        <p className='mt-2 text-sm text-zinc-600'>
           See what our customers are saying about our products
         </p>
 
-        <div className="mt-10">
+        <div className='mt-10  overflow-hidden'>
           <Slider {...settings}>
             {items.map((review, i) => (
-              <div key={i}>
+              <div key={i} className='px-3'>
                 <ReviewCard review={review} />
               </div>
             ))}
