@@ -127,19 +127,10 @@ export function CustomerReviews() {
     autoplay: true,
     autoplaySpeed: 5000,
     speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
+    slidesToShow: 3,
+    slidesToScroll: 3,
     arrows: false,
     responsive: [
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 3,
-          slidesToScroll: 3,
-          infinite: true,
-          dots: true,
-        },
-      },
       {
         breakpoint: 600,
         settings: {
