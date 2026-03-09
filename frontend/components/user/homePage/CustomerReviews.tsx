@@ -132,11 +132,27 @@ export function CustomerReviews() {
     arrows: false,
     responsive: [
       {
-        breakpoint: 640,
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 3,
+          infinite: true,
+          dots: true,
+        },
+      },
+      {
+        breakpoint: 600,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 2,
+          initialSlide: 2,
+        },
+      },
+      {
+        breakpoint: 480,
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          infinite: true,
         },
       },
     ],
@@ -171,7 +187,7 @@ export function CustomerReviews() {
         <div className="mt-10">
           <Slider {...settings}>
             {items.map((review, i) => (
-              <div key={i} className="px-3">
+              <div key={i}>
                 <ReviewCard review={review} />
               </div>
             ))}
