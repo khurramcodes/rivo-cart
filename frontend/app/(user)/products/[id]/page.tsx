@@ -20,6 +20,7 @@ import type { Review } from "@/types";
 import { ReviewEditor } from "@/components/user/reviews/ReviewEditor";
 import { ReviewCard } from "@/components/user/reviews/ReviewCard";
 import { ProductQASection } from "@/components/user/qa/ProductQASection";
+import { toast } from "react-toastify";
 
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>();
@@ -40,7 +41,6 @@ export default function ProductDetailPage() {
   );
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [showAddedNotice, setShowAddedNotice] = useState(false);
   const [pricing, setPricing] = useState<VariantPricing | null>(null);
   const [topReviews, setTopReviews] = useState<Review[]>([]);
 
@@ -227,8 +227,13 @@ export default function ProductDetailPage() {
     const requestedTotal = existingQty + quantity;
 
     if (requestedTotal > selectedVariant.stock) {
-      alert(
-        `You already have ${existingQty} in your cart. Only ${selectedVariant.stock} available in stock.`,
+      toast.error(
+        <div>
+          You already have <span className='font-semibold'>{existingQty}</span>{" "}
+          items in your cart. Only{" "}
+          <span className='font-semibold'>{selectedVariant.stock}</span>{" "}
+          available.
+        </div>,
       );
       return;
     }
@@ -237,7 +242,15 @@ export default function ProductDetailPage() {
       await dispatch(
         addToCart({ product, variant: selectedVariant, quantity }),
       ).unwrap();
-      setShowAddedNotice(true);
+
+       toast.success(
+         <span>
+           Item added to cart!{" "}
+           <Link href='/cart' className='underline font-medium'>
+             View Cart
+           </Link>
+         </span>,
+       );
     } catch {
       // handled by cart state
     }
@@ -281,26 +294,6 @@ export default function ProductDetailPage() {
   return (
     <div className='min-h-screen bg-white'>
       <main className='mx-auto max-w-6xl lg:max-w-7xl px-4 py-10'>
-        {showAddedNotice ? (
-          <div className='mb-6 flex items-center justify-between gap-4 rounded border border-emerald-200 bg-emerald-100 px-4 py-3'>
-            <div className='text-sm text-emerald-800 flex items-center gap-2'>
-              <CircleCheckBig size={16} />
-              Product successfully added to cart!{" "}
-              <Link
-                href='/cart'
-                className='font-medium underline underline-offset-4'>
-                View cart
-              </Link>
-            </div>
-            <button
-              type='button'
-              aria-label='Dismiss'
-              onClick={() => setShowAddedNotice(false)}
-              className='text-emerald-900 hover:text-emerald-700'>
-              <X className='h-4 w-4 cursor-pointer' />
-            </button>
-          </div>
-        ) : null}
         {loading ? <div className='text-sm text-zinc-600'>Loading…</div> : null}
         {!loading && !product ? (
           <div className='text-sm text-zinc-600'>Product not found.</div>
