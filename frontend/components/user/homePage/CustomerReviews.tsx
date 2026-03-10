@@ -150,7 +150,7 @@ export function CustomerReviews() {
 
   return (
     <section className='w-full py-28'>
-      <div className='mx-auto max-w-7xl px-6 lg:px-8'>
+      <div className='mx-auto max-w-7xl'>
         <div className='flex items-center gap-2'>
           <Quote className='h-8 w-8 text-primary' />
           <h2 className='text-3xl font-semibold tracking-tight text-zinc-900'>
