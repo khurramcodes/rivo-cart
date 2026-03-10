@@ -13,8 +13,8 @@ const poppins = Poppins({
 
 
 export const metadata: Metadata = {
-  title: "Mishal Organics - Online Shopping Platform",
-  description: "Mishal Organics - Best website to purchase wide range of 100% organic products online.",
+  title: "Mashal Organics - Online Shopping Platform",
+  description: "Mashal Organics - Best website to purchase wide range of 100% organic products online.",
 };
 
 export default async function RootLayout({
