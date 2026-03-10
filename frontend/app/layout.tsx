@@ -4,7 +4,6 @@ import "./globals.css";
 import { Providers } from "@/store/Providers";
 import { authApi } from "@/services/authApi";
 import { AuthHydrator } from "@/features/auth/AuthHydrator";
-// import { GlobalLoader } from "@/components/ui/GlobalLoader";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],

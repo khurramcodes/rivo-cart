@@ -29,7 +29,7 @@ export function HeroSection({
           className='object-cover bg-left'
           priority
         />
-        <div className='absolute inset-0 bg-linear-to-r from-black/70 via-black/50 to-transparent' />
+        <div className='absolute inset-0 bg-linear-to-r from-black/90 via-black/70 to-transparent' />
       </div>
 
       {/* Containerized Content */}

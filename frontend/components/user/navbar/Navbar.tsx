@@ -112,7 +112,7 @@ export function Navbar() {
             className='relative text-accent-foreground hover:text-primary transition-colors'>
             <Heart className='h-5 w-5' />
             {user && wishlistCount > 0 && (
-              <span className='absolute -right-2 -top-2 rounded-full bg-primary px-1.5 py-0.5 text-xs text-white'>
+              <span className='absolute -right-2 -top-2 rounded-full bg-primary h-4 w-4 flex justify-center items-center text-xs text-white font-semibold'>
                 {wishlistCount}
               </span>
             )}
@@ -122,7 +122,7 @@ export function Navbar() {
           <Link href='/cart' className='relative text-accent-foreground'>
             <ShoppingCart className='h-5 w-5' />
             {cartCount > 0 && (
-              <span className='absolute -right-2 -top-2 rounded-full bg-primary px-1.5 py-0.5 md:py-0 text-xs text-white'>
+              <span className='absolute -right-2 -top-2 rounded-full bg-primary h-4 w-4 flex justify-center items-center text-xs text-white font-semibold'>
                 {cartCount}
               </span>
             )}
