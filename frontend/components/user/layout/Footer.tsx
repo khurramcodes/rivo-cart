@@ -149,7 +149,7 @@ const Footer = () => {
                 <a
                   href='mailto:info@mishalorganics.com'
                   className='hover:text-white'>
-                  info@mishalorganics.com
+                  info@mashalorganics.com
                 </a>
               </li>
             </ul>
