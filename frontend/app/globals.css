@@ -43,3 +43,22 @@
 
 .animate-fadeIn { animation: fadeIn 0.2s ease-out; }
 .animate-slideUp { animation: slideUp 0.3s ease-out; }
+
+
+/* SLICK SLIDER MEDIA QUERIES */
+
+@media (max-width: 640px) {
+  .slick-slide {
+    width: 100% !important;
+  }
+  
+  .slick-track {
+    display: flex !important;
+    width: 100% !important;
+  }
+  
+  /* Ensure slider container respects mobile width */
+  .slick-slider .slick-list {
+    overflow: hidden !important;
+  }
+}
