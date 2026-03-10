@@ -139,7 +139,7 @@ export function ProductCard({ product, pricing, label }: ProductCardProps) {
                 </p>
 
                 {/* Discounted Price */}
-                <div className='flex items-center gap-2'>
+                <div className='flex flex-col md:flex-row items-start gap-2'>
                   <p className='text-sm font-semibold text-zinc-900'>
                     {priceData.isRange && priceData.isVariable
                       ? `From ${formatPrice(priceData.discountedMin)}`
