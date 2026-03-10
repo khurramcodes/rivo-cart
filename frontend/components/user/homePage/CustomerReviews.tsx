@@ -8,6 +8,8 @@ import { reviewApi } from "@/services/reviewApi";
 import type { Review } from "@/types";
 import { GlobalLoader } from "@/components/ui/GlobalLoader";
 import { Quote } from "lucide-react";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const MOCK_REVIEWS = [
   {
@@ -127,17 +129,10 @@ export function CustomerReviews() {
     autoplay: true,
     autoplaySpeed: 5000,
     speed: 500,
-    slidesToShow: 3,
+    slidesToShow: 2,
     slidesToScroll: 1,
     arrows: false,
     responsive: [
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-        },
-      },
       {
         breakpoint: 640,
         settings: {
