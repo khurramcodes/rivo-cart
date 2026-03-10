@@ -13,6 +13,8 @@
     "@reduxjs/toolkit": "^2.11.2",
     "axios": "^1.13.2",
     "clsx": "^2.1.1",
+    "embla-carousel-autoplay": "^8.6.0",
+    "embla-carousel-react": "^8.6.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
     "react": "19.2.3",
@@ -20,9 +22,7 @@
     "react-dom": "19.2.3",
     "react-hook-form": "^7.70.0",
     "react-redux": "^9.2.0",
-    "react-slick": "^0.31.0",
     "react-toastify": "^11.0.5",
-    "slick-carousel": "^1.8.1",
     "tailwind-merge": "^3.4.0",
     "zod": "^4.3.5"
   },

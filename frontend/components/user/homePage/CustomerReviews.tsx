@@ -8,8 +8,8 @@ import { reviewApi } from "@/services/reviewApi";
 import type { Review } from "@/types";
 import { GlobalLoader } from "@/components/ui/GlobalLoader";
 import { Quote } from "lucide-react";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 
 const MOCK_REVIEWS = [
   {
@@ -66,29 +66,28 @@ const MOCK_REVIEWS = [
 
 function ReviewCard({ review }: { review: Review }) {
   return (
-    <div className="flex h-full flex-col rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-      <div className="flex items-center gap-2">
+    <div className='flex h-full flex-col rounded-xl border border-zinc-200 bg-white p-6 shadow-sm'>
+      <div className='flex items-center gap-2'>
         <StarRating value={review.rating} size={18} />
         {review.isVerifiedPurchase && (
-          <span className="rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+          <span className='rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700'>
             Verified
           </span>
         )}
       </div>
 
-      <p className="mt-3 flex-1 text-sm text-zinc-700 line-clamp-2">
+      <p className='mt-3 flex-1 text-sm text-zinc-700 line-clamp-2'>
         &ldquo;{review.comment}&rdquo;
       </p>
 
-      <p className="mt-3 text-sm font-medium text-zinc-900">
+      <p className='mt-3 text-sm font-medium text-zinc-900'>
         — {review.user?.name ?? "Customer"}
       </p>
 
       {review.product && (
         <Link
           href={`/products/${review.productId}`}
-          className="mt-2 text-xs text-zinc-500 hover:text-primary line-clamp-1"
-        >
+          className='mt-2 text-xs text-zinc-500 hover:text-primary line-clamp-1'>
           {review.product.name}
         </Link>
       )}
@@ -99,6 +98,20 @@ function ReviewCard({ review }: { review: Review }) {
 export function CustomerReviews() {
   const [items, setItems] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const autoplay = Autoplay({
+    delay: 4000,
+    stopOnMouseEnter: true,
+    stopOnInteraction: false,
+  });
+
+  const [emblaRef] = useEmblaCarousel(
+    {
+      loop: true,
+      align: "start",
+    },
+    [autoplay],
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -123,30 +136,10 @@ export function CustomerReviews() {
     };
   }, []);
 
-  const settings = {
-    dots: true,
-    infinite: true,
-    autoplay: true,
-    autoplaySpeed: 5000,
-    speed: 500,
-    slidesToShow: 2,
-    slidesToScroll: 1,
-    arrows: false,
-    responsive: [
-      {
-        breakpoint: 640,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        },
-      },
-    ],
-  };
-
   if (loading && items.length === 0) {
     return (
-      <section className="w-full py-16">
-        <div className="flex min-h-50 items-center justify-center">
+      <section className='w-full py-16'>
+        <div className='flex min-h-50 items-center justify-center'>
           <GlobalLoader />
         </div>
       </section>
@@ -169,14 +162,16 @@ export function CustomerReviews() {
           See what our customers are saying about our products
         </p>
 
-        <div className='mt-10  overflow-hidden'>
-          <Slider {...settings}>
+        <div className='mt-10  overflow-hidden' ref={emblaRef}>
+          <div className='flex'>
             {items.map((review, i) => (
-              <div key={i} className='px-3'>
+              <div
+                key={i}
+                className='px-3 flex-[0_0_100%] sm:flex-[0_0_50%] lg:flex-[0_0_33.333%]'>
                 <ReviewCard review={review} />
               </div>
             ))}
-          </Slider>
+          </div>
         </div>
       </div>
     </section>
