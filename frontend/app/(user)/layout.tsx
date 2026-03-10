@@ -1,8 +1,9 @@
-import Footer from "@/components/user/layout/Copyright";
 import { Navbar } from "@/components/user/navbar/Navbar";
 import { SecondaryNav } from "@/components/user/navbar/SecondaryNavbar";
 import Topbar from "@/components/user/navbar/Topbar";
 import { ToastContainer, Bounce } from "react-toastify";
+import Footer from "@/components/user/layout/Footer";
+import Copyright from './../../components/user/layout/Copyright';
 
 export default function RootLayout({
   children,
@@ -18,6 +19,7 @@ export default function RootLayout({
       </div>
       {children}
       <Footer />
+      <Copyright />
       <ToastContainer
         position='top-right'
         autoClose={5000}
