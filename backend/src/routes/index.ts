@@ -20,6 +20,7 @@ import { notificationAdminRoutes } from "./notification.admin.routes.js";
 import { reportRoutes } from "./report.routes.js";
 import { reportAdminRoutes } from "./report.admin.routes.js";
 import { wishlistRoutes } from "../modules/wishlist/wishlist.routes.js";
+import { adminCollectionRoutes, collectionRoutes } from "../modules/collection/collection.routes.js";
 
 export const routes = Router();
 
@@ -44,5 +45,7 @@ routes.use("/admin/notifications", notificationAdminRoutes);
 routes.use("/reports", reportRoutes);
 routes.use("/admin/reports", reportAdminRoutes);
 routes.use("/wishlist", wishlistRoutes);
+routes.use("/admin/collections", adminCollectionRoutes);
+routes.use("/collections", collectionRoutes);
 
 

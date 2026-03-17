@@ -92,6 +92,28 @@ export type Product = {
   category?: Category;
 };
 
+export type CollectionProduct = {
+  id?: string;
+  collectionId?: string;
+  productId: string;
+  position: number;
+  product: Product;
+};
+
+export type Collection = {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  products?: CollectionProduct[];
+  _count?: {
+    products: number;
+  };
+};
+
 export type BestSellingProduct = Product & {
   soldQuantity: number;
 };

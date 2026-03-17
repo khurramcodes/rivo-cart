@@ -7,6 +7,7 @@ import type {
   AdminNotification,
   AdminNotificationStats,
   Category,
+  Collection,
   Order,
   OrderStatus,
   Product,
@@ -158,6 +159,59 @@ export const adminApi = {
   },
   async deleteCategory(id: string) {
     await apiClient.delete(`/categories/${id}`);
+  },
+
+  // collections
+  async listCollections() {
+    const { data } = await apiClient.get<{ collections: Collection[] }>("/admin/collections");
+    return data.collections;
+  },
+  async getCollection(id: string) {
+    const { data } = await apiClient.get<{ collection: Collection }>(`/admin/collections/${id}`);
+    return data.collection;
+  },
+  async createCollection(payload: {
+    title: string;
+    slug?: string;
+    description?: string;
+    isActive?: boolean;
+  }) {
+    const { data } = await apiClient.post<{ collection: Collection }>("/admin/collections", payload);
+    return data.collection;
+  },
+  async updateCollection(
+    id: string,
+    payload: Partial<{
+      title: string;
+      slug: string;
+      description: string;
+      isActive: boolean;
+    }>,
+  ) {
+    const { data } = await apiClient.put<{ collection: Collection }>(`/admin/collections/${id}`, payload);
+    return data.collection;
+  },
+  async deleteCollection(id: string) {
+    await apiClient.delete(`/admin/collections/${id}`);
+  },
+  async addCollectionProducts(id: string, productIds: string[]) {
+    const { data } = await apiClient.post<{ items: Collection["products"] }>(`/admin/collections/${id}/products`, {
+      productIds,
+    });
+    return data.items ?? [];
+  },
+  async reorderCollectionProducts(id: string, items: { productId: string; position: number }[]) {
+    const { data } = await apiClient.put<{ items: Collection["products"] }>(
+      `/admin/collections/${id}/products/reorder`,
+      { items },
+    );
+    return data.items ?? [];
+  },
+  async removeCollectionProduct(id: string, productId: string) {
+    const { data } = await apiClient.delete<{ items: Collection["products"] }>(
+      `/admin/collections/${id}/products/${productId}`,
+    );
+    return data.items ?? [];
   },
 
   // reviews (admin moderation)

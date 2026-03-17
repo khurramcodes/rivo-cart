@@ -202,6 +202,7 @@ model Product {
   questions        Question[]
   highlights       ProductHighlight[]
   wishlists        Wishlist[]
+  collections      ProductCollection[]
 
   @@index([categoryId])
   @@index([type])
@@ -574,12 +575,29 @@ model DiscountCategories {
 
 model Collection {
   id          String   @id @default(cuid())
-  name        String   @unique
+  title       String
+  slug        String   @unique
   description String?
+  isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  products            ProductCollection[]
   discountCollections DiscountCollections[]
+}
+
+model ProductCollection {
+  id           String   @id @default(cuid())
+  productId    String
+  collectionId String
+  position     Int
+  createdAt    DateTime @default(now())
+
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, collectionId])
+  @@index([collectionId, position])
 }
 
 model DiscountCollections {
