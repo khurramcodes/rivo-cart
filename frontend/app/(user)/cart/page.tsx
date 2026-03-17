@@ -139,7 +139,7 @@ export default function CartPage() {
 
   return (
     <div className='min-h-screen bg-white'>
-      <main className='mx-auto max-w-6xl px-4 py-10'>
+      <main className='mx-auto max-w-7xl px-4 py-10'>
         <h1 className='text-2xl font-semibold tracking-tight text-zinc-900'>
           Cart
         </h1>
@@ -172,7 +172,7 @@ export default function CartPage() {
                       />
                     </div>
 
-                    <div className='min-w-0'>
+                    <div className='min-w-0 w-full lg:w-xs'>
                       <p className='text-sm font-medium text-zinc-900 line-clamp-2'>
                         {i.product?.name ?? "Product"}
                       </p>
