@@ -97,7 +97,7 @@ export function ProductCard({ product, pricing, label }: ProductCardProps) {
             src={addCacheBust(product.imageUrl, product.updatedAt)}
             alt={product.name}
             fill
-            className='object-contain bg-white transition group-hover:scale-[1.02]'
+            className='object-cover bg-white transition group-hover:scale-[1.02]'
           />
           {label ? (
             <div className='absolute top-2 left-2 z-10'>

@@ -355,7 +355,13 @@ export async function updateProduct(
   if (!existing) throw new ApiError(404, "PRODUCT_NOT_FOUND", "Product not found");
 
   const data: Record<string, unknown> = {};
-  if (input.name !== undefined) data.name = input.name.trim();
+  if (input.name !== undefined) {
+    const trimmedName = input.name.trim();
+    data.name = trimmedName;
+
+    // Keep slug aligned with title updates and avoid collisions.
+    data.slug = await generateProductSlug(trimmedName, id);
+  }
   if (input.description !== undefined) data.description = input.description.trim() || null;
   if (input.type !== undefined) data.type = input.type;
   if (input.imageUrl !== undefined) data.imageUrl = input.imageUrl;

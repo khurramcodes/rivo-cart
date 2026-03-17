@@ -37,11 +37,14 @@ export async function generateCategorySlug(name: string) {
   );
 }
 
-export async function generateProductSlug(name: string) {
+export async function generateProductSlug(name: string, excludeProductId?: string) {
   const base = slugify(name);
   if (!base) throw new ApiError(400, "INVALID_SLUG", "Product name must include letters or numbers");
   const existing = await prisma.product.findMany({
-    where: { slug: { startsWith: base } },
+    where: {
+      slug: { startsWith: base },
+      ...(excludeProductId ? { id: { not: excludeProductId } } : {}),
+    },
     select: { slug: true },
   });
   return getNextSlug(
